@@ -13,9 +13,9 @@ st.set_page_config(
 )
 
 DB_FILE = "fleet_database.db"
+
 INVOICE_DIR = "faturalar"
-if not os.path.exists(INVOICE_DIR):
-  os.makedirs(INVOICE_DIR)
+os.makedirs(INVOICE_DIR, exist_ok=True)
 
 
 def get_connection():

@@ -14,10 +14,10 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# KUTUNUN KENDİSİNİN TIKLANABİLİR BİR KART OLduğu SAMSARA SİSTEMİ
+# MOONSTAR KURUMSAL RENK PALETİ VE KART TASARIMI
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
@@ -27,16 +27,18 @@ st.markdown("""
     
     .top-header {
         background: linear-gradient(90deg, #0b1f3a 0%, #172554 60%, #0284c7 100%);
-        padding: 12px 24px;
+        padding: 14px 24px;
         border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: white;
         margin-bottom: 16px;
+        box-shadow: 0 3px 10px rgba(11, 31, 58, 0.15);
         border-bottom: 3px solid #38bdf8;
     }
     .brand-title {
+        font-family: 'Montserrat', sans-serif;
         font-size: 20px;
         font-weight: 800;
         letter-spacing: 0.5px;
@@ -61,19 +63,20 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
     .kpi-num {
+        font-family: 'Montserrat', sans-serif;
         font-size: 22px;
         font-weight: 800;
         color: #0b1f3a;
         margin-top: 4px;
     }
 
-    /* KUTUNUN TAMAMINI TIKLANABİLİR BEYAZ SAMSARA KARTINA DÖNÜŞTÜREN STİL */
+    /* TIKLANABİLİR BEYAZ KARTLAR */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
         padding: 14px 16px !important;
-        min-height: 180px !important;
+        min-height: 195px !important;
         height: auto !important;
         width: 100% !important;
         box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
@@ -140,18 +143,18 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "READY", 999
+        return "No Record", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "CRITICAL ACTION", diff
+            return f"Expired ({abs(diff)}d ago)", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "DUE SOON", diff
+            return f"Due in {diff}d", diff
         else:
-            return f"Valid ({diff}d left)", "READY", diff
+            return f"Valid ({diff}d left)", diff
     except Exception:
-        return "Invalid", "READY", 999
+        return "Invalid", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
@@ -198,6 +201,7 @@ def init_db():
             last_oil_mileage INTEGER DEFAULT 0,
             oil_interval INTEGER DEFAULT 25000,
             monthly_gross REAL DEFAULT 0.0,
+            monthly_fuel_cost REAL DEFAULT 0.0,
             hooked_trailer TEXT DEFAULT 'None',
             current_location TEXT DEFAULT 'Yard'
         )
@@ -228,6 +232,8 @@ def init_db():
     cols = [col[1] for col in c.fetchall()]
     if "monthly_gross" not in cols:
         c.execute("ALTER TABLE vehicles ADD COLUMN monthly_gross REAL DEFAULT 0.0")
+    if "monthly_fuel_cost" not in cols:
+        c.execute("ALTER TABLE vehicles ADD COLUMN monthly_fuel_cost REAL DEFAULT 0.0")
     if "hooked_trailer" not in cols:
         c.execute("ALTER TABLE vehicles ADD COLUMN hooked_trailer TEXT DEFAULT 'None'")
     if "current_location" not in cols:
@@ -243,7 +249,8 @@ df_logs = pd.read_sql_query("SELECT * FROM logs", conn)
 
 unit_expenses = df_logs.groupby("unit_number")["cost"].sum().to_dict() if not df_logs.empty else {}
 df_v["total_expenses"] = df_v["unit_number"].map(unit_expenses).fillna(0.0)
-df_v["net_profit"] = df_v["monthly_gross"] - df_v["total_expenses"]
+df_v["monthly_fuel_cost"] = df_v["monthly_fuel_cost"].fillna(0.0)
+df_v["net_profit"] = df_v["monthly_gross"] - (df_v["total_expenses"] + df_v["monthly_fuel_cost"])
 
 def evaluate_insp(row):
     today = datetime.now().date()
@@ -281,8 +288,9 @@ if not df_v.empty:
     oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
     insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
     total_fleet_gross = df_v["monthly_gross"].sum()
+    total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
-    oil_crit_count, insp_crit_count, total_fleet_gross = 0, 0, 0.0
+    oil_crit_count, insp_crit_count, total_fleet_gross, total_fleet_fuel = 0, 0, 0.0, 0.0
 
 # DRIVERS DATA
 df_d = pd.DataFrame()
@@ -297,13 +305,11 @@ if os.path.exists(DRIVERS_FILE):
 
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Label"] = [r[1] for r in cdl_res]
-    df_d["CDL_Diff"] = [r[2] for r in cdl_res]
+    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Label"] = [r[1] for r in med_res]
-    df_d["Med_Diff"] = [r[2] for r in med_res]
+    df_d["Med_Diff"] = [r[1] for r in med_res]
 
     def get_dr_priority(row):
         if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
@@ -311,7 +317,7 @@ if os.path.exists(DRIVERS_FILE):
         elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
             return "DUE SOON", 2
         else:
-            return "READY", 3
+            return "COMPLIANT", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
@@ -322,12 +328,12 @@ dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 # -------------------------------------------------------------
 # DİYALOG MODALLARI
 # -------------------------------------------------------------
-@st.dialog("Equipment Master Dossier & P&L", width="large")
+@st.dialog("Equipment Master Dossier & Financial P&L", width="large")
 def open_equipment_dossier(unit_no):
     r_sel = df_v[df_v["unit_number"] == unit_no].iloc[0]
     st.subheader(f"Unit #{r_sel['unit_number']} — {r_sel['unit_type']} ({r_sel['company']})")
     
-    t1, t2, t3, t4 = st.tabs(["Vehicle Specs & Pairing", "P&L Financials", "DOT Audit Binder & Photos", "Decommission"])
+    t1, t2, t3, t4 = st.tabs(["Vehicle Specs & Pairing", "Financial P&L (Gross, Fuel, Net)", "DOT Audit Binder & Photos", "Decommission"])
     
     with t1:
         with st.form(f"form_unit_{unit_no}"):
@@ -359,11 +365,12 @@ def open_equipment_dossier(unit_no):
                 st.rerun()
 
     with t2:
-        st.markdown(f"##### Monthly Profit & Loss for Unit #{unit_no}")
-        p1, p2, p3 = st.columns(3)
+        st.markdown(f"##### Monthly Profit & Loss Statement for Unit #{unit_no}")
+        p1, p2, p3, p4 = st.columns(4)
         p1.metric("Gross Revenue (ITS)", f"${r_sel['monthly_gross']:,.2f}")
-        p2.metric("Total Maintenance Cost", f"${r_sel['total_expenses']:,.2f}")
-        p3.metric("Net Profit", f"${r_sel['net_profit']:,.2f}")
+        p2.metric("Fuel Cost", f"${r_sel['monthly_fuel_cost']:,.2f}")
+        p3.metric("Maintenance Cost", f"${r_sel['total_expenses']:,.2f}")
+        p4.metric("Net Profit", f"${r_sel['net_profit']:,.2f}", delta_color="normal")
         
         st.markdown("**Recorded Service & Maintenance Logs:**")
         unit_logs = df_logs[df_logs["unit_number"] == unit_no]
@@ -445,7 +452,7 @@ def open_driver_dossier(driver_name):
                 st.rerun()
         with d_up2:
             st.markdown("**Archived Driver Documents & Photos:**")
-            found_dr = [f for f in os.listdir(UPLOAD_DIR) if f"DR_{driver_name.replace(' ', '_')}_" in f]
+            found_dr = [f for f in os.listdir(UPLOAD_DIR) if f"DR_{driver_name.replace(' ','_')}_" in f]
             if found_dr:
                 for d in found_dr:
                     st.write(f"📄 `{d}`")
@@ -466,7 +473,7 @@ st.markdown(f"""
 <div class="top-header">
     <div style="display:flex; align-items:center; gap:16px;">
         <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Samsara & ITS Dispatch Intelligence</span>
+        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Samsara, ITS Dispatch & Fuel Analytics</span>
     </div>
     <div style="font-size:12px; color:#f1f5f9;">
         User: <b>{st.session_state.get('current_user')}</b>
@@ -478,7 +485,7 @@ nav_c1, nav_c2 = st.columns([5, 1])
 with nav_c1:
     top_menu = st.radio(
         "Navigation",
-        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS)", "Dispatch Team Chat", "Service Ledger"],
+        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS/Fuel)", "Dispatch Team Chat", "Service Ledger"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -490,7 +497,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (KUTUNUN KENDİSİNE TIKLAYINCA AÇILAN KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -504,8 +511,8 @@ if top_menu == "Trucks & Trailers":
     with k2:
         st.markdown(f"""
         <div class="kpi-box" style="border-left: 5px solid #dc2626;">
-            <div class="kpi-title">Oil Service Overdue</div>
-            <div class="kpi-num" style="color:#dc2626;">{oil_crit_count} Trucks</div>
+            <div class="kpi-title">Total Monthly Fuel Cost</div>
+            <div class="kpi-num" style="color:#dc2626;">${total_fleet_fuel:,.2f}</div>
         </div>
         """, unsafe_allow_html=True)
     with k3:
@@ -584,26 +591,25 @@ if top_menu == "Trucks & Trailers":
             df_filtered["make_model"].str.lower().str.contains(s)
         ]
 
-    st.caption(f"Showing **{len(df_filtered)}** equipment units (Click any box to open dossier):")
+    st.caption(f"Showing **{len(df_filtered)}** equipment units (Click any box to open full dossier):")
 
-    # 4 KOLONLU TEK PARÇA KUTU BUTONLAR (KUTUYA BASINCA DOSYA AÇILIR)
+    # 4 KOLONLU KUTUCUKLAR (KUTUYA TIKLAYINCA DOSYA AÇILIR)
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            # Kartın üstünde yazan net kurumsal bilgiler
             card_btn_text = (
                 f"UNIT #{r['unit_number']} ({r['unit_type']})   [{r['priority_label']}]\n\n"
                 f"Driver: {driver_str}\n"
                 f"Hooked: {hook_str}\n"
                 f"Oil Service: {r['oil_status']}\n"
                 f"Annual DOT: {r['insp_status']}\n"
-                f"Gross: ${r['monthly_gross']:,.0f} | Net: ${r['net_profit']:,.0f}"
+                f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
+                f"Net Profit: ${r['net_profit']:,.0f}"
             )
             
-            # KUTUNUN KENDİSİNE TIKLANDIĞINDA MODAL DOSYA AÇILIR
             if st.button(card_btn_text, key=f"box_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
 
@@ -674,9 +680,8 @@ elif top_menu == "Drivers Compliance":
                 df_dr_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.caption(f"Showing **{len(df_dr_view)}** driver files (Click any card to open dossier):")
+        st.caption(f"Showing **{len(df_dr_view)}** driver files:")
 
-        # 4 KOLONLU TIKLANABİLİR ŞOFÖR KARTLARI
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
@@ -692,17 +697,17 @@ elif top_menu == "Drivers Compliance":
         st.info("No drivers data found.")
 
 # -------------------------------------------------------------
-# 3. MODÜL: DATA IMPORTS
+# 3. MODÜL: DATA IMPORTS (SAMSARA / ITS / FUEL)
 # -------------------------------------------------------------
-elif top_menu == "Data Imports (Samsara/ITS)":
-    st.markdown("#### Automated Telematics & Revenue Ingestion")
-    st.caption("Upload raw export files directly to sync live mileage and monthly settlement revenue.")
+elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
+    st.markdown("#### Automated Telematics, Revenue & Fuel Ingestion")
+    st.caption("Upload raw export files directly to sync live mileage, monthly settlement revenue, and fuel card expenses.")
 
-    imp_col1, imp_col2 = st.columns(2)
+    imp_col1, imp_col2, imp_col3 = st.columns(3)
     
     with imp_col1:
         st.markdown("##### 1. Samsara Odometer Sync (CSV)")
-        st.write("Upload Samsara 'Vehicle Summary' or 'Mileage Export'. Updates all current odometer readings in seconds.")
+        st.write("Upload Samsara 'Vehicle Summary' or 'Mileage Export' to update current odometers.")
         samsara_file = st.file_uploader("Upload Samsara File (CSV)", type=["csv"], key="samsara_uploader")
         
         if samsara_file and st.button("Sync Samsara Mileages"):
@@ -710,7 +715,6 @@ elif top_menu == "Data Imports (Samsara/ITS)":
                 s_df = pd.read_csv(samsara_file)
                 updated_count = 0
                 cur = conn.cursor()
-                
                 asset_col = [c for c in s_df.columns if any(k in c.lower() for k in ["asset", "vehicle", "name"])][0]
                 odo_col = [c for c in s_df.columns if any(k in c.lower() for k in ["odometer", "mileage", "miles"])][0]
 
@@ -720,36 +724,27 @@ elif top_menu == "Data Imports (Samsara/ITS)":
                     try:
                         odo_val = int(float(odo_str))
                         if odo_val > 0 and u_num:
-                            cur.execute("""
-                                UPDATE vehicles 
-                                SET current_mileage = MAX(current_mileage, ?) 
-                                WHERE unit_number = ?
-                            """, (odo_val, u_num))
+                            cur.execute("UPDATE vehicles SET current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (odo_val, u_num))
                             if cur.rowcount > 0:
                                 updated_count += 1
                     except Exception:
                         pass
                 conn.commit()
-                st.success(f"Successfully synced odometer readings for {updated_count} vehicles!")
+                st.success(f"Successfully synced odometers for {updated_count} vehicles!")
                 st.rerun()
             except Exception as ex:
-                st.error(f"Error parsing Samsara file: {ex}")
+                st.error(f"Error: {ex}")
 
     with imp_col2:
-        st.markdown("##### 2. ITS Dispatch Gross Revenue Sync (Excel/CSV)")
-        st.write("Upload ITS Dispatch Monthly Gross or Settlement report. Automatically connects gross earnings to unit dossiers.")
-        its_file = st.file_uploader("Upload ITS Dispatch File (XLSX/CSV)", type=["xlsx", "xls", "csv"], key="its_uploader")
+        st.markdown("##### 2. ITS Gross Revenue Sync (Excel/CSV)")
+        st.write("Upload ITS Dispatch Monthly Gross or Settlement report.")
+        its_file = st.file_uploader("Upload ITS Dispatch File", type=["xlsx", "xls", "csv"], key="its_uploader")
         
         if its_file and st.button("Sync ITS Gross Revenues"):
             try:
-                if its_file.name.endswith(".csv"):
-                    its_df = pd.read_csv(its_file)
-                else:
-                    its_df = pd.read_excel(its_file)
-                
+                its_df = pd.read_csv(its_file) if its_file.name.endswith(".csv") else pd.read_excel(its_file)
                 updated_gross_count = 0
                 cur = conn.cursor()
-                
                 unit_c = [c for c in its_df.columns if any(k in c.lower() for k in ["unit", "truck", "asset"])][0]
                 gross_c = [c for c in its_df.columns if any(k in c.lower() for k in ["gross", "revenue", "amount", "total"])][0]
 
@@ -768,7 +763,37 @@ elif top_menu == "Data Imports (Samsara/ITS)":
                 st.success(f"Successfully synced gross revenues for {updated_gross_count} units!")
                 st.rerun()
             except Exception as ex:
-                st.error(f"Error parsing ITS Dispatch file: {ex}")
+                st.error(f"Error: {ex}")
+
+    with imp_col3:
+        st.markdown("##### 3. Fuel Card Expense Sync (EFS/Fleet One)")
+        st.write("Upload fuel card statement to automatically assign monthly fuel expenses per unit.")
+        fuel_file = st.file_uploader("Upload Fuel Statement (CSV/XLSX)", type=["xlsx", "xls", "csv"], key="fuel_uploader")
+        
+        if fuel_file and st.button("Sync Fuel Expenses"):
+            try:
+                fuel_df = pd.read_csv(fuel_file) if fuel_file.name.endswith(".csv") else pd.read_excel(fuel_file)
+                updated_fuel_count = 0
+                cur = conn.cursor()
+                f_unit = [c for c in fuel_df.columns if any(k in c.lower() for k in ["unit", "truck", "asset", "card"])][0]
+                f_cost = [c for c in fuel_df.columns if any(k in c.lower() for k in ["cost", "amount", "total", "price", "charge"])][0]
+
+                for _, f_row in fuel_df.iterrows():
+                    u_num = extract_unit_no(str(f_row[f_unit]))
+                    cost_str = str(f_row[f_cost]).replace("$", "").replace(",", "").strip()
+                    try:
+                        cost_val = float(cost_str)
+                        if cost_val >= 0 and u_num:
+                            cur.execute("UPDATE vehicles SET monthly_fuel_cost = monthly_fuel_cost + ? WHERE unit_number = ?", (cost_val, u_num))
+                            if cur.rowcount > 0:
+                                updated_fuel_count += 1
+                    except Exception:
+                        pass
+                conn.commit()
+                st.success(f"Successfully added fuel expenses for {updated_fuel_count} records!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"Error: {ex}")
 
 # -------------------------------------------------------------
 # 4. MODÜL: DISPATCH TEAM CHAT

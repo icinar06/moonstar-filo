@@ -8,20 +8,20 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Enterprise Fleet Console",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise TMS & Telematics",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# SAMSARA 4-COLUMN SINGLE CLICKABLE CARD SYSTEM
+# SAMSARA / MOTIVE ENTERPRISE STYLING
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
-        background-color: #f1f5f9 !important;
+        background-color: #f8fafc !important;
         color: #0f172a;
     }
     
@@ -44,7 +44,7 @@ st.markdown("""
         margin: 0;
     }
 
-    /* KPI BLOKLARI */
+    /* KPI Blokları */
     .kpi-box {
         background: #ffffff;
         border-radius: 8px;
@@ -61,19 +61,19 @@ st.markdown("""
         letter-spacing: 0.5px;
     }
     .kpi-num {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 800;
         color: #0b1f3a;
         margin-top: 4px;
     }
 
-    /* KARTIN KENDİSİ TEK BİR TIKLANABİLİR BEYAZ KUTUDUR (ALT BUTON YOKTUR) */
-    div[data-testid*="stButton"] > button {
+    /* 4 Kolonlu Tıklanabilir Beyaz Kartlar */
+    div[data-testid*="stButton"] > button.fleet-card-btn {
         background-color: #ffffff !important;
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 8px !important;
         padding: 14px 16px !important;
-        min-height: 160px !important;
+        min-height: 180px !important;
         height: auto !important;
         width: 100% !important;
         box-shadow: 0 2px 5px rgba(0,0,0,0.03) !important;
@@ -85,12 +85,12 @@ st.markdown("""
         transition: all 0.15s ease !important;
         margin-bottom: 12px !important;
     }
-    div[data-testid*="stButton"] > button:hover {
+    div[data-testid*="stButton"] > button.fleet-card-btn:hover {
         border-color: #0284c7 !important;
         box-shadow: 0 6px 16px rgba(2, 132, 199, 0.15) !important;
         transform: translateY(-2px) !important;
     }
-    div[data-testid*="stButton"] > button p {
+    div[data-testid*="stButton"] > button.fleet-card-btn p {
         font-family: 'Inter', sans-serif !important;
         font-size: 12px !important;
         font-weight: 500 !important;
@@ -107,7 +107,6 @@ st.markdown("""
 DB_FILE = "fleet_database.db"
 UPLOAD_DIR = "arsiv_dosyalari"
 DRIVERS_FILE = "Drivers.xlsx"
-FLEET_EXCEL = "Başlıksız e-tablo (2) copy 2.xlsx"
 SERVICE_LOGS_CSV = "Service logs.csv"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -197,7 +196,10 @@ def init_db():
             state_inspection TEXT,
             current_mileage INTEGER DEFAULT 0,
             last_oil_mileage INTEGER DEFAULT 0,
-            oil_interval INTEGER DEFAULT 25000
+            oil_interval INTEGER DEFAULT 25000,
+            monthly_gross REAL DEFAULT 0.0,
+            hooked_trailer TEXT DEFAULT 'None',
+            current_location TEXT DEFAULT 'Yard'
         )
     """)
     c.execute("""
@@ -222,32 +224,28 @@ def init_db():
     """)
     conn.commit()
 
-    if os.path.exists(SERVICE_LOGS_CSV):
-        try:
-            df_csv = pd.read_csv(SERVICE_LOGS_CSV)
-            for _, s_row in df_csv.iterrows():
-                u_extracted = extract_unit_no(str(s_row.get("Asset", "")))
-                odo = str(s_row.get("Odometer (mi)", "0")).replace(",", "").strip()
-                try:
-                    odo_val = int(float(odo))
-                    if odo_val > 0 and u_extracted:
-                        c.execute("""
-                            UPDATE vehicles 
-                            SET last_oil_mileage = MAX(last_oil_mileage, ?),
-                                current_mileage = MAX(current_mileage, ?)
-                            WHERE unit_number = ?
-                        """, (odo_val, odo_val, u_extracted))
-                except Exception:
-                    pass
-            conn.commit()
-        except Exception:
-            pass
+    # Kolon kontrolleri
+    c.execute("PRAGMA table_info(vehicles)")
+    cols = [col[1] for col in c.fetchall()]
+    if "monthly_gross" not in cols:
+        c.execute("ALTER TABLE vehicles ADD COLUMN monthly_gross REAL DEFAULT 0.0")
+    if "hooked_trailer" not in cols:
+        c.execute("ALTER TABLE vehicles ADD COLUMN hooked_trailer TEXT DEFAULT 'None'")
+    if "current_location" not in cols:
+        c.execute("ALTER TABLE vehicles ADD COLUMN current_location TEXT DEFAULT 'Yard'")
+    conn.commit()
     conn.close()
 
 init_db()
 
 conn = get_connection()
 df_v = pd.read_sql_query("SELECT * FROM vehicles ORDER BY unit_number ASC", conn)
+df_logs = pd.read_sql_query("SELECT * FROM logs", conn)
+
+# Bakım gideri hesaplama
+unit_expenses = df_logs.groupby("unit_number")["cost"].sum().to_dict() if not df_logs.empty else {}
+df_v["total_expenses"] = df_v["unit_number"].map(unit_expenses).fillna(0.0)
+df_v["net_profit"] = df_v["monthly_gross"] - df_v["total_expenses"]
 
 def evaluate_insp(row):
     today = datetime.now().date()
@@ -264,10 +262,10 @@ def evaluate_insp(row):
                 pass
     return "Valid", "HEALTHY"
 
-insp_res = df_v.apply(evaluate_insp, axis=1)
-df_v["insp_status"] = [r[0] for r in insp_res]
-df_v["insp_level"] = [r[1] for r in insp_res]
-df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
+insp_res = df_v.apply(evaluate_insp, axis=1) if not df_v.empty else []
+df_v["insp_status"] = [r[0] for r in insp_res] if not df_v.empty else []
+df_v["insp_level"] = [r[1] for r in insp_res] if not df_v.empty else []
+df_v["oil_status"] = df_v.apply(check_oil_status, axis=1) if not df_v.empty else []
 
 def get_overall_priority(row):
     if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
@@ -277,12 +275,15 @@ def get_overall_priority(row):
     else:
         return "READY", 3
 
-v_prio = df_v.apply(get_overall_priority, axis=1)
-df_v["priority_label"] = [p[0] for p in v_prio]
-df_v["priority_order"] = [p[1] for p in v_prio]
-
-oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
-insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
+if not df_v.empty:
+    v_prio = df_v.apply(get_overall_priority, axis=1)
+    df_v["priority_label"] = [p[0] for p in v_prio]
+    df_v["priority_order"] = [p[1] for p in v_prio]
+    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
+    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
+    total_fleet_gross = df_v["monthly_gross"].sum()
+else:
+    oil_crit_count, insp_crit_count, total_fleet_gross = 0, 0, 0.0
 
 # DRIVERS DATA
 df_d = pd.DataFrame()
@@ -318,14 +319,14 @@ if os.path.exists(DRIVERS_FILE):
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
 # -------------------------------------------------------------
-# DİYALOG MODALLARI (KARTA TIKLANDIĞINDA AÇILAN POPUP DOSYA)
+# DİYALOG MODALLARI (TAM DONANIMLI ARAÇ & ŞOFÖR DOSYASI)
 # -------------------------------------------------------------
-@st.dialog("Equipment Dossier", width="large")
+@st.dialog("Equipment Master Dossier & P&L", width="large")
 def open_equipment_dossier(unit_no):
     r_sel = df_v[df_v["unit_number"] == unit_no].iloc[0]
     st.subheader(f"Unit #{r_sel['unit_number']} — {r_sel['unit_type']} ({r_sel['company']})")
     
-    t1, t2, t3 = st.tabs(["Vehicle Information & Edit", "Archived Documents & Photos", "Decommission Equipment"])
+    t1, t2, t3, t4 = st.tabs(["Vehicle Specs & Pairing", "P&L Financials", "DOT Audit Binder & Photos", "Decommission"])
     
     with t1:
         with st.form(f"form_unit_{unit_no}"):
@@ -339,25 +340,39 @@ def open_equipment_dossier(unit_no):
                 e_cur = st.number_input("Current Mileage (mi)", value=int(r_sel['current_mileage'] or 0))
                 e_oil = st.number_input("Last Oil Change (mi)", value=int(r_sel['last_oil_mileage'] or 0))
             with c3:
-                e_reg = st.text_input("Registration Exp (YYYY-MM-DD)", value=str(r_sel['plate_expiry'] or ""))
+                e_hook = st.text_input("Hooked Trailer #", value=str(r_sel.get('hooked_trailer', 'None')))
+                e_loc = st.text_input("Current Yard / Location", value=str(r_sel.get('current_location', 'Yard')))
                 e_dot = st.text_input("Annual DOT (YYYY-MM-DD)", value=str(r_sel['dot_inspection'] or ""))
-                e_ste = st.text_input("State Insp (YYYY-MM-DD)", value=str(r_sel['state_inspection'] or ""))
 
-            st.markdown(f"**Oil Status:** `{r_sel['oil_status']}` | **DOT Status:** `{r_sel['insp_status']}`")
+            st.markdown(f"**Maintenance:** Oil: `{r_sel['oil_status']}` | DOT: `{r_sel['insp_status']}`")
 
             if st.form_submit_button("Save Vehicle Details"):
                 cur = conn.cursor()
                 cur.execute("""
                     UPDATE vehicles 
-                    SET driver=?, plate_number=?, vin=?, make_model=?, current_mileage=?, last_oil_mileage=?, plate_expiry=?, dot_inspection=?, state_inspection=?
+                    SET driver=?, plate_number=?, vin=?, make_model=?, current_mileage=?, last_oil_mileage=?, hooked_trailer=?, current_location=?, dot_inspection=?
                     WHERE unit_number=?
-                """, (e_drv, e_plt, e_vin, e_mdl, e_cur, e_oil, e_reg, e_dot, e_ste, unit_no))
+                """, (e_drv, e_plt, e_vin, e_mdl, e_cur, e_oil, e_hook, e_loc, e_dot, unit_no))
                 conn.commit()
                 st.success("Vehicle updated successfully!")
                 st.rerun()
 
     with t2:
-        st.markdown("**Attach Registration, DOT Inspection Sheets, or Condition Photos**")
+        st.markdown(f"##### Monthly Profit & Loss for Unit #{unit_no}")
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Gross Revenue (ITS)", f"${r_sel['monthly_gross']:,.2f}")
+        p2.metric("Total Maintenance Cost", f"${r_sel['total_expenses']:,.2f}")
+        p3.metric("Net Profit", f"${r_sel['net_profit']:,.2f}")
+        
+        st.markdown("**Recorded Service & Maintenance Logs:**")
+        unit_logs = df_logs[df_logs["unit_number"] == unit_no]
+        if not unit_logs.empty:
+            st.dataframe(unit_logs[["log_date", "log_type", "mileage", "cost", "notes"]], use_container_width=True, hide_index=True)
+        else:
+            st.caption("No maintenance expenses recorded for this unit.")
+
+    with t3:
+        st.markdown("**DOT Inspection Binder (Instant Compliance Access)**")
         up1, up2 = st.columns([2, 3])
         with up1:
             f_cat = st.selectbox("Category", ["Registration Card", "Annual DOT Sheet", "Vehicle Photo", "Insurance Certificate", "Repair Order Invoice"], key=f"fcat_{unit_no}")
@@ -369,7 +384,7 @@ def open_equipment_dossier(unit_no):
                 st.success("File archived!")
                 st.rerun()
         with up2:
-            st.markdown("**Archived Equipment Documents:**")
+            st.markdown("**Archived Documents & Photos:**")
             found_v = [f for f in os.listdir(UPLOAD_DIR) if f"EQUIP_{unit_no}_" in f]
             if found_v:
                 for doc in found_v:
@@ -377,7 +392,7 @@ def open_equipment_dossier(unit_no):
             else:
                 st.caption("No files uploaded for this unit yet.")
 
-    with t3:
+    with t4:
         st.warning(f"Permanently remove Unit #{unit_no} from active operations?")
         if st.button("🚨 Yes, Delete Permanently", type="secondary"):
             cur = conn.cursor()
@@ -385,7 +400,7 @@ def open_equipment_dossier(unit_no):
             conn.commit()
             st.rerun()
 
-@st.dialog("Driver Dossier", width="large")
+@st.dialog("Driver Master Dossier", width="large")
 def open_driver_dossier(driver_name):
     d_sel = df_d[df_d["Name"] == driver_name].iloc[0]
     st.subheader(f"Driver Dossier: {d_sel['Name']}")
@@ -450,7 +465,7 @@ st.markdown(f"""
 <div class="top-header">
     <div style="display:flex; align-items:center; gap:16px;">
         <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Samsara Fleet Intelligence</span>
+        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Samsara & ITS Dispatch Intelligence</span>
     </div>
     <div style="font-size:12px; color:#f1f5f9;">
         User: <b>{st.session_state.get('current_user')}</b>
@@ -462,7 +477,7 @@ nav_c1, nav_c2 = st.columns([5, 1])
 with nav_c1:
     top_menu = st.radio(
         "Navigation",
-        ["Trucks & Trailers", "Drivers Compliance", "Dispatch Team Chat", "Service Ledger"],
+        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS)", "Dispatch Team Chat", "Service Ledger"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -474,30 +489,30 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (TAM 4 KOLON, TEK KART BUTON)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, TEK KART BUTON)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     # 1. EN ÜSTTEKİ BÜYÜK KPI BLOKLARI
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.markdown(f"""
+        <div class="kpi-box" style="border-left: 5px solid #0284c7;">
+            <div class="kpi-title">Monthly Fleet Gross (ITS)</div>
+            <div class="kpi-num" style="color:#0284c7;">${total_fleet_gross:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with k2:
+        st.markdown(f"""
         <div class="kpi-box" style="border-left: 5px solid #dc2626;">
             <div class="kpi-title">Oil Service Overdue</div>
             <div class="kpi-num" style="color:#dc2626;">{oil_crit_count} Trucks</div>
         </div>
         """, unsafe_allow_html=True)
-    with k2:
+    with k3:
         st.markdown(f"""
         <div class="kpi-box" style="border-left: 5px solid #d97706;">
             <div class="kpi-title">Inspections Overdue / Due</div>
             <div class="kpi-num" style="color:#d97706;">{insp_crit_count} Assets</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with k3:
-        st.markdown(f"""
-        <div class="kpi-box" style="border-left: 5px solid #dc2626;">
-            <div class="kpi-title">Driver CDL / Med Alerts</div>
-            <div class="kpi-num" style="color:#dc2626;">{dr_crit_count} Drivers</div>
         </div>
         """, unsafe_allow_html=True)
     with k4:
@@ -577,18 +592,17 @@ if top_menu == "Trucks & Trailers":
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
-            model_str = r['make_model'] if r['make_model'] else '-'
+            hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            # Kartın içeriği (Tüm bilgiler tek kutu içinde)
             card_content = (
                 f"UNIT #{r['unit_number']} ({r['unit_type']})   [{r['priority_label']}]\n\n"
                 f"Driver: {driver_str}\n"
-                f"Model: {model_str}\n"
+                f"Hooked: {hook_str}\n"
                 f"Oil Service: {r['oil_status']}\n"
-                f"Annual DOT: {r['insp_status']}"
+                f"Annual DOT: {r['insp_status']}\n"
+                f"Gross: ${r['monthly_gross']:,.0f} | Net: ${r['net_profit']:,.0f}"
             )
             
-            # TEK TIKLA AÇILAN KART BUTONU (ALT BUTON TAMAMEN SİLİNDİ)
             if st.button(card_content, key=f"card_btn_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
 
@@ -677,7 +691,87 @@ elif top_menu == "Drivers Compliance":
         st.info("No drivers data found.")
 
 # -------------------------------------------------------------
-# 3. MODÜL: DISPATCH TEAM CHAT
+# 3. MODÜL: DATA IMPORTS (SAMSARA CSV & ITS DISPATCH EXCEL)
+# -------------------------------------------------------------
+elif top_menu == "Data Imports (Samsara/ITS)":
+    st.markdown("#### Automated Telematics & Revenue Ingestion")
+    st.caption("Upload raw export files directly to sync live mileage and monthly settlement revenue.")
+
+    imp_col1, imp_col2 = st.columns(2)
+    
+    with imp_col1:
+        st.markdown("##### 1. Samsara Odometer Sync (CSV)")
+        st.write("Upload Samsara 'Vehicle Summary' or 'Mileage Export'. Updates all current odometer readings in seconds.")
+        samsara_file = st.file_uploader("Upload Samsara File (CSV)", type=["csv"], key="samsara_uploader")
+        
+        if samsara_file and st.button("Sync Samsara Mileages"):
+            try:
+                s_df = pd.read_csv(samsara_file)
+                updated_count = 0
+                cur = conn.cursor()
+                
+                # Akıllı kolon eşleştirme
+                asset_col = [c for c in s_df.columns if any(k in c.lower() for k in ["asset", "vehicle", "name"])][0]
+                odo_col = [c for c in s_df.columns if any(k in c.lower() for k in ["odometer", "mileage", "miles"])][0]
+
+                for _, s_row in s_df.iterrows():
+                    u_num = extract_unit_no(str(s_row[asset_col]))
+                    odo_str = str(s_row[odo_col]).replace(",", "").strip()
+                    try:
+                        odo_val = int(float(odo_str))
+                        if odo_val > 0 and u_num:
+                            cur.execute("""
+                                UPDATE vehicles 
+                                SET current_mileage = MAX(current_mileage, ?) 
+                                WHERE unit_number = ?
+                            """, (odo_val, u_num))
+                            if cur.rowcount > 0:
+                                updated_count += 1
+                    except Exception:
+                        pass
+                conn.commit()
+                st.success(f"Successfully synced odometer readings for {updated_count} vehicles!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"Error parsing Samsara file: {ex}")
+
+    with imp_col2:
+        st.markdown("##### 2. ITS Dispatch Gross Revenue Sync (Excel/CSV)")
+        st.write("Upload ITS Dispatch Monthly Gross or Settlement report. Automatically connects gross earnings to unit dossiers.")
+        its_file = st.file_uploader("Upload ITS Dispatch File (XLSX/CSV)", type=["xlsx", "xls", "csv"], key="its_uploader")
+        
+        if its_file and st.button("Sync ITS Gross Revenues"):
+            try:
+                if its_file.name.endswith(".csv"):
+                    its_df = pd.read_csv(its_file)
+                else:
+                    its_df = pd.read_excel(its_file)
+                
+                updated_gross_count = 0
+                cur = conn.cursor()
+                
+                unit_c = [c for c in its_df.columns if any(k in c.lower() for k in ["unit", "truck", "asset"])][0]
+                gross_c = [c for c in its_df.columns if any(k in c.lower() for k in ["gross", "revenue", "amount", "total"])][0]
+
+                for _, it_row in its_df.iterrows():
+                    u_num = extract_unit_no(str(it_row[unit_c]))
+                    gross_str = str(it_row[gross_c]).replace("$", "").replace(",", "").strip()
+                    try:
+                        gross_val = float(gross_str)
+                        if gross_val >= 0 and u_num:
+                            cur.execute("UPDATE vehicles SET monthly_gross = ? WHERE unit_number = ?", (gross_val, u_num))
+                            if cur.rowcount > 0:
+                                updated_gross_count += 1
+                    except Exception:
+                        pass
+                conn.commit()
+                st.success(f"Successfully synced gross revenues for {updated_gross_count} units!")
+                st.rerun()
+            except Exception as ex:
+                st.error(f"Error parsing ITS Dispatch file: {ex}")
+
+# -------------------------------------------------------------
+# 4. MODÜL: DISPATCH TEAM CHAT
 # -------------------------------------------------------------
 elif top_menu == "Dispatch Team Chat":
     st.markdown("#### Dispatch Operations & Shift Notes")
@@ -697,13 +791,13 @@ elif top_menu == "Dispatch Team Chat":
     for _, r in df_c.iterrows():
         st.markdown(f"""
         <div style="background:#ffffff; border-left:4px solid #0284c7; padding:10px 14px; border-radius:6px; margin-bottom:8px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-            <b style="color:#0b1f3a; font-size:13px;">{r['sender']}</b> <span style="font-size:11px; color:#64748b; margin-left:8px;">🕒 {r['timestamp']}</span>
+            <b style="color:#0b1f3a; font-size:13px;">{r['sender']}</b> <span style="font-size:11px; color:#64748b; margin-left:8px;">{r['timestamp']}</span>
             <div style="margin-top:3px; font-size:13px; color:#0f172a;">{r['message']}</div>
         </div>
         """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 4. MODÜL: SERVICE LEDGER
+# 5. MODÜL: SERVICE LEDGER
 # -------------------------------------------------------------
 elif top_menu == "Service Ledger":
     st.markdown("#### Equipment Service & Maintenance Record Entry")

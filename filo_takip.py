@@ -8,13 +8,13 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Executive Fleet Intelligence",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise Fleet Management",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# ELITE SAMSARA / MOTIVE ENTERPRISE UI STYLING
+# PROFESYONEL KURUMSAL TMS TABLO VE STİL MİMARİSİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -27,8 +27,8 @@ st.markdown("""
     
     .top-header {
         background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 50%, #0284c7 100%);
-        padding: 16px 28px;
-        border-radius: 10px;
+        padding: 14px 24px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -38,7 +38,7 @@ st.markdown("""
         border-bottom: 3px solid #38bdf8;
     }
     .brand-title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 900;
         letter-spacing: 0.5px;
         color: #ffffff;
@@ -48,16 +48,11 @@ st.markdown("""
     /* Üst KPI Metrik Kartları */
     .kpi-box {
         background: #ffffff;
-        border-radius: 10px;
-        padding: 16px 20px;
+        border-radius: 8px;
+        padding: 14px 18px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-        margin-bottom: 20px;
-        transition: transform 0.15s ease;
-    }
-    .kpi-box:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom: 16px;
     }
     .kpi-title {
         font-size: 11px;
@@ -67,46 +62,10 @@ st.markdown("""
         letter-spacing: 0.8px;
     }
     .kpi-num {
-        font-size: 24px;
+        font-size: 22px;
         font-weight: 900;
         color: #0b1f3a;
-        margin-top: 6px;
-    }
-
-    /* SAMSARA ELITE TIKLANABİLİR BEYAZ KART BUTONU (ALT BUTON YOK) */
-    div[data-testid*="stButton"] > button {
-        background-color: #ffffff !important;
-        border: 1.5px solid #cbd5e1 !important;
-        border-radius: 10px !important;
-        padding: 16px 18px !important;
-        min-height: 190px !important;
-        height: auto !important;
-        width: 100% !important;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
-        text-align: left !important;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 16px !important;
-    }
-    div[data-testid*="stButton"] > button:hover {
-        border-color: #0284c7 !important;
-        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15) !important;
-        transform: translateY(-3px) !important;
-        background-color: #ffffff !important;
-    }
-    div[data-testid*="stButton"] > button p {
-        font-family: 'Inter', sans-serif !important;
-        font-size: 12px !important;
-        font-weight: 500 !important;
-        margin: 0 !important;
-        line-height: 1.6 !important;
-        text-align: left !important;
-        white-space: pre-line !important;
-        width: 100% !important;
-        color: #1e293b !important;
+        margin-top: 4px;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -162,7 +121,7 @@ def check_date_status(date_str):
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt"
+        return "Exempt (Trailer)"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
@@ -279,11 +238,11 @@ if not df_v.empty:
 
     def get_overall_priority(row):
         if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
-            return "[CRITICAL ACTION]", 1
+            return "CRITICAL ACTION", 1
         elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
-            return "[DUE SOON]", 2
+            return "DUE SOON", 2
         else:
-            return "[READY]", 3
+            return "READY", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
@@ -317,11 +276,11 @@ if os.path.exists(DRIVERS_FILE):
 
     def get_dr_priority(row):
         if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
-            return "[CRITICAL ACTION]", 1
+            return "CRITICAL ACTION", 1
         elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
-            return "[DUE SOON]", 2
+            return "DUE SOON", 2
         else:
-            return "[READY]", 3
+            return "COMPLIANT", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
@@ -477,7 +436,7 @@ st.markdown(f"""
 <div class="top-header">
     <div style="display:flex; align-items:center; gap:16px;">
         <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Intelligence</span>
+        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Management Console</span>
     </div>
     <div style="font-size:12px; color:#f1f5f9;">
         User: <b>{st.session_state.get('current_user')}</b>
@@ -501,7 +460,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (KUTUNUN KENDİSİNE TIKLAYINCA AÇILAN KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS (PROFESYONEL KURUMSAL TABLO & DOSYA ERİŞİMİ)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -595,27 +554,28 @@ if top_menu == "Trucks & Trailers":
             df_filtered["make_model"].str.lower().str.contains(s)
         ]
 
-    st.caption(f"Showing **{len(df_filtered)}** equipment units (Click any card to open full dossier):")
+    st.markdown("### 📋 Fleet Operations & Financial Master Table")
+    st.caption("Click 'Open Dossier' on any unit row to review complete financials, P&L, maintenance logs, and audit binder.")
 
-    # 4 KOLONLU TIKLANABİLİR BEYAZ KARTLAR
-    cols = st.columns(4)
-    for idx, (_, r) in enumerate(df_filtered.iterrows()):
-        with cols[idx % 4]:
-            driver_str = r['driver'] if r['driver'] else 'Unassigned'
-            hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
-            
-            card_btn_text = (
-                f"UNIT #{r['unit_number']} ({r['unit_type']})   {r['priority_label']}\n\n"
-                f"Driver: {driver_str}\n"
-                f"Hooked: {hook_str}\n"
-                f"Oil Service: {r['oil_status']}\n"
-                f"Annual DOT: {r['insp_status']}\n"
-                f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
-                f"Net Profit: ${r['net_profit']:,.0f}"
-            )
-            
-            if st.button(card_btn_text, key=f"box_card_{r['unit_number']}", use_container_width=True):
-                open_equipment_dossier(r['unit_number'])
+    # PROFESYONEL KURUMSAL TABLO GÖRÜNÜMÜ
+    display_df = df_filtered[["unit_number", "unit_type", "driver", "hooked_trailer", "oil_status", "insp_status", "monthly_gross", "monthly_fuel_cost", "net_profit", "priority_label"]].copy()
+    display_df.columns = ["Unit #", "Type", "Driver", "Hooked Trailer", "Oil Service", "Annual DOT", "Gross (ITS)", "Fuel Cost", "Net Profit", "Status"]
+
+    for idx, row in display_df.iterrows():
+        cols = st.columns([1, 1, 1.8, 1.2, 1.5, 1.5, 1.2, 1.2, 1.2, 1.2])
+        cols[0].write(f"**#{row['Unit #']}**")
+        cols[1].write(row['Type'])
+        cols[2].write(row['Driver'] if row['Driver'] else "Unassigned")
+        cols[3].write(row['Hooked Trailer'])
+        cols[4].write(row['Oil Service'])
+        cols[5].write(row['Annual DOT'])
+        cols[6].write(f"${row['Gross (ITS)']:,.0f}")
+        cols[7].write(f"${row['Fuel Cost']:,.0f}")
+        cols[8].write(f"${row['Net Profit']:,.0f}")
+        
+        # Tek tıkla dosya açma butonu
+        if cols[9].button("📂 Dossier", key=f"table_dossier_{row['Unit #']}"):
+            open_equipment_dossier(row['Unit #'])
 
 # -------------------------------------------------------------
 # 2. MODÜL: DRIVERS COMPLIANCE
@@ -684,20 +644,18 @@ elif top_menu == "Drivers Compliance":
                 df_dr_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.caption(f"Showing **{len(df_dr_view)}** driver files (Click any card to open dossier):")
-
-        # 4 KOLONLU TIKLANABİLİR ŞOFÖR KARTLARI
-        d_cols = st.columns(4)
-        for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
-            with d_cols[j % 4]:
-                dr_card_text = (
-                    f"DRIVER: {d_row['Name']}   {d_row['priority_label']}\n\n"
-                    f"Phone: {d_row['Telephone']}\n"
-                    f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
-                    f"Medical Card: {d_row['Med_Status']}"
-                )
-                if st.button(dr_card_text, key=f"box_dr_card_{j}", use_container_width=True):
-                    open_driver_dossier(d_row['Name'])
+        st.markdown("### 👤 Driver Compliance & Safety Master Table")
+        
+        for idx, row in df_dr_view.iterrows():
+            cols = st.columns([2.5, 1.5, 1.5, 2, 2, 1.2])
+            cols[0].write(f"**{row['Name']}**")
+            cols[1].write(row['Telephone'])
+            cols[2].write(row['License Number'])
+            cols[3].write(row['CDL_Status'])
+            cols[4].write(row['Med_Status'])
+            
+            if cols[5].button("📂 Dossier", key=f"table_dr_{idx}"):
+                open_driver_dossier(row['Name'])
     else:
         st.info("No drivers data found.")
 

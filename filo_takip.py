@@ -454,7 +454,7 @@ if menu == "📊 Operations & Alert Center":
         )
 
 # -------------------------------------------------------------
-# 2. MODULE: DRIVER DOSSIER & COMPLIANCE
+# 2. MODULE: DRIVER DOSSIER & COMPLIANCE (WITH ADD / REMOVE)
 # -------------------------------------------------------------
 elif menu == "👤 Driver Dossier & Compliance":
     st.markdown("#### 👤 Driver Master Dossier (Profile, Check-in/out Photos & Safety History)")
@@ -587,8 +587,51 @@ elif menu == "👤 Driver Dossier & Compliance":
         }), use_container_width=True, hide_index=True
     )
 
+    # --- DRIVER MANAGEMENT: ADD & REMOVE DRIVER FORMS ---
+    st.markdown("---")
+    with st.expander("👤 Driver Management (Onboard New Driver / Offboard Driver)", expanded=False):
+        d_col1, d_col2 = st.columns(2)
+        with d_col1:
+            st.markdown("##### ➕ Onboard New Driver")
+            with st.form("onboard_driver_form"):
+                new_d_name = st.text_input("Driver Full Name (First & Last)")
+                new_d_phone = st.text_input("Phone Number")
+                new_d_email = st.text_input("Corporate / Personal Email")
+                new_d_cdl = st.text_input("CDL License Number")
+                new_d_cdl_exp = st.date_input("CDL Expiration Date")
+                new_d_med_exp = st.date_input("DOT Medical Card Due Date")
+
+                if st.form_submit_button("Save Driver Profile"):
+                    if new_d_name.strip():
+                        new_driver_entry = {
+                            "Status": "Active",
+                            "Name": new_d_name.strip(),
+                            "Telephone": new_d_phone.strip(),
+                            "E-mail": new_d_email.strip(),
+                            "License Number": new_d_cdl.strip(),
+                            "License Expiry": str(new_d_cdl_exp),
+                            "Next Medical": str(new_d_med_exp)
+                        }
+                        df_d = pd.concat([df_d, pd.DataFrame([new_driver_entry])], ignore_index=True)
+                        df_d.to_excel(DRIVERS_FILE, index=False)
+                        st.success(f"Driver '{new_d_name}' successfully added to compliance records!")
+                        st.rerun()
+                    else:
+                        st.error("Driver name is mandatory.")
+
+        with d_col2:
+            st.markdown("##### ❌ Offboard / Remove Driver")
+            all_current_drivers = df_d["Name"].dropna().tolist() if not df_d.empty else []
+            driver_to_remove = st.selectbox("Select Driver to Remove:", ["Select..."] + all_current_drivers)
+            if st.button("🚨 Remove Driver from Fleet", type="secondary"):
+                if driver_to_remove != "Select...":
+                    df_d = df_d[df_d["Name"] != driver_to_remove]
+                    df_d.to_excel(DRIVERS_FILE, index=False)
+                    st.warning(f"Driver '{driver_to_remove}' removed from active fleet!")
+                    st.rerun()
+
 # -------------------------------------------------------------
-# 3. MODULE: FLEET DISPATCH & ASSET BOARD
+# 3. MODULE: FLEET DISPATCH & ASSET BOARD (WITH ADD / REMOVE)
 # -------------------------------------------------------------
 elif menu == "🚛 Fleet Dispatch & Asset Board":
     st.markdown("#### 🚛 Equipment Roster & Active Maintenance Tracking")
@@ -631,6 +674,50 @@ elif menu == "🚛 Fleet Dispatch & Asset Board":
             "plate_expiry": "Registration", "dot_inspection": "Annual DOT", "insp_status": "Inspection Status"
         }), use_container_width=True, height=480, hide_index=True
     )
+
+    # --- FLEET MANAGEMENT: ADD & REMOVE ASSET FORMS ---
+    st.markdown("---")
+    with st.expander("⚙️ Fleet Asset Management (Add New Truck / Trailer or Delete Asset)", expanded=False):
+        v_col1, v_col2 = st.columns(2)
+        with v_col1:
+            st.markdown("##### ➕ Add New Equipment (Truck / Trailer)")
+            with st.form("add_asset_form"):
+                v_comp = st.selectbox("Operating Company", ["MOONSTAR", "LIONSTAR"])
+                v_type = st.selectbox("Equipment Type", ["TRUCK", "TRAILER"])
+                v_unit = st.text_input("Unit Number (e.g. 95 or 5312)")
+                v_driver = st.text_input("Assigned Driver")
+                v_vin = st.text_input("VIN / Serial Number")
+                v_plate = st.text_input("License Plate #")
+                v_model = st.text_input("Make / Model / Year")
+                v_reg = st.date_input("Registration Expiration")
+                v_dot = st.date_input("Annual DOT Inspection Date")
+                v_state = st.date_input("State / PA Inspection Date")
+
+                if st.form_submit_button("Register Equipment"):
+                    if v_unit.strip():
+                        cur = conn.cursor()
+                        cur.execute("""
+                            INSERT INTO vehicles 
+                            (company, unit_type, unit_number, driver, vin, plate_number, make_model, plate_expiry, dot_inspection, state_inspection)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (v_comp, v_type, v_unit.strip(), v_driver.strip(), v_vin.strip(), v_plate.strip(), v_model.strip(), str(v_reg), str(v_dot), str(v_state)))
+                        conn.commit()
+                        st.success(f"{v_type} #{v_unit} successfully registered in fleet database!")
+                        st.rerun()
+                    else:
+                        st.error("Unit Number is mandatory.")
+
+        with v_col2:
+            st.markdown("##### ❌ Decommission / Remove Asset")
+            all_assets = df_v["unit_number"].dropna().tolist()
+            asset_to_remove = st.selectbox("Select Asset to Remove:", ["Select..."] + all_assets)
+            if st.button("🚨 Remove Equipment Permanently", type="secondary"):
+                if asset_to_remove != "Select...":
+                    cur = conn.cursor()
+                    cur.execute("DELETE FROM vehicles WHERE unit_number = ?", (asset_to_remove,))
+                    conn.commit()
+                    st.warning(f"Asset #{asset_to_remove} deleted from fleet!")
+                    st.rerun()
 
 # -------------------------------------------------------------
 # 4. MODULE: TEAM DISPATCH CHAT

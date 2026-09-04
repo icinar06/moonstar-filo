@@ -53,6 +53,23 @@ with st.sidebar:
         st.session_state["authenticated"] = False
         st.rerun()
 # -------------------------------
+def check_driver_expiry(date_str):
+    if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
+        return "Tarih Yok / Eksik", "⚪"
+    try:
+        dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
+        today = datetime.now().date()
+        diff = (dt - today).days
+        if diff < 0:
+            return f"Süresi Doldu ({abs(diff)} gün önce)", "🔴"
+        elif diff <= 30:
+            return f"Kritik! ({diff} gün kaldı)", "🟡"
+        elif diff <= 60:
+            return f"Yaklaşıyor ({diff} gün kaldı)", "🟠"
+        else:
+            return f"Geçerli ({diff} gün var)", "🟢"
+    except Exception:
+        return "Geçersiz Tarih", "⚪"
 def get_connection():
   return sqlite3.connect(DB_FILE, check_same_thread=False)
 

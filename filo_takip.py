@@ -22,9 +22,9 @@ if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
-   if os.path.exists("logo.jpg"):
+    if os.path.exists("logo.jpg"):
         st.image("logo.jpg", width=220)
-    st.markdown("### 🔒 Moonstar Express LLC — Filo Yönetim Paneli")
+    st.markdown("### 🔒 Moonstar Express LLC – Filo Yönetim Paneli")
     st.caption("Bu panele yalnızca yetkili kurumsal personeller erişebilir.")
     
     with st.form("login_form"):

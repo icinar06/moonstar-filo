@@ -437,8 +437,9 @@ k5.metric("Toplam Masraf", f"${all_spending:,.2f}")
 
 st.markdown("---")
 
-tab_fleet, tab_add_log, tab_expenses = st.tabs([
+tab_fleet, tab_drivers, tab_add_log, tab_expenses = st.tabs([
     "📋 Canlı Düzenlenebilir Filo Listesi",
+    "👤 Şoförler & Evrak Takibi",
     "➕ Bakım, Yağ & Fatura Ekle",
     "💰 Masraf Raporları & Faturalar",
 ])
@@ -589,7 +590,62 @@ with tab_fleet:
     conn.commit()
     st.success("✅ Tablodaki tüm değişiklikler veritabanına kaydedildi!")
     st.rerun()
-
+# 2. SEKME: ŞOFÖRLER, EHLİYET VE MEDICAL CARD TAKİBİ
+with tab_drivers:
+    st.markdown("### 👤 Şoför İletişim Bilgileri, CDL & Medical Card Durumları")
+    
+    drivers_file = "Drivers.xlsx"
+    if os.path.exists(drivers_file):
+        try:
+            df_d = pd.read_excel(drivers_file)
+            df_d = df_d[df_d["Name"].notna()].copy()
+            df_d["License Expiry"] = df_d["License Expiry"].astype(str).str.strip()
+            df_d["Next Medical"] = df_d["Next Medical"].astype(str).str.strip()
+            df_d["E-mail"] = df_d["E-mail"].fillna("-").astype(str).str.strip()
+            df_d["Telephone"] = df_d["Telephone"].fillna("-").astype(str).str.strip()
+            df_d["License Number"] = df_d["License Number"].fillna("-").astype(str).str.strip()
+            
+            df_d["Ehliyet Durumu"] = df_d["License Expiry"].apply(lambda d: check_driver_expiry(d)[0])
+            df_d["Ehliyet İkon"] = df_d["License Expiry"].apply(lambda d: check_driver_expiry(d)[1])
+            df_d["Medical Durumu"] = df_d["Next Medical"].apply(lambda d: check_driver_expiry(d)[0])
+            df_d["Medical İkon"] = df_d["Next Medical"].apply(lambda d: check_driver_expiry(d)[1])
+            
+            crit_lic = df_d[df_d["Ehliyet İkon"].isin(["🔴", "🟡"])]
+            crit_med = df_d[df_d["Medical İkon"].isin(["🔴", "🟡"])]
+            
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric("Kayıtlı Şoför Sayısı", len(df_d))
+            c2.metric("Aktif Şoförler", len(df_d[df_d["Status"] == "Active"]))
+            c3.metric("Kritik / Günü Dolan CDL", len(crit_lic), delta_color="inverse")
+            c4.metric("Kritik / Günü Dolan Medical", len(crit_med), delta_color="inverse")
+            
+            if len(crit_lic) > 0:
+                st.error(f"⚠️ **DİKKAT:** {len(crit_lic)} şoförün ehliyet (CDL) süresi dolmuş veya 30 günden az kalmış!")
+            if len(crit_med) > 0:
+                st.warning(f"⚠️ **DİKKAT:** {len(crit_med)} şoförün Medical Card süresi dolmuş veya 30 günden az kalmış!")
+                
+            display_cols = [
+                "Name", "Telephone", "E-mail", "License Number", 
+                "License Expiry", "Ehliyet İkon", "Ehliyet Durumu", 
+                "Next Medical", "Medical İkon", "Medical Durumu"
+            ]
+            
+            st.dataframe(
+                df_d[display_cols].rename(columns={
+                    "Name": "Şoför Adı",
+                    "Telephone": "Telefon",
+                    "E-mail": "E-Posta",
+                    "License Number": "Ehliyet No",
+                    "License Expiry": "CDL Bitiş Tarihi",
+                    "Next Medical": "Medical Card Bitiş"
+                }),
+                use_container_width=True,
+                hide_index=True
+            )
+        except Exception as e:
+            st.error(f"Drivers.xlsx okunurken hata oluştu: {e}")
+    else:
+        st.info("Sistemde 'Drivers.xlsx' dosyası bulunamadı. Lütfen ana dizinde olduğundan emin olun.")
 # 2. SEKME: BAKIM & FATURA GİRİŞİ
 with tab_add_log:
   st.subheader("Yeni Bakım, Onarım veya Fatura Girişi")

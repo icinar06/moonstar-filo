@@ -8,123 +8,106 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Enterprise Fleet Console",
+    page_title="MOONSTAR EXPRESS LLC — Executive Fleet Intelligence",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# SAMSARA GERÇEK RENKLİ HTML KART TASARIMI
+# ELITE SAMSARA / MOTIVE ENTERPRISE UI STYLING
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
-        background-color: #f1f5f9 !important;
+        background-color: #f8fafc !important;
         color: #0f172a;
     }
     
     .top-header {
-        background: linear-gradient(90deg, #0b1f3a 0%, #172554 60%, #0284c7 100%);
-        padding: 12px 24px;
-        border-radius: 8px;
+        background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 50%, #0284c7 100%);
+        padding: 16px 28px;
+        border-radius: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: white;
-        margin-bottom: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 15px rgba(11, 31, 58, 0.15);
         border-bottom: 3px solid #38bdf8;
     }
     .brand-title {
-        font-size: 20px;
-        font-weight: 800;
+        font-size: 22px;
+        font-weight: 900;
         letter-spacing: 0.5px;
         color: #ffffff;
         margin: 0;
     }
 
-    /* KPI Blokları */
+    /* Üst KPI Metrik Kartları */
     .kpi-box {
         background: #ffffff;
-        border-radius: 8px;
-        padding: 14px 18px;
+        border-radius: 10px;
+        padding: 16px 20px;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        margin-bottom: 16px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        margin-bottom: 20px;
+        transition: transform 0.15s ease;
+    }
+    .kpi-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.06);
     }
     .kpi-title {
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
         color: #64748b;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.8px;
     }
     .kpi-num {
-        font-size: 22px;
-        font-weight: 800;
+        font-size: 24px;
+        font-weight: 900;
         color: #0b1f3a;
-        margin-top: 4px;
+        margin-top: 6px;
     }
 
-    /* GERÇEK RENKLİ SAMSARA KARTLARI (HTML) */
-    .samsara-card {
-        background-color: #ffffff;
-        border: 1.5px solid #cbd5e1;
-        border-radius: 8px;
-        padding: 14px 16px;
-        min-height: 190px;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-        margin-bottom: 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
+    /* SAMSARA ELITE TIKLANABİLİR BEYAZ KART BUTONU (ALT BUTON YOK) */
+    div[data-testid*="stButton"] > button {
+        background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        padding: 16px 18px !important;
+        min-height: 190px !important;
+        height: auto !important;
+        width: 100% !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-bottom: 16px !important;
     }
-    .card-top-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 8px;
-        border-bottom: 1px solid #f1f5f9;
-        padding-bottom: 6px;
+    div[data-testid*="stButton"] > button:hover {
+        border-color: #0284c7 !important;
+        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15) !important;
+        transform: translateY(-3px) !important;
+        background-color: #ffffff !important;
     }
-    .card-title-text {
-        font-size: 14px;
-        font-weight: 800;
-        color: #0b1f3a;
+    div[data-testid*="stButton"] > button p {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+        line-height: 1.6 !important;
+        text-align: left !important;
+        white-space: pre-line !important;
+        width: 100% !important;
+        color: #1e293b !important;
     }
-    
-    /* Renkli Rozetler */
-    .badge {
-        font-size: 10px;
-        font-weight: 700;
-        padding: 3px 8px;
-        border-radius: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .badge-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .badge-healthy { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-
-    .card-info-line {
-        font-size: 12px;
-        margin-bottom: 4px;
-        color: #334155;
-    }
-    .info-lbl {
-        font-weight: 600;
-        color: #64748b;
-        display: inline-block;
-        width: 85px;
-    }
-    .info-val {
-        font-weight: 600;
-        color: #0f172a;
-    }
-    .val-critical { color: #dc2626 !important; font-weight: 700; }
-    .val-warning { color: #d97706 !important; font-weight: 700; }
-    .val-healthy { color: #16a34a !important; font-weight: 700; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -145,7 +128,7 @@ if not st.session_state["authenticated"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         if os.path.exists("logo.jpg"):
             st.image("logo.jpg", width=220)
-        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — FLEET CONSOLE")
+        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — EXECUTIVE LOGIN")
         with st.form("login_form"):
             email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
             pwd = st.text_input("Password", type="password")
@@ -164,37 +147,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "badge-healthy", "val-healthy", 999
+        return "No Record", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "badge-critical", "val-critical", diff
+            return f"Expired ({abs(diff)}d ago)", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "badge-warning", "val-warning", diff
+            return f"Due in {diff}d", diff
         else:
-            return f"Valid ({diff}d left)", "badge-healthy", "val-healthy", diff
+            return f"Valid ({diff}d left)", diff
     except Exception:
-        return "Invalid", "badge-healthy", "val-healthy", 999
+        return "Invalid", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)", "badge-healthy", "val-healthy"
+        return "Exempt"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record", "badge-healthy", "val-healthy"
+            return "No Record"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi", "badge-critical", "val-critical"
+            return f"Overdue by {abs(rem):,} mi"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi", "badge-warning", "val-warning"
+            return f"Due in {rem:,} mi"
         else:
-            return f"Valid ({rem:,} mi left)", "badge-healthy", "val-healthy"
+            return f"Valid ({rem:,} mi left)"
     except Exception:
-        return "Not Set", "badge-healthy", "val-healthy"
+        return "Not Set"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -281,39 +264,33 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "badge-critical", "val-critical"
+                    return f"Expired ({abs(diff)}d ago)", "CRITICAL"
                 elif diff <= 30:
-                    return f"Due in {diff}d", "badge-warning", "val-warning"
+                    return f"Due in {diff}d", "WARNING"
             except:
                 pass
-    return "Valid", "badge-healthy", "val-healthy"
+    return "Valid", "HEALTHY"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_badge"] = [r[1] for r in insp_res]
-    df_v["insp_val_cls"] = [r[2] for r in insp_res]
-
-    oil_res = df_v.apply(check_oil_status, axis=1)
-    df_v["oil_status"] = [r[0] for r in oil_res]
-    df_v["oil_badge"] = [r[1] for r in oil_res]
-    df_v["oil_val_cls"] = [r[2] for r in oil_res]
+    df_v["insp_level"] = [r[1] for r in insp_res]
+    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
 
     def get_overall_priority(row):
-        if row["oil_badge"] == "badge-critical" or row["insp_badge"] == "badge-critical":
-            return "CRITICAL ACTION", "badge-critical", 1
-        elif row["oil_badge"] == "badge-warning" or row["insp_badge"] == "badge-warning":
-            return "DUE SOON", "badge-warning", 2
+        if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
+            return "[CRITICAL ACTION]", 1
+        elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
+            return "[DUE SOON]", 2
         else:
-            return "READY", "badge-healthy", 3
+            return "[READY]", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["priority_badge"] = [p[1] for p in v_prio]
-    df_v["priority_order"] = [p[2] for p in v_prio]
+    df_v["priority_order"] = [p[1] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_badge"] == "badge-critical"])
-    insp_crit_count = len(df_v[df_v["insp_badge"] == "badge-critical"])
+    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
+    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -332,26 +309,23 @@ if os.path.exists(DRIVERS_FILE):
 
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Badge"] = [r[1] for r in cdl_res]
-    df_d["CDL_Val_Cls"] = [r[2] for r in cdl_res]
+    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Badge"] = [r[1] for r in med_res]
-    df_d["Med_Val_Cls"] = [r[2] for r in med_res]
+    df_d["Med_Diff"] = [r[1] for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Badge"] == "badge-critical" or row["Med_Badge"] == "badge-critical":
-            return "CRITICAL ACTION", "badge-critical", 1
-        elif row["CDL_Badge"] == "badge-warning" or row["Med_Badge"] == "badge-warning":
-            return "DUE SOON", "badge-warning", 2
+        if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
+            return "[CRITICAL ACTION]", 1
+        elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
+            return "[DUE SOON]", 2
         else:
-            return "COMPLIANT", "badge-healthy", 3
+            return "[READY]", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["priority_badge"] = [p[1] for p in dr_prio]
-    df_d["priority_order"] = [p[2] for p in dr_prio]
+    df_d["priority_order"] = [p[1] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
@@ -503,7 +477,7 @@ st.markdown(f"""
 <div class="top-header">
     <div style="display:flex; align-items:center; gap:16px;">
         <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Samsara, ITS Dispatch & Fuel Analytics</span>
+        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Intelligence</span>
     </div>
     <div style="font-size:12px; color:#f1f5f9;">
         User: <b>{st.session_state.get('current_user')}</b>
@@ -527,7 +501,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (KUTU ÜZERİNDE GERÇEK RENKLİ ROZETLER)
+# 1. MODÜL: TRUCKS & TRAILERS (KUTUNUN KENDİSİNE TIKLAYINCA AÇILAN KARTLAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -621,49 +595,26 @@ if top_menu == "Trucks & Trailers":
             df_filtered["make_model"].str.lower().str.contains(s)
         ]
 
-    st.caption(f"Showing **{len(df_filtered)}** equipment units (Click any card to open dossier):")
+    st.caption(f"Showing **{len(df_filtered)}** equipment units (Click any card to open full dossier):")
 
-    # 4 KOLONLU GERÇEK HTML KARTLAR (ÜSTÜNE TIKLAYINCA DOSYA AÇILIR)
+    # 4 KOLONLU TIKLANABİLİR BEYAZ KARTLAR
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            # Kartın HTML Görsel Tasarımı (Renkli Rozetler ile)
-            card_html = f"""
-            <div class="samsara-real-card">
-                <div>
-                    <div class="card-top-row">
-                        <span class="card-title-text">UNIT #{r['unit_number']} <span style="font-size:11px; color:#64748b;">({r['unit_type']})</span></span>
-                        <span class="badge {r['priority_badge']}">{r['priority_label']}</span>
-                    </div>
-                    <div class="card-info-line">
-                        <span class="info-lbl">Driver:</span>
-                        <span class="info-val">{driver_str}</span>
-                    </div>
-                    <div class="card-info-line">
-                        <span class="info-lbl">Hooked:</span>
-                        <span class="info-val">{hook_str}</span>
-                    </div>
-                    <div class="card-info-line">
-                        <span class="info-lbl">Oil Service:</span>
-                        <span class="info-val {r['oil_val_cls']}">{r['oil_status']}</span>
-                    </div>
-                    <div class="card-info-line">
-                        <span class="info-lbl">Annual DOT:</span>
-                        <span class="info-val {r['insp_val_cls']}">{r['insp_status']}</span>
-                    </div>
-                    <div class="card-info-line" style="border-top: 1px dashed #e2e8f0; margin-top:6px; padding-top:4px;">
-                        <span class="info-lbl">Gross | Fuel:</span>
-                        <span class="info-val" style="color:#0284c7;">${r['monthly_gross']:,.0f} | <span style="color:#dc2626;">${r['monthly_fuel_cost']:,.0f}</span></span>
-                    </div>
-                </div>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
+            card_btn_text = (
+                f"UNIT #{r['unit_number']} ({r['unit_type']})   {r['priority_label']}\n\n"
+                f"Driver: {driver_str}\n"
+                f"Hooked: {hook_str}\n"
+                f"Oil Service: {r['oil_status']}\n"
+                f"Annual DOT: {r['insp_status']}\n"
+                f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
+                f"Net Profit: ${r['net_profit']:,.0f}"
+            )
             
-            if st.button(f"Open Dossier 📂 #{r['unit_number']}", key=f"html_card_btn_{r['unit_number']}", use_container_width=True):
+            if st.button(card_btn_text, key=f"box_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
 
 # -------------------------------------------------------------
@@ -733,39 +684,19 @@ elif top_menu == "Drivers Compliance":
                 df_dr_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.caption(f"Showing **{len(df_dr_view)}** driver files:")
+        st.caption(f"Showing **{len(df_dr_view)}** driver files (Click any card to open dossier):")
 
+        # 4 KOLONLU TIKLANABİLİR ŞOFÖR KARTLARI
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
-                st.markdown(f"""
-                <div class="samsara-real-card">
-                    <div>
-                        <div class="card-top-row">
-                            <span class="card-title-text" style="font-size:13px;">{d_row['Name']}</span>
-                            <span class="badge {d_row['priority_badge']}">{d_row['priority_label']}</span>
-                        </div>
-                        <div class="card-info-line">
-                            <span class="info-lbl">Phone:</span>
-                            <span class="info-val">{d_row['Telephone']}</span>
-                        </div>
-                        <div class="card-info-line">
-                            <span class="info-lbl">CDL #:</span>
-                            <span class="info-val">{d_row['License Number']}</span>
-                        </div>
-                        <div class="card-info-line">
-                            <span class="info-lbl">CDL Expiry:</span>
-                            <span class="info-val {d_row['CDL_Val_Cls']}">{d_row['CDL_Status']}</span>
-                        </div>
-                        <div class="card-info-line">
-                            <span class="info-lbl">Medical:</span>
-                            <span class="info-val {d_row['Med_Val_Cls']}">{d_row['Med_Status']}</span>
-                        </div>
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                if st.button(f"Open Dossier 📂 {d_row['Name'].split('/')[0]}", key=f"html_dr_btn_{j}", use_container_width=True):
+                dr_card_text = (
+                    f"DRIVER: {d_row['Name']}   {d_row['priority_label']}\n\n"
+                    f"Phone: {d_row['Telephone']}\n"
+                    f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
+                    f"Medical Card: {d_row['Med_Status']}"
+                )
+                if st.button(dr_card_text, key=f"box_dr_card_{j}", use_container_width=True):
                     open_driver_dossier(d_row['Name'])
     else:
         st.info("No drivers data found.")

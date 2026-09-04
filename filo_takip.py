@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# SCHNEIDER / SAMSARA ELITE PORTAL STYLING & BORDER ACCENTS
+# 4 KOLONLU, KOYU KENARLI VE LOJİSTİK STANDARDI KART STİLİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -50,70 +50,70 @@ st.markdown("""
         background: #ffffff;
         border-radius: 10px;
         padding: 18px 22px;
-        border: 1px solid #e4e4e7;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
         margin-bottom: 20px;
     }
     .kpi-title {
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        color: #71717a;
+        color: #64748b;
         letter-spacing: 0.8px;
     }
     .kpi-num {
         font-size: 26px;
         font-weight: 900;
-        color: #09090b;
+        color: #0b1f3a;
         margin-top: 6px;
     }
 
-    /* RENKLİ KENARLI VE SOL ŞERİTLİ PORTAL KARTLARI */
+    /* 4 KOLONLU, KOYU KENARLI PORTAL KARTLARI */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
-        border-radius: 12px !important;
-        padding: 22px 20px !important;
-        min-height: 220px !important;
+        border-radius: 10px !important;
+        padding: 18px 16px !important;
+        min-height: 200px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.04) !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
         justify-content: space-between !important;
         text-align: left !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 16px !important;
+        margin-bottom: 14px !important;
     }
     
     div[data-testid*="stButton"] > button.btn-critical {
-        border: 1.5px solid #fca5a5 !important;
-        border-left: 6px solid #dc2626 !important;
+        border: 2px solid #ef4444 !important;
+        border-left: 7px solid #dc2626 !important;
     }
     div[data-testid*="stButton"] > button.btn-warning {
-        border: 1.5px solid #fde047 !important;
-        border-left: 6px solid #d97706 !important;
+        border: 2px solid #f59e0b !important;
+        border-left: 7px solid #d97706 !important;
     }
     div[data-testid*="stButton"] > button.btn-healthy {
-        border: 1.5px solid #86efac !important;
-        border-left: 6px solid #16a34a !important;
+        border: 2px solid #22c55e !important;
+        border-left: 7px solid #16a34a !important;
     }
 
     div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
         transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
     div[data-testid*="stButton"] > button p {
         font-family: 'Inter', sans-serif !important;
-        font-size: 13px !important;
+        font-size: 12px !important;
         font-weight: 500 !important;
         margin: 0 !important;
-        line-height: 1.6 !important;
+        line-height: 1.5 !important;
         text-align: left !important;
         white-space: pre-line !important;
         width: 100% !important;
-        color: #3f3f46 !important;
+        color: #1e293b !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -263,6 +263,12 @@ df_v["total_expenses"] = df_v["unit_number"].map(unit_expenses).fillna(0.0)
 df_v["monthly_fuel_cost"] = df_v["monthly_fuel_cost"].fillna(0.0)
 df_v["net_profit"] = df_v["monthly_gross"] - (df_v["total_expenses"] + df_v["monthly_fuel_cost"])
 
+# DRIVERS READ
+df_d = pd.DataFrame()
+if os.path.exists(DRIVERS_FILE):
+    df_d = pd.read_excel(DRIVERS_FILE)
+    df_d = df_d[df_d["Name"].notna()].copy()
+
 def evaluate_insp(row):
     today = datetime.now().date()
     for col in ["plate_expiry", "dot_inspection", "state_inspection"]:
@@ -307,17 +313,7 @@ if not df_v.empty:
 else:
     oil_crit_count, insp_crit_count, total_fleet_gross, total_fleet_fuel = 0, 0, 0.0, 0.0
 
-# DRIVERS DATA
-df_d = pd.DataFrame()
-if os.path.exists(DRIVERS_FILE):
-    df_d = pd.read_excel(DRIVERS_FILE)
-    df_d = df_d[df_d["Name"].notna()].copy()
-    df_d["License Expiry"] = df_d["License Expiry"].astype(str).str.strip()
-    df_d["Next Medical"] = df_d["Next Medical"].astype(str).str.strip()
-    df_d["Telephone"] = df_d["Telephone"].fillna("-").astype(str).str.strip()
-    df_d["E-mail"] = df_d["E-mail"].fillna("-").astype(str).str.strip() if "E-mail" in df_d.columns else "-"
-    df_d["License Number"] = df_d["License Number"].fillna("-").astype(str).str.strip() if "License Number" in df_d.columns else "-"
-
+if not df_d.empty:
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
     df_d["CDL_Class"] = [r[1] for r in cdl_res]
@@ -357,7 +353,11 @@ def open_equipment_dossier(unit_no):
         with st.form(f"form_unit_{unit_no}"):
             c1, c2, c3 = st.columns(3)
             with c1:
-                e_drv = st.text_input("Assigned Driver", value=r_sel['driver'] or "")
+                # Sürücü Açılır Listesi (Dropdown)
+                dr_list = ["Unassigned"] + (df_d["Name"].tolist() if not df_d.empty else [])
+                curr_drv = r_sel['driver'] if r_sel['driver'] in dr_list else "Unassigned"
+                e_drv = st.selectbox("Assigned Driver", dr_list, index=dr_list.index(curr_drv))
+                
                 e_plt = st.text_input("Plate Number", value=r_sel['plate_number'] or "")
                 e_vin = st.text_input("VIN / Serial", value=r_sel['vin'] or "")
             with c2:
@@ -365,7 +365,13 @@ def open_equipment_dossier(unit_no):
                 e_cur = st.number_input("Current Mileage (mi)", value=int(r_sel['current_mileage'] or 0))
                 e_oil = st.number_input("Last Oil Change (mi)", value=int(r_sel['last_oil_mileage'] or 0))
             with c3:
-                e_hook = st.text_input("Hooked Trailer #", value=str(r_sel.get('hooked_trailer', 'None')))
+                # Trailer Açılır Listesi (Dropdown)
+                trailer_list = ["None"] + df_v[df_v["unit_type"] == "TRAILER"]["unit_number"].tolist()
+                curr_hook = str(r_sel.get('hooked_trailer', 'None'))
+                if curr_hook not in trailer_list:
+                    trailer_list.append(curr_hook)
+                e_hook = st.selectbox("Hooked Trailer #", trailer_list, index=trailer_list.index(curr_hook))
+                
                 e_loc = st.text_input("Current Yard / Location", value=str(r_sel.get('current_location', 'Yard')))
                 e_dot = st.text_input("Annual DOT (YYYY-MM-DD)", value=str(r_sel['dot_inspection'] or ""))
 
@@ -500,7 +506,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (SCHNEIDER TARZI RENKLİ PORTAL KARTLARI)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, KOYU KENARLI KARTLAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -588,10 +594,10 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # SCHNEIDER TARZI 3'LÜ RENKLİ PORTAL KARTLARI
-    cols = st.columns(3)
+    # 4 KOLONLU KOYU KENARLI KARTLAR
+    cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
-        with cols[idx % 3]:
+        with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
@@ -678,10 +684,10 @@ elif top_menu == "Drivers Compliance":
 
         st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
 
-        # SCHNEIDER TARZI 3'LÜ RENKLİ ŞOFÖR KARTLARI
-        d_cols = st.columns(3)
+        # 4 KOLONLU KOYU KENARLI ŞOFÖR KARTLARI
+        d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
-            with d_cols[j % 3]:
+            with d_cols[j % 4]:
                 dr_card_title = f"{d_row['Name']}"
                 dr_card_body = (
                     f"Status: {d_row['priority_label']}\n"

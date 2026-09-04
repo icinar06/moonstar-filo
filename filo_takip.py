@@ -17,7 +17,41 @@ DB_FILE = "fleet_database.db"
 INVOICE_DIR = "faturalar"
 os.makedirs(INVOICE_DIR, exist_ok=True)
 
+# --- KURUMSAL GİRİŞ KONTROLÜ ---
+if "authenticated" not in st.session_state:
+    st.session_state["authenticated"] = False
 
+if not st.session_state["authenticated"]:
+    st.image("logo.jpg", width=220) if os.path.exists("logo.jpg") else None
+    st.markdown("### 🔒 Moonstar Express LLC — Filo Yönetim Paneli")
+    st.caption("Bu panele yalnızca yetkili kurumsal personeller erişebilir.")
+    
+    with st.form("login_form"):
+        email = st.text_input("Kurumsal E-Posta", placeholder="ornek@moonstarpa...")
+        password = st.text_input("Şifre", type="password")
+        submit = st.form_submit_button("Giriş Yap")
+        
+        if submit:
+            email_clean = email.strip().lower()
+            # @moonstarpa kontrolü ve şifre doğrulaması:
+            if "@moonstarpa" in email_clean and password == "Moonstar2026!":
+                st.session_state["authenticated"] = True
+                st.session_state["current_user"] = email_clean
+                st.success("Giriş başarılı, yükleniyor...")
+                st.rerun()
+            else:
+                st.error("Yetkisiz erişim! Geçersiz kurumsal e-posta veya şifre.")
+    
+    # Giriş yapılmadığı sürece aşağıdaki hiçbir kod çalışmaz ve hiçbir veri gösterilmez:
+    st.stop()
+
+# Sol menüye çıkış butonu
+with st.sidebar:
+    st.write(f"👤 Aktif Kullanıcı: **{st.session_state.get('current_user')}**")
+    if st.button("Güvenli Çıkış"):
+        st.session_state["authenticated"] = False
+        st.rerun()
+# -------------------------------
 def get_connection():
   return sqlite3.connect(DB_FILE, check_same_thread=False)
 

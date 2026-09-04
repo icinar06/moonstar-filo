@@ -8,21 +8,21 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Enterprise Portal",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise Fleet Management",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# SCHNEIDER / SAMSARA ELITE PORTAL CARD STYLING
+# RENKLİ KENAR ÇİZGİLERİ VE DURUM ROZETLERİNE SAHİP ENTERPRISE KART STİLİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
-        background-color: #f4f4f5 !important;
-        color: #18181b;
+        background-color: #f8fafc !important;
+        color: #0f172a;
     }
     
     .top-header {
@@ -35,7 +35,7 @@ st.markdown("""
         color: white;
         margin-bottom: 24px;
         box-shadow: 0 4px 20px rgba(11, 31, 58, 0.15);
-        border-bottom: 4px solid #f97316; /* Schneider Turuncu Vurgusu */
+        border-bottom: 4px solid #f97316;
     }
     .brand-title {
         font-size: 22px;
@@ -68,16 +68,15 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* SCHNEIDER TARZI BÜYÜK BEYAZ PORTAL KARTLARI */
+    /* RENKLİ KENARLI SCHNEIDER / SAMSARA PORTAL KARTLARI */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
-        border: 1px solid #e4e4e7 !important;
         border-radius: 12px !important;
-        padding: 24px 22px !important;
-        min-height: 210px !important;
+        padding: 22px 20px !important;
+        min-height: 220px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.04) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -86,10 +85,24 @@ st.markdown("""
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         margin-bottom: 16px !important;
     }
+    
+    /* Duruma Göre Sol Şerit ve Kenar Renkleri */
+    div[data-testid*="stButton"] > button.btn-critical {
+        border: 1.5px solid #fca5a5 !important;
+        border-left: 6px solid #dc2626 !important;
+    }
+    div[data-testid*="stButton"] > button.btn-warning {
+        border: 1.5px solid #fde047 !important;
+        border-left: 6px solid #d97706 !important;
+    }
+    div[data-testid*="stButton"] > button.btn-healthy {
+        border: 1.5px solid #86efac !important;
+        border-left: 6px solid #16a34a !important;
+    }
+
     div[data-testid*="stButton"] > button:hover {
-        border-color: #f97316 !important; /* Schneider Turuncu Hover */
-        box-shadow: 0 12px 30px rgba(249, 115, 22, 0.12) !important;
-        transform: translateY(-4px) !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+        transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
     div[data-testid*="stButton"] > button p {
@@ -142,18 +155,18 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", 999
+        return "No Record", "READY", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", diff
+            return f"Expired ({abs(diff)}d ago)", "CRITICAL ACTION", diff
         elif diff <= 30:
-            return f"Due in {diff}d", diff
+            return f"Due in {diff}d", "DUE SOON", diff
         else:
-            return f"Valid ({diff}d left)", diff
+            return f"Valid ({diff}d left)", "READY", diff
     except Exception:
-        return "Invalid", 999
+        return "Invalid", "READY", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
@@ -274,15 +287,16 @@ if not df_v.empty:
 
     def get_overall_priority(row):
         if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
-            return "CRITICAL ACTION", 1
+            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
         elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
-            return "DUE SOON", 2
+            return "🟡 [DUE SOON]", "btn-warning", 2
         else:
-            return "READY", 3
+            return "🟢 [READY]", "btn-healthy", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["priority_order"] = [p[1] for p in v_prio]
+    df_v["btn_class"] = [p[1] for p in v_prio]
+    df_v["priority_order"] = [p[2] for p in v_prio]
 
     oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
     insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
@@ -312,15 +326,16 @@ if os.path.exists(DRIVERS_FILE):
 
     def get_dr_priority(row):
         if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
-            return "CRITICAL ACTION", 1
+            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
         elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
-            return "DUE SOON", 2
+            return "🟡 [DUE SOON]", "btn-warning", 2
         else:
-            return "READY", 3
+            return "🟢 [READY]", "btn-healthy", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["priority_order"] = [p[1] for p in dr_prio]
+    df_d["btn_class"] = [p[1] for p in dr_prio]
+    df_d["priority_order"] = [p[2] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
@@ -481,7 +496,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (SCHNEIDER TARZI BÜYÜK KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS (SCHNEIDER TARZI RENKLİ PORTAL KARTLARI)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -569,14 +584,13 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # SCHNEIDER TARZI 3'LÜ BÜYÜK PORTAL KARTLARI GRID YAPISI
+    # SCHNEIDER TARZI 3'LÜ RENKLİ PORTAL KARTLARI (ÖZEL CSS SINIFLARI İLE)
     cols = st.columns(3)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 3]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            # Kartın üstündeki kurumsal başlık ve metinler
             card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})"
             card_body = (
                 f"Status: {r['priority_label']}\n"
@@ -587,6 +601,11 @@ if top_menu == "Trucks & Trailers":
                 f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
                 f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
             )
+            
+            # Streamlit butonuna özel CSS sınıfı enjekte etme hilesi
+            btn_html_wrapper = f"""
+            <div class="{r['btn_class']}">
+            """
             
             if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
@@ -660,16 +679,14 @@ elif top_menu == "Drivers Compliance":
 
         st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
 
-        # SCHNEIDER TARZI 3'LÜ ŞOFÖR KARTLARI
+        # SCHNEIDER TARZI 3'LÜ RENKLİ ŞOFÖR KARTLARI
         d_cols = st.columns(3)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 3]:
-                phone_clean = re.sub(r'\D', '', str(d_row['Telephone']))
-                
                 dr_card_title = f"{d_row['Name']}"
                 dr_card_body = (
                     f"Status: {d_row['priority_label']}\n"
-                    f"Phone: {d_row['Telephone']} (Click to Call)\n"
+                    f"Phone: {d_row['Telephone']}\n"
                     f"Email: {d_row.get('E-mail', '-')}\n"
                     f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
                     f"Medical Card: {d_row['Med_Status']} ➔ Open Dossier"

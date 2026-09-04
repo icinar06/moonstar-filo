@@ -8,16 +8,16 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Enterprise Fleet Management",
+    page_title="MOONSTAR EXPRESS LLC — Executive Fleet Console",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# 4 KOLONLU, KOYU KENARLI VE LOJİSTİK STANDARDI KART STİLİ
+# MOONSTAR RESMİ WEBSİTESİ VE LÜKS KART STİLLERİ
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
@@ -25,20 +25,74 @@ st.markdown("""
         color: #0f172a;
     }
     
+    /* Moonstar Web Sitesi Header Navbar */
+    .moonstar-nav {
+        background: #ffffff;
+        padding: 16px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .moonstar-menu {
+        display: flex;
+        gap: 24px;
+        font-size: 13px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #0f172a;
+        letter-spacing: 0.5px;
+    }
+    .moonstar-menu span {
+        cursor: pointer;
+        transition: color 0.15s;
+    }
+    .moonstar-menu span:hover {
+        color: #0284c7;
+    }
+
+    /* Hero Banner (Home Ekranı) */
+    .hero-container {
+        display: flex;
+        background: #111111;
+        border-radius: 12px;
+        overflow: hidden;
+        color: white;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .hero-left {
+        flex: 1;
+        background: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1000&auto=format&fit=crop') center/cover;
+        min-height: 380px;
+    }
+    .hero-right {
+        flex: 1;
+        padding: 50px 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        background: #18181b;
+    }
+
+    /* Üst Konsol Header (Login Sonrası) */
     .top-header {
         background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
-        padding: 18px 32px;
+        padding: 16px 28px;
         border-radius: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: white;
-        margin-bottom: 24px;
-        box-shadow: 0 4px 20px rgba(11, 31, 58, 0.15);
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(11, 31, 58, 0.18);
         border-bottom: 4px solid #f97316;
     }
     .brand-title {
-        font-size: 22px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 20px;
         font-weight: 900;
         letter-spacing: 0.5px;
         color: #ffffff;
@@ -49,9 +103,9 @@ st.markdown("""
     .kpi-card {
         background: #ffffff;
         border-radius: 10px;
-        padding: 18px 22px;
+        padding: 16px 20px;
         border: 1px solid #cbd5e1;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         margin-bottom: 20px;
     }
     .kpi-title {
@@ -62,45 +116,46 @@ st.markdown("""
         letter-spacing: 0.8px;
     }
     .kpi-num {
-        font-size: 26px;
+        font-family: 'Montserrat', sans-serif;
+        font-size: 24px;
         font-weight: 900;
         color: #0b1f3a;
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU, KOYU KENARLI PORTAL KARTLARI */
+    /* 4 KOLONLU, KOYU KENARLI VE GÖLGELİ PORTAL KARTLARI */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
-        border-radius: 10px !important;
-        padding: 18px 16px !important;
-        min-height: 200px !important;
+        border-radius: 12px !important;
+        padding: 16px 18px !important;
+        min-height: 210px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.05) !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
         justify-content: space-between !important;
         text-align: left !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
-        margin-bottom: 14px !important;
+        margin-bottom: 16px !important;
     }
     
     div[data-testid*="stButton"] > button.btn-critical {
-        border: 2px solid #ef4444 !important;
+        border: 2px solid #cbd5e1 !important;
         border-left: 7px solid #dc2626 !important;
     }
     div[data-testid*="stButton"] > button.btn-warning {
-        border: 2px solid #f59e0b !important;
+        border: 2px solid #cbd5e1 !important;
         border-left: 7px solid #d97706 !important;
     }
     div[data-testid*="stButton"] > button.btn-healthy {
-        border: 2px solid #22c55e !important;
+        border: 2px solid #cbd5e1 !important;
         border-left: 7px solid #16a34a !important;
     }
 
     div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 10px 25px rgba(0,0,0,0.12) !important;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
         transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
@@ -125,27 +180,126 @@ SERVICE_LOGS_CSV = "Service logs.csv"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# --- LOGIN ---
+# --- WEB SİTESİ / GİRİŞ EKRANI ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
+if "web_page" not in st.session_state:
+    st.session_state["web_page"] = "Home"
+
 if not st.session_state["authenticated"]:
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        if os.path.exists("logo.jpg"):
-            st.image("logo.jpg", width=220)
-        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — EXECUTIVE PORTAL LOGIN")
-        with st.form("login_form"):
-            email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
-            pwd = st.text_input("Password", type="password")
-            if st.form_submit_button("Sign In"):
-                if "@moonstarpa" in email.strip().lower() and pwd == "Moonstar2026!":
-                    st.session_state["authenticated"] = True
-                    st.session_state["current_user"] = email.strip().lower()
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials!")
+    # Moonstar Resmi Web Sitesi Navigasyonu
+    st.markdown("""
+    <div class="moonstar-nav">
+        <div style="font-family:'Montserrat',sans-serif; font-size:20px; font-weight:900; color:#0b1f3a;">
+            MOONSTAR <span style="color:#0284c7;">EXPRESS</span>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Menü butonları için Streamlit kolonları
+    nav_b1, nav_b2, nav_b3, nav_b4, nav_b5 = st.columns(5)
+    with nav_b1:
+        if st.button("🏠 Home", use_container_width=True):
+            st.session_state["web_page"] = "Home"
+            st.rerun()
+    with nav_b2:
+        if st.button("ℹ️ About Us", use_container_width=True):
+            st.session_state["web_page"] = "About Us"
+            st.rerun()
+    with nav_b3:
+        if st.button("📞 Contact Us", use_container_width=True):
+            st.session_state["web_page"] = "Contact Us"
+            st.rerun()
+    with nav_b4:
+        if st.button("⚙️ Services", use_container_width=True):
+            st.session_state["web_page"] = "Services"
+            st.rerun()
+    with nav_b5:
+        if st.button("👥 Portal Login", use_container_width=True):
+            st.session_state["web_page"] = "Login"
+            st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # SAYFA İÇERİKLERİ
+    if st.session_state["web_page"] == "Home":
+        st.markdown("""
+        
+            
+            
+                RELIABLE TRANSPORTATION SOLUTIONS
+                Your trusted partner for safe and efficient travel across the United States.
+                📞 +1 215-666-0595
+            
+        
+        """"""
+        <div class="hero-container">
+            <div class="hero-left"></div>
+            <div class="hero-right">
+                <h1 style="font-family:'Montserrat',sans-serif; font-size:32px; font-weight:900; margin-bottom:12px; color:#ffffff;">RELIABLE TRANSPORTATION SOLUTIONS</h1>
+                <p style="font-size:14px; color:#a1a1aa; margin-bottom:24px;">Your trusted partner for safe and efficient travel across the United States.</p>
+                <div style="font-size:14px; color:#38bdf8; font-weight:700;">📞 +1 215-666-0595</div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c_l, c_r = st.columns([2, 1])
+        with c_r:
+            st.markdown("### 🔐 Secure Fleet Login")
+            with st.form("login_form"):
+                email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
+                pwd = st.text_input("Password", type="password")
+                if st.form_submit_button("Sign In to Portal", use_container_width=True):
+                    if "@moonstarpa" in email.strip().lower() and pwd == "Moonstar2026!":
+                        st.session_state["authenticated"] = True
+                        st.session_state["current_user"] = email.strip().lower()
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials!")
+
+    elif st.session_state["web_page"] == "Contact Us":
+        co1, co2 = st.columns(2)
+        with co1:
+            st.markdown("## 📞 CONTACT US")
+            st.markdown("#### **SAFETY MANAGER CALL:** `717-666-2343`""#### **SAFETY MANAGER CALL:** `717-666-2343`")
+            st.write("Report dangerous driving like speeding and weaving. If you see something, say something.")
+            st.markdown("---")
+            st.markdown("#### **MOONSTAR EXPRESS LLC**")
+            st.write("2750 Grant Avenue, Philadelphia, PA, USA")
+            st.markdown("SUITE B / Phone : `215-666-0595`""SUITE B / Phone : `215-666-0595`")
+            st.markdown("#### **Hours**")
+            st.write("Open today `09:00 am - 05:00 pm`")
+        with co2:
+            st.markdown("### 📍 Location & Directions")
+            st.markdown("""
+            <div style="background:#e2e8f0; border-radius:10px; padding:40px; text-align:center; color:#475569; font-weight:700;">
+                📍 2750 Grant Avenue, Philadelphia, PA 19114<br><span style="font-size:12px; font-weight:400;">Ashton Wooden Bridge Area</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+    elif st.session_state["web_page"] == "About Us":
+        st.markdown("## About Moonstar Express LLC")
+        st.write("Moonstar Express LLC is a premier commercial freight and logistics provider based in Bensalem / Philadelphia, PA. Operating a state-of-the-art fleet of Volvo and Mack semi-trucks, we ensure on-time nationwide delivery with unmatched corporate excellence.")
+
+    elif st.session_state["web_page"] == "Services":
+        st.markdown("## Our Fleet Logistics Services")
+        st.write("• Nationwide Dry Van & Reefer Transportation\n• Dedicated Fleet Management & Telematics\n• 24/7 Dispatch Operations & Driver Compliance\n• Automated P&L and Fuel Expense Tracking")
+
+    elif st.session_state["web_page"] == "Login":
+        c1, c2, c3 = st.columns([1, 2, 1])
+        with c2:
+            st.markdown("### 🔒 Executive Portal Login")
+            with st.form("login_form_direct"):
+                email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
+                pwd = st.text_input("Password", type="password")
+                if st.form_submit_button("Sign In", use_container_width=True):
+                    if "@moonstarpa" in email.strip().lower() and pwd == "Moonstar2026!":
+                        st.session_state["authenticated"] = True
+                        st.session_state["current_user"] = email.strip().lower()
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials!")
     st.stop()
 
 # ---------------------------------------------
@@ -353,7 +507,6 @@ def open_equipment_dossier(unit_no):
         with st.form(f"form_unit_{unit_no}"):
             c1, c2, c3 = st.columns(3)
             with c1:
-                # Sürücü Açılır Listesi (Dropdown)
                 dr_list = ["Unassigned"] + (df_d["Name"].tolist() if not df_d.empty else [])
                 curr_drv = r_sel['driver'] if r_sel['driver'] in dr_list else "Unassigned"
                 e_drv = st.selectbox("Assigned Driver", dr_list, index=dr_list.index(curr_drv))
@@ -365,7 +518,6 @@ def open_equipment_dossier(unit_no):
                 e_cur = st.number_input("Current Mileage (mi)", value=int(r_sel['current_mileage'] or 0))
                 e_oil = st.number_input("Last Oil Change (mi)", value=int(r_sel['last_oil_mileage'] or 0))
             with c3:
-                # Trailer Açılır Listesi (Dropdown)
                 trailer_list = ["None"] + df_v[df_v["unit_type"] == "TRAILER"]["unit_number"].tolist()
                 curr_hook = str(r_sel.get('hooked_trailer', 'None'))
                 if curr_hook not in trailer_list:
@@ -476,7 +628,7 @@ def open_driver_dossier(driver_name):
             st.rerun()
 
 # -------------------------------------------------------------
-# TOP NAVBAR
+# TOP NAVBAR (GİRİŞ YAPILDIKTAN SONRA MOONSTAR LOGOLU KONSOL)
 # -------------------------------------------------------------
 st.markdown(f"""
 <div class="top-header">
@@ -506,7 +658,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, KOYU KENARLI KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, GÖLGELİ VE BELİRGİN KARTLAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -594,16 +746,16 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # 4 KOLONLU KOYU KENARLI KARTLAR
+    # 4 KOLONLU KUTUCUKLAR (BAŞLIK AYRI KUTU, GÖLGE VE BELİRGİN KENARLAR)
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})"
+            # Üst kutu başlığı ve alt gövde ayrımı
+            card_title = f"━━━━━━━━━━━━━━━━━━━━\nUNIT #{r['unit_number']} ({r['unit_type']}) | {r['priority_label']}\n━━━━━━━━━━━━━━━━━━━━"
             card_body = (
-                f"Status: {r['priority_label']}\n"
                 f"Driver: {driver_str}\n"
                 f"Hooked: {hook_str}\n"
                 f"Oil Service: {r['oil_status']}\n"
@@ -684,20 +836,19 @@ elif top_menu == "Drivers Compliance":
 
         st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
 
-        # 4 KOLONLU KOYU KENARLI ŞOFÖR KARTLARI
+        # 4 KOLONLU KUTUCUKLAR ŞOFÖRLER İÇİN
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
-                dr_card_title = f"{d_row['Name']}"
-                dr_card_body = (
-                    f"Status: {d_row['priority_label']}\n"
+                card_title = f"━━━━━━━━━━━━━━━━━━━━\n{d_row['Name']} | {d_row['priority_label']}\n━━━━━━━━━━━━━━━━━━━━"
+                card_body = (
                     f"Phone: {d_row['Telephone']}\n"
                     f"Email: {d_row.get('E-mail', '-')}\n"
                     f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
                     f"Medical Card: {d_row['Med_Status']} ➔ Open Dossier"
                 )
                 
-                if st.button(f"{dr_card_title}\n\n{dr_card_body}", key=f"schneider_dr_{j}", use_container_width=True):
+                if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_dr_{j}", use_container_width=True):
                     open_driver_dossier(d_row['Name'])
     else:
         st.info("No drivers data found.")

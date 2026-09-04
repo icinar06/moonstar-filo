@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# ORİJİNAL MOONSTAR WEBSİTESİ VE ENTERPRISE KONSOL STİLLERİ
+# MOONSTAR KURUMSAL WEB VE ENTERPRISE KONSOL STİLLERİ (KESİLME YAPMAYAN LÜKS KARTLAR)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -25,7 +25,7 @@ st.markdown("""
         color: #0f172a;
     }
     
-    /* Orijinal Moonstar Navbar Tasarımı */
+    /* Orijinal Moonstar Web Sitesi Navigasyonu */
     .moonstar-header {
         background: #ffffff;
         padding: 16px 40px;
@@ -36,15 +36,8 @@ st.markdown("""
         margin-bottom: 24px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .brand-logo {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 24px;
-        font-weight: 900;
-        color: #0b1f3a;
-        letter-spacing: 1px;
-    }
 
-    /* Navbar Butonlarını Orijinal Metin Linkine Çevirme */
+    /* Navbar Butonları */
     div[data-testid*="column"] button {
         background: transparent !important;
         border: none !important;
@@ -137,38 +130,51 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU LÜKS KURUMSAL PORTAL KARTLARI */
-    div[data-testid*="stButton"] > button.fleet-card-btn {
+    /* 4 KOLONLU, BELİRGİN KENARLI VE GÖLGELİ SCHNEIDER/SAMSARA KARTLARI */
+    div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
-        border: 1.5px solid #cbd5e1 !important;
         border-radius: 12px !important;
-        padding: 18px 20px !important;
-        min-height: 210px !important;
+        padding: 20px 18px !important;
+        min-height: 220px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06) !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
-        justify-content: space-between !important;
+        justify-content: flex-start !important;
         text-align: left !important;
+        white-space: pre-wrap !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         margin-bottom: 16px !important;
     }
-    div[data-testid*="stButton"] > button.fleet-card-btn:hover {
-        border-color: #0284c7 !important;
-        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15) !important;
+    
+    div[data-testid*="stButton"] > button.btn-critical {
+        border: 2px solid #ef4444 !important;
+        border-left: 7px solid #dc2626 !important;
+    }
+    div[data-testid*="stButton"] > button.btn-warning {
+        border: 2px solid #f59e0b !important;
+        border-left: 7px solid #d97706 !important;
+    }
+    div[data-testid*="stButton"] > button.btn-healthy {
+        border: 2px solid #22c55e !important;
+        border-left: 7px solid #16a34a !important;
+    }
+
+    div[data-testid*="stButton"] > button:hover {
+        box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
         transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
-    div[data-testid*="stButton"] > button.fleet-card-btn p {
+    div[data-testid*="stButton"] > button p {
         font-family: 'Inter', sans-serif !important;
         font-size: 12px !important;
         font-weight: 500 !important;
         margin: 0 !important;
         line-height: 1.6 !important;
         text-align: left !important;
-        white-space: pre-line !important;
+        white-space: pre-wrap !important;
         width: 100% !important;
         color: #1e293b !important;
     }
@@ -190,7 +196,6 @@ if "web_page" not in st.session_state:
     st.session_state["web_page"] = "Home"
 
 if not st.session_state["authenticated"]:
-    # Orijinal Web Sitesi Header Navbar Düzeni
     hdr_left, hdr_right = st.columns([1.5, 3.5])
     with hdr_left:
         st.markdown("""
@@ -223,7 +228,6 @@ if not st.session_state["authenticated"]:
 
     st.markdown("<hr style='margin:0 0 20px 0; border-color:#e2e8f0;'>", unsafe_allow_html=True)
 
-    # SAYFA İÇERİKLERİ
     if st.session_state["web_page"] == "Home":
         st.markdown("""
         
@@ -309,37 +313,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", 999
+        return "No Record", "btn-healthy", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", diff
+            return f"Expired ({abs(diff)}d ago)", "btn-critical", diff
         elif diff <= 30:
-            return f"Due in {diff}d", diff
+            return f"Due in {diff}d", "btn-warning", diff
         else:
-            return f"Valid ({diff}d left)", diff
+            return f"Valid ({diff}d left)", "btn-healthy", diff
     except Exception:
-        return "Invalid", 999
+        return "Invalid", "btn-healthy", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)"
+        return "Exempt (Trailer)", "btn-healthy"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record"
+            return "No Record", "btn-healthy"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi"
+            return f"Overdue by {abs(rem):,} mi", "btn-critical"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi"
+            return f"Due in {rem:,} mi", "btn-warning"
         else:
-            return f"Valid ({rem:,} mi left)"
+            return f"Valid ({rem:,} mi left)", "btn-healthy"
     except Exception:
-        return "Not Set"
+        return "Not Set", "btn-healthy"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -432,33 +436,37 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "CRITICAL"
+                    return f"Expired ({abs(diff)}d ago)", "btn-critical"
                 elif diff <= 30:
-                    return f"Due in {diff}d", "WARNING"
+                    return f"Due in {diff}d", "btn-warning"
             except:
                 pass
-    return "Valid", "HEALTHY"
+    return "Valid", "btn-healthy"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_level"] = [r[1] for r in insp_res]
-    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
+    df_v["insp_class"] = [r[1] for r in insp_res]
+
+    oil_res = df_v.apply(check_oil_status, axis=1)
+    df_v["oil_status"] = [r[0] for r in oil_res]
+    df_v["oil_class"] = [r[1] for r in oil_res]
 
     def get_overall_priority(row):
-        if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
-            return "🔴 [CRITICAL ACTION]", 1
-        elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
-            return "🟡 [DUE SOON]", 2
+        if row["oil_class"] == "btn-critical" or row["insp_class"] == "btn-critical":
+            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
+        elif row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
+            return "🟡 [DUE SOON]", "btn-warning", 2
         else:
-            return "🟢 [READY]", 3
+            return "🟢 [READY]", "btn-healthy", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["priority_order"] = [p[1] for p in v_prio]
+    df_v["btn_class"] = [p[1] for p in v_prio]
+    df_v["priority_order"] = [p[2] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
-    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
+    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-critical"])
+    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-critical"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -467,23 +475,26 @@ else:
 if not df_d.empty:
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
+    df_d["CDL_Class"] = [r[1] for r in cdl_res]
+    df_d["CDL_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Diff"] = [r[1] for r in med_res]
+    df_d["Med_Class"] = [r[1] for r in med_res]
+    df_d["Med_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
-            return "🔴 [CRITICAL ACTION]", 1
-        elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
-            return "🟡 [DUE SOON]", 2
+        if row["CDL_Class"] == "btn-critical" or row["Med_Class"] == "btn-critical":
+            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
+        elif row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
+            return "🟡 [DUE SOON]", "btn-warning", 2
         else:
-            return "🟢 [READY]", 3
+            return "🟢 [READY]", "btn-healthy", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["priority_order"] = [p[1] for p in dr_prio]
+    df_d["btn_class"] = [p[1] for p in dr_prio]
+    df_d["priority_order"] = [p[2] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
@@ -652,7 +663,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, NET BAŞLIKLI KUTULAR)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, KESİLME YAPMAYAN KARTLAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -740,7 +751,7 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # 4 KOLONLU KUTUCUKLAR (NET BAŞLIK AYRIMI VE KUSURSUZ HİZALAMA)
+    # 4 KOLONLU KUTUCUKLAR (KUSURSUZ HİZALAMA VE RENKLİ KENARLAR)
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
@@ -757,8 +768,11 @@ if top_menu == "Trucks & Trailers":
                 f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
             )
             
-            if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True, help="Click to open dossier"):
+            # Butona özel renkli sınıf enjekte ediliyor
+            st.markdown(f'<div class="{r["btn_class"]}">', unsafe_allow_html=True)
+            if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # 2. MODÜL: DRIVERS COMPLIANCE
@@ -841,8 +855,10 @@ elif top_menu == "Drivers Compliance":
                     f"Medical Card: {d_row['Med_Status']} ➔ Open Dossier"
                 )
                 
+                st.markdown(f'<div class="{d_row["btn_class"]}">', unsafe_allow_html=True)
                 if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_dr_{j}", use_container_width=True):
                     open_driver_dossier(d_row['Name'])
+                st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No drivers data found.")
 

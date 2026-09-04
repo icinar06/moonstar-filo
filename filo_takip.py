@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# MOONSTAR KURUMSAL RENK PALETİ (NAVY #0b1f3a, SKY BLUE #0284c7, ICE BLUE #38bdf8)
+# MOONSTAR CORPORATE COLOR PALETTE (Navy #0b1f3a, Sky Blue #0284c7, Ice Blue #38bdf8)
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -25,7 +25,6 @@ st.markdown("""
         color: #0f172a;
     }
     
-    /* Kurumsal Navbar */
     .moonstar-nav {
         background: linear-gradient(90deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
         padding: 16px 24px;
@@ -53,7 +52,6 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Schneider / Moonstar Kart Yapısı */
     .kpi-card {
         background: #ffffff;
         border-radius: 8px;
@@ -84,7 +82,6 @@ st.markdown("""
         margin-top: 4px;
     }
     
-    /* Şoför Dosya Başlığı */
     .dossier-box {
         background: #ffffff;
         border: 1px solid #cbd5e1;
@@ -104,7 +101,7 @@ SERVICE_LOGS_CSV = "Service logs.csv"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# --- KURUMSAL GİRİŞ ---
+# --- CORPORATE LOGIN ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
@@ -116,15 +113,15 @@ if not st.session_state["authenticated"]:
             st.image("logo.jpg", width=240)
         st.markdown("### 🔒 MOONSTAR EXPRESS LLC — TMS PORTAL")
         with st.form("login_form"):
-            email = st.text_input("Kurumsal E-Posta", placeholder="ismail@moonstarpa.com")
-            pwd = st.text_input("Şifre", type="password")
-            if st.form_submit_button("Giriş Yap"):
+            email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
+            pwd = st.text_input("Password", type="password")
+            if st.form_submit_button("Sign In"):
                 if "@moonstarpa" in email.strip().lower() and pwd == "Moonstar2026!":
                     st.session_state["authenticated"] = True
                     st.session_state["current_user"] = email.strip().lower()
                     st.rerun()
                 else:
-                    st.error("Geçersiz e-posta veya şifre!")
+                    st.error("Invalid corporate email or password!")
     st.stop()
 
 # ---------------------------------------------
@@ -133,39 +130,39 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "Tarih Yok", "⚪", 999
+        return "No Date", "⚪", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Doldu ({abs(diff)}g)", "🔴", diff
+            return f"Expired ({abs(diff)}d ago)", "🔴", diff
         elif diff <= 30:
-            return f"Kritik ({diff}g)", "🟡", diff
+            return f"Critical ({diff}d left)", "🟡", diff
         elif diff <= 60:
-            return f"Yaklaşıyor ({diff}g)", "🟠", diff
+            return f"Approaching ({diff}d left)", "🟠", diff
         else:
-            return f"Geçerli ({diff}g)", "🟢", diff
+            return f"Valid ({diff}d left)", "🟢", diff
     except Exception:
-        return "Geçersiz", "⚪", 999
+        return "Invalid", "⚪", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Muaf (Dorse)", "⚪", "-"
+        return "Exempt (Trailer)", "⚪", "-"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "Kayıt Yok", "⚪", "-"
+            return "No Record", "⚪", "-"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Geçti ({abs(rem):,} mi)", "🔴", f"{rem:,}"
+            return f"Overdue ({abs(rem):,} mi)", "🔴", f"{rem:,}"
         elif rem <= 3000:
-            return f"Yaklaşıyor ({rem:,} mi)", "🟡", f"{rem:,}"
+            return f"Due Soon ({rem:,} mi)", "🟡", f"{rem:,}"
         else:
-            return f"Geçerli ({rem:,} mi)", "🟢", f"{rem:,}"
+            return f"Good ({rem:,} mi)", "🟢", f"{rem:,}"
     except Exception:
-        return "Hesap Hatası", "⚪", "-"
+        return "Calc Error", "⚪", "-"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -214,12 +211,11 @@ def init_db():
             timestamp TEXT
         )
     """)
-    # ŞOFÖR DETAYLI DOSYASI: Kaza, Ceza, Zimmet & Resimler
     c.execute("""
         CREATE TABLE IF NOT EXISTS driver_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             driver_name TEXT,
-            record_type TEXT, -- 'Kaza/Hasar', 'Trafik/DOT Cezası', 'Araç Alış (Check-in)', 'Araç Teslim (Check-out)', 'Genel Not'
+            record_type TEXT,
             unit_truck TEXT,
             unit_trailer TEXT,
             event_date TEXT,
@@ -267,20 +263,19 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return "GECİKMİŞ ❌"
+                    return "OVERDUE ❌"
                 elif diff <= 30:
-                    return "YAKLAŞIYOR ⚠️"
+                    return "EXPIRING ⚠️"
             except:
                 pass
-    return "GEÇERLİ"
+    return "VALID"
 
-df_v["muayene_durum"] = df_v.apply(evaluate_insp, axis=1)
+df_v["insp_status"] = df_v.apply(evaluate_insp, axis=1)
 oil_res = df_v.apply(check_oil_status, axis=1)
-df_v["yag_durumu"] = [r[0] for r in oil_res]
-df_v["yag_ikon"] = [r[1] for r in oil_res]
-df_v["kalan_yag_mili"] = [r[2] for r in oil_res]
+df_v["oil_status"] = [r[0] for r in oil_res]
+df_v["oil_icon"] = [r[1] for r in oil_res]
+df_v["remaining_oil_mi"] = [r[2] for r in oil_res]
 
-# Drivers Tablosu Hazırlığı
 df_d = pd.DataFrame()
 if os.path.exists(DRIVERS_FILE):
     df_d = pd.read_excel(DRIVERS_FILE)
@@ -290,63 +285,63 @@ if os.path.exists(DRIVERS_FILE):
     df_d["Telephone"] = df_d["Telephone"].fillna("-").astype(str).str.strip()
     df_d["License Number"] = df_d["License Number"].fillna("-").astype(str).str.strip()
     
-    df_d["CDL_Durum"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[0])
-    df_d["CDL_Ikon"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[1])
-    df_d["Med_Durum"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[0])
-    df_d["Med_Ikon"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[1])
+    df_d["CDL_Status"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[0])
+    df_d["CDL_Icon"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[1])
+    df_d["Med_Status"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[0])
+    df_d["Med_Icon"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[1])
 
-crit_oil = df_v[df_v["yag_ikon"].isin(["🔴", "🟡"])]
-crit_insp = df_v[df_v["muayene_durum"].str.contains("❌|⚠️")]
-crit_cdl = df_d[df_d["CDL_Ikon"].isin(["🔴", "🟡"])] if not df_d.empty else pd.DataFrame()
-crit_med = df_d[df_d["Med_Ikon"].isin(["🔴", "🟡"])] if not df_d.empty else pd.DataFrame()
+crit_oil = df_v[df_v["oil_icon"].isin(["🔴", "🟡"])]
+crit_insp = df_v[df_v["insp_status"].str.contains("❌|⚠️")]
+crit_cdl = df_d[df_d["CDL_Icon"].isin(["🔴", "🟡"])] if not df_d.empty else pd.DataFrame()
+crit_med = df_d[df_d["Med_Icon"].isin(["🔴", "🟡"])] if not df_d.empty else pd.DataFrame()
 
 # -------------------------------------------------------------
-# YAN PANEL (SOL MENÜ)
+# SIDEBAR (LEFT NAVIGATION PANEL)
 # -------------------------------------------------------------
 with st.sidebar:
     if os.path.exists("logo.jpg"):
         st.image("logo.jpg", width=190)
     st.markdown("### 🏢 **MOONSTAR TMS**")
-    st.caption(f"👤 Aktif: **{st.session_state.get('current_user')}**")
+    st.caption(f"👤 Active: **{st.session_state.get('current_user')}**")
     st.markdown("---")
     
     menu = st.radio(
-        "KONTROL PANELLERİ",
+        "MODULES",
         [
-            "📊 Operasyon & Alarm Merkezi",
-            "👤 Şoför Dosyaları (Dossier & Sicil)",
-            "🚛 Çekici & Dorse Masası",
-            "💬 Ekip İçi Operasyon Chat",
-            "🔧 Servis, Bakım & Fatura Girişi"
+            "📊 Operations & Alert Center",
+            "👤 Driver Dossier & Compliance",
+            "🚛 Fleet Dispatch & Asset Board",
+            "💬 Team Dispatch Chat",
+            "🔧 Service, Maintenance & Invoicing"
         ]
     )
     st.markdown("---")
-    if st.button("🚪 Güvenli Çıkış"):
+    if st.button("🚪 Sign Out"):
         st.session_state["authenticated"] = False
         st.rerun()
 
 # -------------------------------------------------------------
-# ÜST KURUMSAL ŞERİT
+# TOP CORPORATE NAVBAR
 # -------------------------------------------------------------
 st.markdown(f"""
 <div class="moonstar-nav">
     <div>
         <div class="brand-text">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></div>
-        <div class="brand-sub">Enterprise Fleet, Driver Dossier & Compliance Operations • Bensalem, PA</div>
+        <div class="brand-sub">Enterprise Fleet Management, Driver Dossier & Operations Console • Bensalem, PA</div>
     </div>
     <div style="text-align: right;">
         <span style="background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid #38bdf8;">
-            🟢 Canlı: <b>{st.session_state.get('current_user')}</b>
+            🟢 Online: <b>{st.session_state.get('current_user')}</b>
         </span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. BÖLÜM: İNTERAKTİF OPERASYON & ALARM MERKEZİ
+# 1. MODULE: OPERATIONS & ALERT CENTER
 # -------------------------------------------------------------
-if menu == "📊 Operasyon & Alarm Merkezi":
-    st.markdown("#### 📌 Filo & Sürücü Sağlık Göstergeleri *(Alttaki Kutulara Tıklayarak İnceleyin)*")
+if menu == "📊 Operations & Alert Center":
+    st.markdown("#### 📌 Operations Health Cockpit *(Click any card below to view details)*")
     
     if "op_view" not in st.session_state:
         st.session_state["op_view"] = "ALL"
@@ -355,222 +350,217 @@ if menu == "📊 Operasyon & Alarm Merkezi":
     with k1:
         st.markdown(f"""
         <div class="kpi-card">
-            <div class="kpi-label">Toplam Filo</div>
-            <div class="kpi-val">{len(df_v[df_v['unit_type']=='TRUCK'])} Çekici / {len(df_v[df_v['unit_type']=='TRAILER'])} Dorse</div>
+            <div class="kpi-label">Active Equipment</div>
+            <div class="kpi-val">{len(df_v[df_v['unit_type']=='TRUCK'])} Trucks / {len(df_v[df_v['unit_type']=='TRAILER'])} Trailers</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("📋 Tüm Filoyu Listele", use_container_width=True):
+        if st.button("📋 Show All Fleet", use_container_width=True):
             st.session_state["op_view"] = "ALL"
 
     with k2:
         st.markdown(f"""
         <div class="kpi-card kpi-card-alert">
-            <div class="kpi-label">🚨 Yağ Değişimi Alarmı</div>
-            <div class="kpi-val" style="color:#ef4444;">{len(crit_oil)} Çekici</div>
+            <div class="kpi-label">🚨 Oil Change Alert</div>
+            <div class="kpi-val" style="color:#ef4444;">{len(crit_oil)} Trucks</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("🔍 Yağ Alarmlarını Aç", use_container_width=True):
+        if st.button("🔍 View Oil Alerts", use_container_width=True):
             st.session_state["op_view"] = "OIL"
 
     with k3:
         st.markdown(f"""
         <div class="kpi-card kpi-card-warn">
-            <div class="kpi-label">⚠️ Muayene / DOT Alarmı</div>
-            <div class="kpi-val" style="color:#d97706;">{len(crit_insp)} Araç</div>
+            <div class="kpi-label">⚠️ Inspection / DOT Alert</div>
+            <div class="kpi-val" style="color:#d97706;">{len(crit_insp)} Assets</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("🔍 Muayene Alarmlarını Aç", use_container_width=True):
+        if st.button("🔍 View Inspection Alerts", use_container_width=True):
             st.session_state["op_view"] = "INSP"
 
     with k4:
         st.markdown(f"""
         <div class="kpi-card kpi-card-alert">
-            <div class="kpi-label">🔴 Şoför CDL Alarmı</div>
-            <div class="kpi-val" style="color:#ef4444;">{len(crit_cdl)} Sürücü</div>
+            <div class="kpi-label">🔴 Driver CDL Alert</div>
+            <div class="kpi-val" style="color:#ef4444;">{len(crit_cdl)} Drivers</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("🔍 CDL Alarmlarını Aç", use_container_width=True):
+        if st.button("🔍 View CDL Alerts", use_container_width=True):
             st.session_state["op_view"] = "CDL"
 
     with k5:
         st.markdown(f"""
         <div class="kpi-card kpi-card-warn">
-            <div class="kpi-label">🟡 Medical Card Alarmı</div>
-            <div class="kpi-val" style="color:#d97706;">{len(crit_med)} Sürücü</div>
+            <div class="kpi-label">🟡 Medical Card Alert</div>
+            <div class="kpi-val" style="color:#d97706;">{len(crit_med)} Drivers</div>
         </div>
         """, unsafe_allow_html=True)
-        if st.button("🔍 Medical Alarmlarını Aç", use_container_width=True):
+        if st.button("🔍 View Medical Alerts", use_container_width=True):
             st.session_state["op_view"] = "MED"
 
     st.markdown("---")
 
-    # TIKLANAN KUTUYA GÖRE ÖZEL FİLTRE VERİSİ
     view = st.session_state["op_view"]
 
     if view == "OIL":
-        st.markdown("### 🚨 Yağ Değişimi Geçen veya Yaklaşan (3,000 Mil Altı) Çekiciler")
+        st.markdown("### 🚨 Overdue or Approaching Oil Changes (< 3,000 mi)")
         if not crit_oil.empty:
             st.dataframe(
-                crit_oil[["unit_number", "company", "driver", "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu", "kalan_yag_mili"]].rename(columns={
-                    "unit_number": "Unit", "company": "Şirket", "driver": "Şoför", "current_mileage": "Güncel Mil", "last_oil_mileage": "Son Değişim", "yag_durumu": "Alarm", "kalan_yag_mili": "Kalan Mil"
+                crit_oil[["unit_number", "company", "driver", "current_mileage", "last_oil_mileage", "oil_icon", "oil_status", "remaining_oil_mi"]].rename(columns={
+                    "unit_number": "Unit #", "company": "Company", "driver": "Assigned Driver", "current_mileage": "Current Odo", "last_oil_mileage": "Last Oil Change", "oil_icon": "Status", "oil_status": "Alert Detail", "remaining_oil_mi": "Remaining (mi)"
                 }), use_container_width=True, hide_index=True
             )
         else:
-            st.success("Tüm çekicilerin yağ durumu güvenli menzilde!")
+            st.success("All trucks are well within their scheduled maintenance interval!")
 
     elif view == "INSP":
-        st.markdown("### ⚠️ Muayenesi (Registration / DOT / State) Geciken veya Yaklaşan Araçlar")
+        st.markdown("### ⚠️ Overdue or Approaching Asset Inspections (Registration / DOT / State)")
         if not crit_insp.empty:
             st.dataframe(
-                crit_insp[["unit_number", "unit_type", "company", "driver", "plate_number", "plate_expiry", "dot_inspection", "state_inspection", "muayene_durum"]].rename(columns={
-                    "unit_number": "Unit", "unit_type": "Tür", "company": "Şirket", "driver": "Şoför", "plate_number": "Plaka", "plate_expiry": "Registration", "dot_inspection": "DOT Annual", "state_inspection": "PA/State", "muayene_durum": "Durum"
+                crit_insp[["unit_number", "unit_type", "company", "driver", "plate_number", "plate_expiry", "dot_inspection", "state_inspection", "insp_status"]].rename(columns={
+                    "unit_number": "Unit #", "unit_type": "Type", "company": "Company", "driver": "Driver", "plate_number": "Plate", "plate_expiry": "Registration Exp", "dot_inspection": "Annual DOT Exp", "state_inspection": "State / PA Exp", "insp_status": "Inspection Status"
                 }), use_container_width=True, hide_index=True
             )
         else:
-            st.success("Tüm araçların muayeneleri geçerli!")
+            st.success("All asset inspections and registrations are valid!")
 
     elif view == "CDL":
-        st.markdown("### 🔴 Ehliyet (CDL) Süresi Dolan veya 30 Günden Az Kalan Şoförler")
+        st.markdown("### 🔴 CDL Licenses Expired or Expiring in Less Than 30 Days")
         if not crit_cdl.empty:
             st.dataframe(
-                crit_cdl[["Name", "Telephone", "License Number", "License Expiry", "CDL_Ikon", "CDL_Durum"]].rename(columns={
-                    "Name": "Şoför Adı Soyadı", "Telephone": "Telefon", "License Number": "CDL No", "License Expiry": "Bitiş Tarihi", "CDL_Ikon": "İkon", "CDL_Durum": "Durum"
+                crit_cdl[["Name", "Telephone", "License Number", "License Expiry", "CDL_Icon", "CDL_Status"]].rename(columns={
+                    "Name": "Driver Full Name", "Telephone": "Phone Number", "License Number": "CDL #", "License Expiry": "Expiration Date", "CDL_Icon": "Status", "CDL_Status": "Detail"
                 }), use_container_width=True, hide_index=True
             )
         else:
-            st.success("Tüm sürücülerin CDL ehliyetleri geçerli!")
+            st.success("All driver CDLs are up to date!")
 
     elif view == "MED":
-        st.markdown("### 🟡 Medical Card Muayenesi Dolan veya Yaklaşan Şoförler")
+        st.markdown("### 🟡 Medical Examination Cards Expired or Due Soon")
         if not crit_med.empty:
             st.dataframe(
-                crit_med[["Name", "Telephone", "Next Medical", "Med_Ikon", "Med_Durum"]].rename(columns={
-                    "Name": "Şoför Adı Soyadı", "Telephone": "Telefon", "Next Medical": "Medical Bitiş", "Med_Ikon": "İkon", "Med_Durum": "Durum"
+                crit_med[["Name", "Telephone", "Next Medical", "Med_Icon", "Med_Status"]].rename(columns={
+                    "Name": "Driver Full Name", "Telephone": "Phone Number", "Next Medical": "Medical Due Date", "Med_Icon": "Status", "Med_Status": "Detail"
                 }), use_container_width=True, hide_index=True
             )
         else:
-            st.success("Tüm sürücülerin Medical Card belgeleri güncel!")
+            st.success("All Medical Cards are fully compliant!")
 
     else:
-        st.markdown("### 📋 Genel Filo Özeti")
+        st.markdown("### 📋 Complete Fleet Operations Overview")
         st.dataframe(
-            df_v[["unit_number", "company", "unit_type", "driver", "make_model", "current_mileage", "last_oil_mileage", "yag_ikon", "muayene_durum"]].rename(columns={
-                "unit_number": "Unit", "company": "Şirket", "unit_type": "Tür", "driver": "Şoför", "make_model": "Model", "current_mileage": "Mil", "last_oil_mileage": "Son Yağ", "yag_ikon": "Yağ", "muayene_durum": "Muayene"
+            df_v[["unit_number", "company", "unit_type", "driver", "make_model", "current_mileage", "last_oil_mileage", "oil_icon", "insp_status"]].rename(columns={
+                "unit_number": "Unit #", "company": "Company", "unit_type": "Asset Type", "driver": "Assigned Driver", "make_model": "Make/Model", "current_mileage": "Current Odo", "last_oil_mileage": "Last Oil (mi)", "oil_icon": "Oil", "insp_status": "Compliance Status"
             }), use_container_width=True, height=450, hide_index=True
         )
 
 # -------------------------------------------------------------
-# 2. BÖLÜM: ŞOFÖR DOSYALARI (DOSSIER, RESİMLER & SİCİL)
+# 2. MODULE: DRIVER DOSSIER & COMPLIANCE
 # -------------------------------------------------------------
-elif menu == "👤 Şoför Dosyaları (Dossier & Sicil)":
-    st.markdown("#### 👤 Personel Dijital Dosyası (Kimlik, Zimmet Resimleri & Kaza/Ceza Sicili)")
+elif menu == "👤 Driver Dossier & Compliance":
+    st.markdown("#### 👤 Driver Master Dossier (Profile, Check-in/out Photos & Safety History)")
     
     driver_names = df_d["Name"].dropna().tolist() if not df_d.empty else []
     
     col_d1, col_d2 = st.columns([2, 3])
     with col_d1:
-        selected_dr = st.selectbox("Dosyasını incelemek istediğiniz Şoförü seçin:", ["Seçiniz..."] + driver_names)
+        selected_dr = st.selectbox("Select Driver Dossier to Inspect:", ["Select..."] + driver_names)
         
-    if selected_dr != "Seçiniz...":
+    if selected_dr != "Select...":
         dr_info = df_d[df_d["Name"] == selected_dr].iloc[0]
         
-        # 1. KİMLİK VE EVRAK KARTI
         st.markdown(f"""
         <div class="dossier-box">
-            <h3 style="color:#0b1f3a; margin-top:0;">📁 ŞOFÖR DOSYASI: {dr_info['Name']}</h3>
+            <h3 style="color:#0b1f3a; margin-top:0;">📁 DRIVER PROFILE: {dr_info['Name']}</h3>
             <div style="display:flex; justify-content:space-between; flex-wrap:wrap; font-size:14px; margin-top:10px;">
-                <div>📞 <b>Telefon:</b> {dr_info['Telephone']}</div>
-                <div>✉️ <b>E-Posta:</b> {dr_info.get('E-mail', '-')}</div>
-                <div>🪪 <b>CDL No:</b> {dr_info['License Number']}</div>
-                <div>📅 <b>CDL Bitiş:</b> {dr_info['License Expiry']} ({dr_info['CDL_Ikon']} {dr_info['CDL_Durum']})</div>
-                <div>🏥 <b>Medical Card:</b> {dr_info['Next Medical']} ({dr_info['Med_Ikon']} {dr_info['Med_Durum']})</div>
+                <div>📞 <b>Phone:</b> {dr_info['Telephone']}</div>
+                <div>✉️ <b>Email:</b> {dr_info.get('E-mail', '-')}</div>
+                <div>🪪 <b>CDL Number:</b> {dr_info['License Number']}</div>
+                <div>📅 <b>CDL Expiration:</b> {dr_info['License Expiry']} ({dr_info['CDL_Icon']} {dr_info['CDL_Status']})</div>
+                <div>🏥 <b>Medical Card:</b> {dr_info['Next Medical']} ({dr_info['Med_Icon']} {dr_info['Med_Status']})</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
 
         t_sub1, t_sub2, t_sub3 = st.tabs([
-            "🚚 Araç/Dorse Alış & Teslim Resimleri (Check-in/out)",
-            "💥 Kaza, Hasar & Ceza Sicili (Violation/Ticket)",
-            "➕ Yeni Evrak, Fotoğraf veya Tutanak Ekle"
+            "🚚 Truck/Trailer Check-in & Check-out Photos",
+            "💥 Accidents, Violations & Citations",
+            "➕ Add Photo, Incident or Documents"
         ])
 
-        # SUB TAB 1: ZİMMET & TESLİM RESİMLERİ
         with t_sub1:
-            st.markdown("##### 📸 Ekipman Alış ve Teslimat Fotoğraf Geçmişi")
+            st.markdown("##### 📸 Equipment Custody & Condition Photos")
             conn_dr = get_connection()
             rec_checkin = pd.read_sql_query("""
                 SELECT * FROM driver_records 
-                WHERE driver_name = ? AND record_type IN ('Araç Alış (Check-in)', 'Araç Teslim (Check-out)')
+                WHERE driver_name = ? AND record_type IN ('Equipment Pick-up (Check-in)', 'Equipment Drop-off (Check-out)')
                 ORDER BY id DESC
             """, conn_dr, params=(selected_dr,))
             conn_dr.close()
 
             if not rec_checkin.empty:
                 for _, r in rec_checkin.iterrows():
-                    with st.expander(f"📌 {r['record_type']} — Tarih: {r['event_date']} (Truck: {r['unit_truck']} | Trailer: {r['unit_trailer']})"):
-                        st.write(f"**Açıklama / Durum Notu:** {r['description']}")
+                    with st.expander(f"📌 {r['record_type']} — Date: {r['event_date']} (Truck: #{r['unit_truck']} | Trailer: #{r['unit_trailer']})"):
+                        st.write(f"**Condition / Handoff Notes:** {r['description']}")
                         if r['photo_file']:
                             p_path = os.path.join(UPLOAD_DIR, r['photo_file'])
                             if os.path.exists(p_path):
                                 if p_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-                                    st.image(p_path, caption=f"Yüklenen Fotoğraf: {r['photo_file']}", width=400)
+                                    st.image(p_path, caption=f"Uploaded Condition Photo", width=400)
                                 else:
-                                    st.markdown(f"📄 [Dosyayı Görüntüle / İndir ({r['photo_file']})]({p_path})")
+                                    st.markdown(f"📄 [View Attached Document ({r['photo_file']})]({p_path})")
             else:
-                st.info("Bu şoföre ait henüz kayıtlı araç teslim/alış fotoğrafı bulunmuyor.")
+                st.info("No equipment handoff or check-in photos recorded for this driver yet.")
 
-        # SUB TAB 2: KAZA, HASAR VE CEZA KAYITLARI
         with t_sub2:
-            st.markdown("##### 💥 Kaza Tutanakları, Hasar Fotoğrafları & DOT Cezaları")
+            st.markdown("##### 💥 Accident Reports, Collision Photos & DOT Violations")
             conn_dr = get_connection()
             rec_violations = pd.read_sql_query("""
                 SELECT * FROM driver_records 
-                WHERE driver_name = ? AND record_type IN ('Kaza/Hasar', 'Trafik/DOT Cezası', 'Genel Not')
+                WHERE driver_name = ? AND record_type IN ('Accident / Damage', 'DOT / Traffic Citation', 'General Safety Memo')
                 ORDER BY id DESC
             """, conn_dr, params=(selected_dr,))
             conn_dr.close()
 
             if not rec_violations.empty:
                 for _, v in rec_violations.iterrows():
-                    with st.expander(f"⚠️ {v['record_type']} — {v['event_date']} — Tutar: ${v['cost']:,.2f}"):
-                        st.write(f"**İlgili Ekipman:** Truck #{v['unit_truck']} / Trailer #{v['unit_trailer']}")
-                        st.write(f"**Olay Detayları & Açıklama:** {v['description']}")
+                    with st.expander(f"⚠️ {v['record_type']} — Date: {v['event_date']} — Cost: ${v['cost']:,.2f}"):
+                        st.write(f"**Associated Asset:** Truck #{v['unit_truck']} / Trailer #{v['unit_trailer']}")
+                        st.write(f"**Incident Summary & Officer Report:** {v['description']}")
                         if v['photo_file']:
                             vp_path = os.path.join(UPLOAD_DIR, v['photo_file'])
                             if os.path.exists(vp_path):
                                 if vp_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-                                    st.image(vp_path, caption=f"Olay Yeri / Tutanak Görseli", width=400)
+                                    st.image(vp_path, caption=f"Incident Photo / Citation Scan", width=400)
                                 else:
-                                    st.write(f"📄 Dosya: `{v['photo_file']}`")
+                                    st.write(f"📄 File: `{v['photo_file']}`")
             else:
-                st.success("Bu şoförün sicilinde kayıtlı bir kaza veya DOT cezası bulunmuyor (Tertemiz).")
+                st.success("Clean safety record! No accidents or DOT citations reported for this driver.")
 
-        # SUB TAB 3: YENİ SİCİL / ZİMMET FORMU
         with t_sub3:
-            st.markdown(f"##### ➕ {selected_dr} Dosyasına Yeni Kayıt ve Fotoğraf Ekle")
+            st.markdown(f"##### ➕ Add Record or Photo to {selected_dr}'s File")
             with st.form("add_driver_record_form", clear_on_submit=True):
                 r_c1, r_c2, r_c3 = st.columns(3)
                 with r_c1:
-                    rec_type = st.selectbox("İşlem Türü", [
-                        "Araç Alış (Check-in)",
-                        "Araç Teslim (Check-out)",
-                        "Kaza/Hasar",
-                        "Trafik/DOT Cezası",
-                        "Genel Not / Tutanak"
+                    rec_type = st.selectbox("Record Type", [
+                        "Equipment Pick-up (Check-in)",
+                        "Equipment Drop-off (Check-out)",
+                        "Accident / Damage",
+                        "DOT / Traffic Citation",
+                        "General Safety Memo"
                     ])
-                    rec_date = st.date_input("İşlem / Olay Tarihi")
+                    rec_date = st.date_input("Event Date")
                 with r_c2:
-                    truck_units = ["Yok"] + df_v[df_v["unit_type"] == "TRUCK"]["unit_number"].tolist()
-                    sel_truck = st.selectbox("Kullanılan Çekici (Truck)", truck_units)
-                    trailer_units = ["Yok"] + df_v[df_v["unit_type"] == "TRAILER"]["unit_number"].tolist()
-                    sel_trailer = st.selectbox("Kullanılan Dorse (Trailer)", trailer_units)
+                    truck_units = ["None"] + df_v[df_v["unit_type"] == "TRUCK"]["unit_number"].tolist()
+                    sel_truck = st.selectbox("Truck Assigned", truck_units)
+                    trailer_units = ["None"] + df_v[df_v["unit_type"] == "TRAILER"]["unit_number"].tolist()
+                    sel_trailer = st.selectbox("Trailer Assigned", trailer_units)
                 with r_c3:
-                    rec_cost = st.number_input("Hasar / Ceza Tutarı ($)", min_value=0.0, step=50.0)
-                    rec_upload = st.file_uploader("Fotoğraf / Kaza Tutanağı / Belge Seç", type=["pdf", "png", "jpg", "jpeg"])
+                    rec_cost = st.number_input("Cost / Fine Amount ($)", min_value=0.0, step=50.0)
+                    rec_upload = st.file_uploader("Upload Photo / Report / Citation (PDF/JPG)", type=["pdf", "png", "jpg", "jpeg"])
 
-                rec_desc = st.text_area("Detaylı Açıklama (Hasarın yeri, araç durumu, polis raporu vb.)")
+                rec_desc = st.text_area("Detailed Notes (Damage location, inspection findings, police report info, etc.)")
                 
-                if st.form_submit_button("Bu Kaydı Şoförün Dosyasına Kaydet"):
+                if st.form_submit_button("Submit Record to Dossier"):
                     saved_photo_name = ""
                     if rec_upload:
                         saved_photo_name = f"DR_{selected_dr.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{rec_upload.name}"
@@ -586,40 +576,40 @@ elif menu == "👤 Şoför Dosyaları (Dossier & Sicil)":
                     """, (selected_dr, rec_type, sel_truck, sel_trailer, str(rec_date), rec_desc, rec_cost, saved_photo_name, st.session_state.get("current_user")))
                     c_ins.commit()
                     c_ins.close()
-                    st.success("Kayıt ve fotoğraf şoförün dosyasına başarıyla eklendi!")
+                    st.success("New record and files successfully logged into driver dossier!")
                     st.rerun()
 
     st.markdown("---")
-    st.markdown("#### 📋 Tüm Kayıtlı Şoförlerin Ehliyet & İletişim Tablosu")
+    st.markdown("#### 📋 Driver Fleet Compliance Table")
     st.dataframe(
-        df_d[["Name", "Telephone", "License Number", "License Expiry", "CDL_Ikon", "CDL_Durum", "Next Medical", "Med_Ikon", "Med_Durum"]].rename(columns={
-            "Name": "Şoför", "Telephone": "Telefon", "License Number": "CDL No", "License Expiry": "CDL Bitiş", "CDL_Ikon": "CDL", "Next Medical": "Med Bitiş", "Med_Ikon": "Med"
+        df_d[["Name", "Telephone", "License Number", "License Expiry", "CDL_Icon", "CDL_Status", "Next Medical", "Med_Icon", "Med_Status"]].rename(columns={
+            "Name": "Driver", "Telephone": "Phone", "License Number": "CDL #", "License Expiry": "CDL Expiration", "CDL_Icon": "CDL Status", "Next Medical": "Medical Due", "Med_Icon": "Medical Status"
         }), use_container_width=True, hide_index=True
     )
 
 # -------------------------------------------------------------
-# 3. BÖLÜM: ÇEKİCİ & DORSE MASASI
+# 3. MODULE: FLEET DISPATCH & ASSET BOARD
 # -------------------------------------------------------------
-elif menu == "🚛 Çekici & Dorse Masası":
-    st.markdown("#### 🚛 Ekipman Listesi & Canlı Bakım Durumu")
+elif menu == "🚛 Fleet Dispatch & Asset Board":
+    st.markdown("#### 🚛 Equipment Roster & Active Maintenance Tracking")
     
     fa, fb, fc = st.columns([1, 1, 2])
     with fa:
-        f_co = st.selectbox("Firma:", ["HEPSİ", "MOONSTAR", "LIONSTAR"])
+        f_co = st.selectbox("Company Filter:", ["ALL", "MOONSTAR", "LIONSTAR"])
     with fb:
-        f_ty = st.selectbox("Tür:", ["HEPSİ", "TRUCK", "TRAILER", "🚨 Sadece Yağ Alarmları"])
+        f_ty = st.selectbox("Asset Type:", ["ALL", "TRUCK", "TRAILER", "🚨 Oil Alerts Only"])
     with fc:
-        f_sc = st.text_input("Unit No, Şoför veya Plaka ile filtrele:")
+        f_sc = st.text_input("Quick Search by Unit #, Driver or Plate:")
 
     df_filt = df_v.copy()
-    if f_co != "HEPSİ":
+    if f_co != "ALL":
         df_filt = df_filt[df_filt["company"] == f_co]
     if f_ty == "TRUCK":
         df_filt = df_filt[df_filt["unit_type"] == "TRUCK"]
     elif f_ty == "TRAILER":
         df_filt = df_filt[df_filt["unit_type"] == "TRAILER"]
-    elif f_ty == "🚨 Sadece Yağ Alarmları":
-        df_filt = df_filt[df_filt["yag_ikon"].isin(["🔴", "🟡"])]
+    elif f_ty == "🚨 Oil Alerts Only":
+        df_filt = df_filt[df_filt["oil_icon"].isin(["🔴", "🟡"])]
 
     if f_sc:
         s = f_sc.strip().lower()
@@ -632,29 +622,29 @@ elif menu == "🚛 Çekici & Dorse Masası":
     st.dataframe(
         df_filt[[
             "unit_number", "company", "unit_type", "driver", "make_model",
-            "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu",
-            "plate_number", "plate_expiry", "dot_inspection", "muayene_durum"
+            "current_mileage", "last_oil_mileage", "oil_icon", "oil_status",
+            "plate_number", "plate_expiry", "dot_inspection", "insp_status"
         ]].rename(columns={
-            "unit_number": "Unit", "company": "Şirket", "unit_type": "Tür", "driver": "Şoför",
-            "make_model": "Model", "current_mileage": "Güncel Mil", "last_oil_mileage": "Son Yağ",
-            "yag_ikon": "Yağ", "yag_durumu": "Yağ Detay", "plate_number": "Plaka",
-            "plate_expiry": "Reg", "dot_inspection": "DOT", "muayene_durum": "Muayene"
+            "unit_number": "Unit #", "company": "Company", "unit_type": "Type", "driver": "Driver",
+            "make_model": "Make/Model", "current_mileage": "Current Odo", "last_oil_mileage": "Last Oil Change",
+            "oil_icon": "Oil Status", "oil_status": "Remaining Oil Mileage", "plate_number": "License Plate",
+            "plate_expiry": "Registration", "dot_inspection": "Annual DOT", "insp_status": "Inspection Status"
         }), use_container_width=True, height=480, hide_index=True
     )
 
 # -------------------------------------------------------------
-# 4. BÖLÜM: EKİP İÇİ OPERASYON CHAT
+# 4. MODULE: TEAM DISPATCH CHAT
 # -------------------------------------------------------------
-elif menu == "💬 Ekip İçi Operasyon Chat":
-    st.markdown("#### 💬 Ekip İçi Operasyon & Notlaşma")
+elif menu == "💬 Team Dispatch Chat":
+    st.markdown("#### 💬 Dispatch Operations & Shift Notes")
     with st.form("chat_form", clear_on_submit=True):
         cm1, cm2 = st.columns([5, 1])
         with cm1:
-            msg_txt = st.text_input("Mesajınızı yazın...", placeholder="Örn: Unit 14'ün Laredo teslimatı tamamlandı.")
+            msg_txt = st.text_input("Type your update here...", placeholder="E.g., Unit 14 delivered load in Laredo, now available for dispatch.")
         with cm2:
-            if st.form_submit_button("Gönder 🚀") and msg_txt.strip():
+            if st.form_submit_button("Post Note 🚀") and msg_txt.strip():
                 cur = conn.cursor()
-                now_s = datetime.now().strftime("%d.%m.%Y %H:%M")
+                now_s = datetime.now().strftime("%m/%d/%Y %I:%M %p")
                 cur.execute("INSERT INTO team_chat (sender, message, timestamp) VALUES (?, ?, ?)", (st.session_state.get("current_user"), msg_txt.strip(), now_s))
                 conn.commit()
                 st.rerun()
@@ -669,24 +659,24 @@ elif menu == "💬 Ekip İçi Operasyon Chat":
         """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 5. BÖLÜM: SERVİS & BAKIM GİRİŞİ
+# 5. MODULE: SERVICE, MAINTENANCE & INVOICING
 # -------------------------------------------------------------
-elif menu == "🔧 Servis, Bakım & Fatura Girişi":
-    st.markdown("#### 🔧 Yeni Bakım, Onarım veya Fatura Girişi")
+elif menu == "🔧 Service, Maintenance & Invoicing":
+    st.markdown("#### 🔧 Log New Maintenance, Repair or Invoice")
     with st.form("add_log_form", clear_on_submit=True):
         sc1, sc2, sc3 = st.columns(3)
         with sc1:
-            sel_u = st.selectbox("Unit Seçin", df_v["unit_number"].tolist())
-            l_date = st.date_input("Servis Tarihi")
+            sel_u = st.selectbox("Select Asset (Unit #)", df_v["unit_number"].tolist())
+            l_date = st.date_input("Service Date")
         with sc2:
-            l_type = st.selectbox("İşlem Türü", ["Yağ Değişimi", "Lastik / Fren", "DOT Muayene", "Arıza / Onarım", "Periyodik Bakım", "Diğer"])
-            l_mil = st.number_input("İşlem Mili (Odometer)", min_value=0, step=1000)
+            l_type = st.selectbox("Work Performed", ["Oil Change (PM)", "Tires / Brakes", "Annual DOT Inspection", "Breakdown / Repair", "PM Service", "Other"])
+            l_mil = st.number_input("Odometer (mi)", min_value=0, step=1000)
         with sc3:
-            l_cost = st.number_input("Tutar ($)", min_value=0.0, step=50.0)
-            l_inv = st.file_uploader("Fatura / Belge", type=["pdf", "png", "jpg", "jpeg"])
+            l_cost = st.number_input("Invoice Total ($)", min_value=0.0, step=50.0)
+            l_inv = st.file_uploader("Upload Invoice / Repair Order (PDF/JPG)", type=["pdf", "png", "jpg", "jpeg"])
 
-        l_desc = st.text_area("İşlem Detayları")
-        if st.form_submit_button("Servis Kaydını Tamamla"):
+        l_desc = st.text_area("Detailed Scope of Work & Replaced Parts")
+        if st.form_submit_button("Record Service Entry"):
             inv_name = ""
             if l_inv:
                 inv_name = f"Unit_{sel_u}_{l_inv.name}"
@@ -694,10 +684,10 @@ elif menu == "🔧 Servis, Bakım & Fatura Girişi":
                     f.write(l_inv.getbuffer())
             cur = conn.cursor()
             cur.execute("INSERT INTO logs (unit_number, log_date, log_type, mileage, cost, invoice_filename, notes) VALUES (?, ?, ?, ?, ?, ?, ?)", (sel_u, str(l_date), l_type, l_mil, l_cost, inv_name, l_desc))
-            if l_type == "Yağ Değişimi" and l_mil > 0:
+            if l_type == "Oil Change (PM)" and l_mil > 0:
                 cur.execute("UPDATE vehicles SET last_oil_mileage = ?, current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (l_mil, l_mil, sel_u))
             elif l_mil > 0:
                 cur.execute("UPDATE vehicles SET current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (l_mil, sel_u))
             conn.commit()
-            st.success("Servis kaydı başarıyla oluşturuldu!")
+            st.success("Service record successfully updated in the fleet ledger!")
             st.rerun()

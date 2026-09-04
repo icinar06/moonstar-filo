@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR KURUMSAL WEB VE ENTERPRISE KONSOL STİLLERİ (KESİLME YAPMAYAN LÜKS KARTLAR)
+# MOONSTAR ÜST DÜZEY ENTERPRISE SAMSARA & SCHNEIDER STİLLERİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -130,19 +130,19 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU, BELİRGİN KENARLI VE GÖLGELİ SCHNEIDER/SAMSARA KARTLARI */
+    /* 4 KOLONLU LÜKS SAMSARA KARTLARI (SOL KALIN RENKLİ ŞERİTLİ) */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
         border-radius: 12px !important;
-        padding: 20px 18px !important;
-        min-height: 220px !important;
+        padding: 18px 20px !important;
+        min-height: 210px !important;
         height: auto !important;
         width: 100% !important;
         box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
-        justify-content: flex-start !important;
+        justify-content: space-between !important;
         text-align: left !important;
         white-space: pre-wrap !important;
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
@@ -150,15 +150,15 @@ st.markdown("""
     }
     
     div[data-testid*="stButton"] > button.btn-critical {
-        border: 2px solid #ef4444 !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-left: 7px solid #dc2626 !important;
     }
     div[data-testid*="stButton"] > button.btn-warning {
-        border: 2px solid #f59e0b !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-left: 7px solid #d97706 !important;
     }
     div[data-testid*="stButton"] > button.btn-healthy {
-        border: 2px solid #22c55e !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-left: 7px solid #16a34a !important;
     }
 
@@ -651,7 +651,7 @@ nav_c1, nav_c2 = st.columns([5, 1])
 with nav_c1:
     top_menu = st.radio(
         "Navigation",
-        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS/Fuel)", "Dispatch Team Chat", "Service Ledger"],
+        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS/Fuel)", "Service Ledger"],
         horizontal=True,
         label_visibility="collapsed"
     )
@@ -663,7 +663,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, KESİLME YAPMAYAN KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, YENİLENMİŞ KARTLAR & + ADD BUTONU)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -705,11 +705,13 @@ if top_menu == "Trucks & Trailers":
         f_srch = st.text_input("Find Unit, Driver or Model:", placeholder="Type Unit # (e.g. 12)...")
     with f4:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        btn_add_v = st.button("+ Add Equipment", use_container_width=True)
+        if st.button("+ Add Equipment", use_container_width=True):
+            st.session_state["show_add_modal"] = True
 
-    if btn_add_v:
-        with st.form("new_veh_top_box"):
-            st.markdown("##### Register New Equipment")
+    # Modal for Adding Equipment
+    if st.session_state.get("show_add_modal", False):
+        with st.form("new_veh_modal_box"):
+            st.markdown("##### ➕ Register New Equipment")
             nc1, nc2 = st.columns(2)
             with nc1:
                 nu_comp = st.selectbox("Company", ["MOONSTAR", "LIONSTAR"])
@@ -720,13 +722,21 @@ if top_menu == "Trucks & Trailers":
                 nu_vin = st.text_input("VIN / Serial")
                 nu_plate = st.text_input("Plate Number")
                 nu_model = st.text_input("Make / Model / Year")
-            if st.form_submit_button("Save Asset") and nu_unit:
-                cur = conn.cursor()
-                cur.execute("INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                            (nu_comp, nu_type, nu_unit.strip(), nu_driver.strip(), nu_vin.strip(), nu_plate.strip(), nu_model.strip()))
-                conn.commit()
-                st.success(f"{nu_type} #{nu_unit} added successfully!")
-                st.rerun()
+            
+            sub_col1, sub_col2 = st.columns(2)
+            with sub_col1:
+                if st.form_submit_button("Save Asset", use_container_width=True) and nu_unit:
+                    cur = conn.cursor()
+                    cur.execute("INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                                (nu_comp, nu_type, nu_unit.strip(), nu_driver.strip(), nu_vin.strip(), nu_plate.strip(), nu_model.strip()))
+                    conn.commit()
+                    st.session_state["show_add_modal"] = False
+                    st.success(f"{nu_type} #{nu_unit} added successfully!")
+                    st.rerun()
+            with sub_col2:
+                if st.form_submit_button("Cancel", use_container_width=True):
+                    st.session_state["show_add_modal"] = False
+                    st.rerun()
 
     df_filtered = df_v.copy()
     if f_type == "Trucks Only":
@@ -751,7 +761,7 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # 4 KOLONLU KUTUCUKLAR (KUSURSUZ HİZALAMA VE RENKLİ KENARLAR)
+    # 4 KOLONLU KUTUCUKLAR
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
@@ -768,7 +778,6 @@ if top_menu == "Trucks & Trailers":
                 f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
             )
             
-            # Butona özel renkli sınıf enjekte ediliyor
             st.markdown(f'<div class="{r["btn_class"]}">', unsafe_allow_html=True)
             if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
@@ -809,22 +818,30 @@ elif top_menu == "Drivers Compliance":
             dr_search = st.text_input("Find Driver Name or Phone:")
         with df3:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            btn_add_d = st.button("+ Onboard Driver", use_container_width=True)
+            if st.button("+ Onboard Driver", use_container_width=True):
+                st.session_state["show_add_driver_modal"] = True
 
-        if btn_add_d:
+        if st.session_state.get("show_add_driver_modal", False):
             with st.form("modal_add_driver_box"):
-                st.markdown("##### Onboard New Driver")
                 nd_name = st.text_input("Full Name")
                 nd_phone = st.text_input("Phone Number")
                 nd_cdl = st.text_input("CDL Number")
                 nd_cdl_exp = st.date_input("CDL Expiration")
                 nd_med_exp = st.date_input("Medical Due Date")
-                if st.form_submit_button("Save Driver") and nd_name:
-                    new_dr_entry = {"Name": nd_name.strip(), "Telephone": nd_phone.strip(), "License Number": nd_cdl.strip(), "License Expiry": str(nd_cdl_exp), "Next Medical": str(nd_med_exp)}
-                    df_d = pd.concat([df_d, pd.DataFrame([new_dr_entry])], ignore_index=True)
-                    df_d.to_excel(DRIVERS_FILE, index=False)
-                    st.success(f"Driver '{nd_name}' registered!")
-                    st.rerun()
+                
+                sub_d1, sub_d2 = st.columns(2)
+                with sub_d1:
+                    if st.form_submit_button("Save Driver", use_container_width=True) and nd_name:
+                        new_dr_entry = {"Name": nd_name.strip(), "Telephone": nd_phone.strip(), "License Number": nd_cdl.strip(), "License Expiry": str(nd_cdl_exp), "Next Medical": str(nd_med_exp)}
+                        df_d = pd.concat([df_d, pd.DataFrame([new_dr_entry])], ignore_index=True)
+                        df_d.to_excel(DRIVERS_FILE, index=False)
+                        st.session_state["show_add_driver_modal"] = False
+                        st.success(f"Driver '{nd_name}' registered!")
+                        st.rerun()
+                with sub_d2:
+                    if st.form_submit_button("Cancel", use_container_width=True):
+                        st.session_state["show_add_driver_modal"] = False
+                        st.rerun()
 
         df_dr_view = df_d.copy()
         if dr_stat_filter == "Critical Action Needed":
@@ -843,7 +860,6 @@ elif top_menu == "Drivers Compliance":
 
         st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
 
-        # 4 KOLONLU KUTUCUKLAR ŞOFÖRLER İÇİN
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
@@ -962,33 +978,7 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
                 st.error(f"Error: {ex}")
 
 # -------------------------------------------------------------
-# 4. MODÜL: DISPATCH TEAM CHAT
-# -------------------------------------------------------------
-elif top_menu == "Dispatch Team Chat":
-    st.markdown("#### Dispatch Operations & Shift Notes")
-    with st.form("chat_form_samsara", clear_on_submit=True):
-        cm1, cm2 = st.columns([5, 1])
-        with cm1:
-            msg_txt = st.text_input("Write shift note...", placeholder="E.g., Unit 14 delivered in Laredo, now available for reloading.")
-        with cm2:
-            if st.form_submit_button("Post Note") and msg_txt.strip():
-                cur = conn.cursor()
-                now_s = datetime.now().strftime("%m/%d/%Y %I:%M %p")
-                cur.execute("INSERT INTO team_chat (sender, message, timestamp) VALUES (?, ?, ?)", (st.session_state.get("current_user"), msg_txt.strip(), now_s))
-                conn.commit()
-                st.rerun()
-
-    df_c = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 50", conn)
-    for _, r in df_c.iterrows():
-        st.markdown(f"""
-        <div style="background:#ffffff; border-left:4px solid #0284c7; padding:10px 14px; border-radius:6px; margin-bottom:8px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
-            <b style="color:#0b1f3a; font-size:13px;">{r['sender']}</b> <span style="font-size:11px; color:#64748b; margin-left:8px;">🕒 {r['timestamp']}</span>
-            <div style="margin-top:3px; font-size:13px; color:#0f172a;">{r['message']}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# -------------------------------------------------------------
-# 5. MODÜL: SERVICE LEDGER
+# 4. MODÜL: SERVICE LEDGER
 # -------------------------------------------------------------
 elif top_menu == "Service Ledger":
     st.markdown("#### Equipment Service & Maintenance Record Entry")
@@ -1012,3 +1002,61 @@ elif top_menu == "Service Ledger":
             conn.commit()
             st.success("Service recorded successfully!")
             st.rerun()
+
+# -------------------------------------------------------------
+# YÜZEN DİSPATCH CHAT BARA (FLOATING CHAT WIDGET)
+# -------------------------------------------------------------
+if "show_chat_bubble" not in st.session_state:
+    st.session_state["show_chat_bubble"] = False
+
+# Sağ altta sabit yüzen balon butonu için özel CSS
+st.markdown("""
+<style>
+    .floating-chat-btn {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: #0284c7;
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+        cursor: pointer;
+        z-index: 99999;
+        font-size: 24px;
+        transition: transform 0.2s;
+    }
+    .floating-chat-btn:hover {
+        transform: scale(1.08);
+        background: #0369a1;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# Yüzen Balona Tıklama Kontrolü (Streamlit Sidebar veya Popover yerine akıllı toggle)
+st.markdown('<div class="floating-chat-btn" onclick="window.location.reload();">💬</div>', unsafe_allow_html=True)
+
+with st.sidebar:
+    st.markdown("### 💬 Dispatch Live Chat")
+    with st.form("chat_form_floating", clear_on_submit=True):
+        msg_txt = st.text_input("Write dispatch note...", placeholder="Unit 14 delivered...")
+        if st.form_submit_button("Send Note") and msg_txt.strip():
+            cur = conn.cursor()
+            now_s = datetime.now().strftime("%m/%d/%Y %I:%M %p")
+            cur.execute("INSERT INTO team_chat (sender, message, timestamp) VALUES (?, ?, ?)", (st.session_state.get("current_user"), msg_txt.strip(), now_s))
+            conn.commit()
+            st.rerun()
+
+    st.markdown("---")
+    df_c = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 20", conn)
+    for _, r in df_c.iterrows():
+        st.markdown(f"""
+        <div style="background:#ffffff; border-left:3px solid #0284c7; padding:8px 10px; border-radius:4px; margin-bottom:6px; font-size:11px; border:1px solid #e2e8f0;">
+            <b>{r['sender']}</b> <span style="color:#64748b; font-size:9px;">{r['timestamp']}</span>
+            <div style="color:#0f172a; margin-top:2px;">{r['message']}</div>
+        </div>
+        """, unsafe_allow_html=True)

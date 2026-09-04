@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR ÜST DÜZEY ENTERPRISE SAMSARA & SCHNEIDER STİLLERİ
+# MOONSTAR ORİJİNAL LOGO VE ENTERPRISE KONSOL STİLLERİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -84,7 +84,7 @@ st.markdown("""
         background: #18181b;
     }
 
-    /* Üst Konsol Header (Login Sonrası) */
+    /* Üst Konsol Header (Orijinal Yıldızlı Logo ile) */
     .top-header {
         background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
         padding: 16px 28px;
@@ -130,7 +130,7 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU LÜKS SAMSARA KARTLARI (SOL KALIN RENKLİ ŞERİTLİ) */
+    /* 4 KOLONLU LÜKS KARTLAR (SARI VE YEŞİL STANDARTLAR) */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
         border-radius: 12px !important;
@@ -149,10 +149,6 @@ st.markdown("""
         margin-bottom: 16px !important;
     }
     
-    div[data-testid*="stButton"] > button.btn-critical {
-        border: 1.5px solid #cbd5e1 !important;
-        border-left: 7px solid #dc2626 !important;
-    }
     div[data-testid*="stButton"] > button.btn-warning {
         border: 1.5px solid #cbd5e1 !important;
         border-left: 7px solid #d97706 !important;
@@ -163,7 +159,7 @@ st.markdown("""
     }
 
     div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 12px 30px rgba(0,0,0,0.15) !important;
+        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15) !important;
         transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
@@ -177,6 +173,30 @@ st.markdown("""
         white-space: pre-wrap !important;
         width: 100% !important;
         color: #1e293b !important;
+    }
+
+    /* Yüzen Canlı Chat Balonu (Floating Chat Widget) */
+    .floating-chat-btn {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: #0284c7;
+        color: white;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
+        cursor: pointer;
+        z-index: 99999;
+        font-size: 24px;
+        transition: transform 0.2s;
+    }
+    .floating-chat-btn:hover {
+        transform: scale(1.08);
+        background: #0369a1;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -199,8 +219,8 @@ if not st.session_state["authenticated"]:
     hdr_left, hdr_right = st.columns([1.5, 3.5])
     with hdr_left:
         st.markdown("""
-        <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:900; color:#0b1f3a; padding: 10px 0;">
-            MOONSTAR <span style="color:#0284c7; font-size:12px; display:block; font-weight:600; letter-spacing:3px;">EXPRESS</span>
+        <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:900; color:#0b1f3a; padding: 10px 0; display:flex; align-items:center; gap:8px;">
+            MOON<span style="color:#f97316;">★</span>TAR <span style="font-size:10px; color:#0284c7; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">EXPRESS</span>
         </div>
         """, unsafe_allow_html=True)
     with hdr_right:
@@ -318,7 +338,7 @@ def check_date_status(date_str):
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "btn-critical", diff
+            return f"Expired ({abs(diff)}d ago)", "btn-warning", diff
         elif diff <= 30:
             return f"Due in {diff}d", "btn-warning", diff
         else:
@@ -337,7 +357,7 @@ def check_oil_status(row):
             return "No Record", "btn-healthy"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi", "btn-critical"
+            return f"Overdue by {abs(rem):,} mi", "btn-warning"
         elif rem <= 3000:
             return f"Due in {rem:,} mi", "btn-warning"
         else:
@@ -436,7 +456,7 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "btn-critical"
+                    return f"Expired ({abs(diff)}d ago)", "btn-warning"
                 elif diff <= 30:
                     return f"Due in {diff}d", "btn-warning"
             except:
@@ -453,20 +473,18 @@ if not df_v.empty:
     df_v["oil_class"] = [r[1] for r in oil_res]
 
     def get_overall_priority(row):
-        if row["oil_class"] == "btn-critical" or row["insp_class"] == "btn-critical":
-            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
-            return "🟡 [DUE SOON]", "btn-warning", 2
+        if row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
+            return "🟡 [DUE ACTION]", "btn-warning", 1
         else:
-            return "🟢 [READY]", "btn-healthy", 3
+            return "🟢 [READY]", "btn-healthy", 2
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
     df_v["btn_class"] = [p[1] for p in v_prio]
     df_v["priority_order"] = [p[2] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-critical"])
-    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-critical"])
+    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-warning"])
+    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-warning"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -484,12 +502,10 @@ if not df_d.empty:
     df_d["Med_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Class"] == "btn-critical" or row["Med_Class"] == "btn-critical":
-            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
-            return "🟡 [DUE SOON]", "btn-warning", 2
+        if row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
+            return "🟡 [DUE ACTION]", "btn-warning", 1
         else:
-            return "🟢 [READY]", "btn-healthy", 3
+            return "🟢 [READY]", "btn-healthy", 2
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
@@ -632,20 +648,28 @@ def open_driver_dossier(driver_name):
             df_new.to_excel(DRIVERS_FILE, index=False)
             st.rerun()
 
-# -------------------------------------------------------------
-# TOP NAVBAR (GİRİŞ SONRASI KURUMSAL KONSOL)
-# -------------------------------------------------------------
-st.markdown(f"""
-<div class="top-header">
-    <div style="display:flex; align-items:center; gap:16px;">
-        <span class="brand-title">MOONSTAR <span style="color:#f97316;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#cbd5e1; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Management Console</span>
+# ---------------------------------------------
+# TOP NAVBAR (ORİJİNAL YILDIZLI MOONSTAR LOGOSU İLE)
+# ---------------------------------------------
+nav_top_col1, nav_top_col2 = st.columns([4, 1])
+with nav_top_col1:
+    st.markdown(f"""
+    <div style="display:flex; align-items:center; gap:16px; background:linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%); padding:12px 20px; border-radius:8px; border-bottom:3px solid #f97316; color:white;">
+        <div style="font-family:'Montserrat',sans-serif; font-size:18px; font-weight:900;">
+            MOON<span style="color:#f97316;">★</span>TAR <span style="font-size:10px; color:#38bdf8;">EXPRESS LLC</span>
+        </div>
+        <div style="font-size:11px; color:#cbd5e1; border-left:1px solid #334155; padding-left:12px;">
+            Executive Fleet Management Console | User: <b>{st.session_state.get('current_user')}</b>
+        </div>
     </div>
-    <div style="font-size:12px; color:#f1f5f9;">
-        User: <b>{st.session_state.get('current_user')}</b>
-    </div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
+with nav_top_col2:
+    if st.button("Sign Out", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.rerun()
+
+st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
 nav_c1, nav_c2 = st.columns([5, 1])
 with nav_c1:
@@ -655,15 +679,11 @@ with nav_c1:
         horizontal=True,
         label_visibility="collapsed"
     )
-with nav_c2:
-    if st.button("Sign Out", use_container_width=True):
-        st.session_state["authenticated"] = False
-        st.rerun()
 
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, YENİLENMİŞ KARTLAR & + ADD BUTONU)
+# 1. MODÜL: TRUCKS & TRAILERS
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -676,9 +696,9 @@ if top_menu == "Trucks & Trailers":
         """, unsafe_allow_html=True)
     with k2:
         st.markdown(f"""
-        <div class="kpi-card" style="border-left: 5px solid #dc2626;">
+        <div class="kpi-card" style="border-left: 5px solid #d97706;">
             <div class="kpi-title">Total Monthly Fuel Cost</div>
-            <div class="kpi-num" style="color:#dc2626;">${total_fleet_fuel:,.2f}</div>
+            <div class="kpi-num" style="color:#d97706;">${total_fleet_fuel:,.2f}</div>
         </div>
         """, unsafe_allow_html=True)
     with k3:
@@ -708,7 +728,6 @@ if top_menu == "Trucks & Trailers":
         if st.button("+ Add Equipment", use_container_width=True):
             st.session_state["show_add_modal"] = True
 
-    # Modal for Adding Equipment
     if st.session_state.get("show_add_modal", False):
         with st.form("new_veh_modal_box"):
             st.markdown("##### ➕ Register New Equipment")
@@ -761,7 +780,6 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # 4 KOLONLU KUTUCUKLAR
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
@@ -791,16 +809,16 @@ elif top_menu == "Drivers Compliance":
         dk1, dk2, dk3 = st.columns(3)
         with dk1:
             st.markdown(f"""
-            <div class="kpi-card" style="border-left: 5px solid #dc2626;">
-                <div class="kpi-title">CDL / Medical Expired</div>
-                <div class="kpi-num" style="color:#dc2626;">{dr_crit_count} Drivers</div>
+            <div class="kpi-card" style="border-left: 5px solid #d97706;">
+                <div class="kpi-title">CDL / Medical Due</div>
+                <div class="kpi-num" style="color:#d97706;">{dr_crit_count} Drivers</div>
             </div>
             """, unsafe_allow_html=True)
         with dk2:
             st.markdown(f"""
             <div class="kpi-card" style="border-left: 5px solid #d97706;">
                 <div class="kpi-title">Expiring in 30 Days</div>
-                <div class="kpi-num" style="color:#d97706;">{len(df_d[df_d['priority_order']==2])} Drivers</div>
+                <div class="kpi-num" style="color:#d97706;">{len(df_d[df_d['priority_order']==1])} Drivers</div>
             </div>
             """, unsafe_allow_html=True)
         with dk3:
@@ -813,7 +831,7 @@ elif top_menu == "Drivers Compliance":
 
         df1, df2, df3 = st.columns([2, 2.5, 1.2])
         with df1:
-            dr_stat_filter = st.selectbox("Filter Compliance:", ["All Drivers", "Critical Action Needed", "Expiring Soon", "Fully Compliant"])
+            dr_stat_filter = st.selectbox("Filter Compliance:", ["All Drivers", "Due Action Needed", "Fully Compliant"])
         with df2:
             dr_search = st.text_input("Find Driver Name or Phone:")
         with df3:
@@ -844,12 +862,10 @@ elif top_menu == "Drivers Compliance":
                         st.rerun()
 
         df_dr_view = df_d.copy()
-        if dr_stat_filter == "Critical Action Needed":
+        if dr_stat_filter == "Due Action Needed":
             df_dr_view = df_dr_view[df_dr_view["priority_order"] == 1]
-        elif dr_stat_filter == "Expiring Soon":
-            df_dr_view = df_dr_view[df_dr_view["priority_order"] == 2]
         elif dr_stat_filter == "Fully Compliant":
-            df_dr_view = df_dr_view[df_dr_view["priority_order"] == 3]
+            df_dr_view = df_dr_view[df_dr_view["priority_order"] == 2]
 
         if dr_search:
             ds = dr_search.strip().lower()
@@ -1004,41 +1020,13 @@ elif top_menu == "Service Ledger":
             st.rerun()
 
 # -------------------------------------------------------------
-# YÜZEN DİSPATCH CHAT BARA (FLOATING CHAT WIDGET)
+# YÜZEN DİSPATCH CHAT BALONU (FLOATING CHAT WIDGET)
 # -------------------------------------------------------------
-if "show_chat_bubble" not in st.session_state:
-    st.session_state["show_chat_bubble"] = False
-
-# Sağ altta sabit yüzen balon butonu için özel CSS
 st.markdown("""
-<style>
-    .floating-chat-btn {
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        background: #0284c7;
-        color: white;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
-        cursor: pointer;
-        z-index: 99999;
-        font-size: 24px;
-        transition: transform 0.2s;
-    }
-    .floating-chat-btn:hover {
-        transform: scale(1.08);
-        background: #0369a1;
-    }
-</style>
+<div class="floating-chat-btn" onclick="alert('Dispatch Chat opened! Use the sidebar panel or chat widget.');">
+    💬
+</div>
 """, unsafe_allow_html=True)
-
-# Yüzen Balona Tıklama Kontrolü (Streamlit Sidebar veya Popover yerine akıllı toggle)
-st.markdown('<div class="floating-chat-btn" onclick="window.location.reload();">💬</div>', unsafe_allow_html=True)
 
 with st.sidebar:
     st.markdown("### 💬 Dispatch Live Chat")

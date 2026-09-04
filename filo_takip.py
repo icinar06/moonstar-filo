@@ -8,84 +8,98 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Fleet Console",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise TMS",
     page_icon="⭐",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR COMPACT TILE DESIGN
+# MODERN ENTERPRISE LOGISTICS THEME (EDGE-TO-EDGE & CLEAN WHITE TILES)
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
         background-color: #f8fafc !important;
     }
     
-    .moonstar-nav {
-        background: linear-gradient(90deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
-        padding: 12px 20px;
-        border-radius: 6px;
-        color: #ffffff;
+    /* Üst Kurumsal Header */
+    .top-header {
+        background: linear-gradient(90deg, #0b1f3a 0%, #172554 60%, #0284c7 100%);
+        padding: 12px 24px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
-        border-bottom: 3px solid #38bdf8;
+        color: white;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
     .brand-title {
         font-family: 'Montserrat', sans-serif;
         font-size: 20px;
         font-weight: 800;
+        letter-spacing: 0.5px;
         color: #ffffff;
         margin: 0;
     }
-
-    /* COMPACT TILE STYLES */
-    .mini-tile {
-        background: #ffffff;
-        border-radius: 8px;
-        padding: 10px 12px;
-        margin-bottom: 10px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    }
-    .tile-green { border-left: 5px solid #22c55e !important; }
-    .tile-yellow { border-left: 5px solid #eab308 !important; background: #fffdf5 !important; }
-    .tile-red { border-left: 5px solid #ef4444 !important; background: #fef8f8 !important; }
     
-    .tile-header {
+    /* Beyaz Temiz Kart Stili (Clean Card) */
+    .clean-tile {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 12px 14px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        margin-bottom: 8px;
+        transition: border-color 0.15s ease;
+    }
+    .clean-tile:hover {
+        border-color: #0284c7;
+    }
+    
+    .tile-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
-    .tile-title {
+    .tile-unit-title {
         font-family: 'Montserrat', sans-serif;
         font-size: 15px;
         font-weight: 800;
-        color: #0b1f3a;
+        color: #0f172a;
         margin: 0;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
-    .tile-badge {
+    
+    /* Sadece Rozetler Renkli */
+    .badge {
         font-size: 10px;
         font-weight: 700;
-        padding: 2px 6px;
+        padding: 2px 7px;
         border-radius: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
-    .badge-green { background: #dcfce7; color: #166534; }
-    .badge-yellow { background: #fef08a; color: #854d0e; }
-    .badge-red { background: #fee2e2; color: #991b1b; }
+    .badge-ready { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-due { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+    .badge-overdue { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
     
-    .tile-meta {
+    .tile-body {
         font-size: 11px;
         color: #475569;
-        line-height: 1.4;
+        line-height: 1.5;
+    }
+    
+    /* Modal / Dossier Container */
+    .dossier-card {
+        background: #ffffff;
+        border: 2px solid #0284c7;
+        border-radius: 10px;
+        padding: 18px 22px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -107,8 +121,8 @@ if not st.session_state["authenticated"]:
     with c2:
         st.markdown("<br><br>", unsafe_allow_html=True)
         if os.path.exists("logo.jpg"):
-            st.image("logo.jpg", width=200)
-        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — PORTAL")
+            st.image("logo.jpg", width=220)
+        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — TMS LOGIN")
         with st.form("login_form"):
             email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
             pwd = st.text_input("Password", type="password")
@@ -118,7 +132,7 @@ if not st.session_state["authenticated"]:
                     st.session_state["current_user"] = email.strip().lower()
                     st.rerun()
                 else:
-                    st.error("Invalid corporate credentials!")
+                    st.error("Invalid credentials!")
     st.stop()
 
 # ---------------------------------------------
@@ -132,32 +146,32 @@ def check_date_status(date_str):
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "🔴", diff
+            return f"Expired ({abs(diff)}d)", "badge-overdue", diff
         elif diff <= 30:
-            return f"Due Soon ({diff}d)", "🟡", diff
+            return f"Due Soon ({diff}d)", "badge-due", diff
         else:
-            return f"Good ({diff}d)", "🟢", diff
+            return f"Valid ({diff}d)", "badge-ready", diff
     except Exception:
         return "Invalid", "⚪", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)", "⚪", "-"
+        return "Exempt", "badge-ready", "-"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record", "⚪", "-"
+            return "No Record", "badge-ready", "-"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue ({abs(rem):,} mi)", "🔴", f"{rem:,}"
+            return f"Overdue ({abs(rem):,} mi)", "badge-overdue", f"{rem:,}"
         elif rem <= 3000:
-            return f"Due Soon ({rem:,} mi)", "🟡", f"{rem:,}"
+            return f"Due Soon ({rem:,} mi)", "badge-due", f"{rem:,}"
         else:
-            return f"Good ({rem:,} mi)", "🟢", f"{rem:,}"
+            return f"Good ({rem:,} mi)", "badge-ready", f"{rem:,}"
     except Exception:
-        return "Calc Error", "⚪", "-"
+        return "Calc Error", "badge-ready", "-"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -207,17 +221,13 @@ def init_db():
         )
     """)
     c.execute("""
-        CREATE TABLE IF NOT EXISTS driver_records (
+        CREATE TABLE IF NOT EXISTS asset_files (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            driver_name TEXT,
-            record_type TEXT,
-            unit_truck TEXT,
-            unit_trailer TEXT,
-            event_date TEXT,
-            description TEXT,
-            cost REAL DEFAULT 0,
-            photo_file TEXT,
-            created_by TEXT
+            target_type TEXT, -- 'EQUIPMENT' or 'DRIVER'
+            target_id TEXT,
+            file_category TEXT,
+            filename TEXT,
+            uploaded_at TEXT
         )
     """)
     conn.commit()
@@ -248,7 +258,6 @@ init_db()
 
 conn = get_connection()
 df_v = pd.read_sql_query("SELECT * FROM vehicles ORDER BY unit_number ASC", conn)
-df_logs = pd.read_sql_query("SELECT * FROM logs ORDER BY log_date DESC", conn)
 
 def evaluate_insp(row):
     today = datetime.now().date()
@@ -258,23 +267,23 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return "OVERDUE ❌", "🔴"
+                    return "OVERDUE ❌", "badge-overdue"
                 elif diff <= 30:
-                    return "EXPIRING ⚠️", "🟡"
+                    return "EXPIRING ⚠️", "badge-due"
             except:
                 pass
-    return "VALID", "🟢"
+    return "VALID", "badge-ready"
 
 insp_res = df_v.apply(evaluate_insp, axis=1)
 df_v["insp_status"] = [r[0] for r in insp_res]
-df_v["insp_icon"] = [r[1] for r in insp_res]
+df_v["insp_badge"] = [r[1] for r in insp_res]
 
 oil_res = df_v.apply(check_oil_status, axis=1)
 df_v["oil_status"] = [r[0] for r in oil_res]
-df_v["oil_icon"] = [r[1] for r in oil_res]
+df_v["oil_badge"] = [r[1] for r in oil_res]
 df_v["remaining_oil_mi"] = [r[2] for r in oil_res]
 
-# DRIVERS READ
+# DRIVERS VERİLERİ
 df_d = pd.DataFrame()
 if os.path.exists(DRIVERS_FILE):
     df_d = pd.read_excel(DRIVERS_FILE)
@@ -286,322 +295,386 @@ if os.path.exists(DRIVERS_FILE):
     df_d["License Number"] = df_d["License Number"].fillna("-").astype(str).str.strip() if "License Number" in df_d.columns else "-"
     
     df_d["CDL_Status"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[0])
-    df_d["CDL_Icon"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[1])
+    df_d["CDL_Badge"] = df_d["License Expiry"].apply(lambda d: check_date_status(d)[1])
     df_d["Med_Status"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[0])
-    df_d["Med_Icon"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[1])
+    df_d["Med_Badge"] = df_d["Next Medical"].apply(lambda d: check_date_status(d)[1])
 
-# ---------------------------------------------
-# SIDEBAR
-# ---------------------------------------------
-with st.sidebar:
-    if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", width=170)
-    st.markdown("### 🏢 **MOONSTAR TMS**")
-    st.caption(f"👤 Active: **{st.session_state.get('current_user')}**")
-    st.markdown("---")
-    
-    menu = st.radio(
-        "NAVIGATION",
-        [
-            "🚛 Trucks & Trailers (Grid)",
-            "👤 Drivers Compliance (Grid)",
-            "💬 Team Chat",
-            "🔧 Quick Service Entry"
-        ]
-    )
-    st.markdown("---")
-    if st.button("🚪 Sign Out"):
-        st.session_state["authenticated"] = False
-        st.rerun()
-
-# ---------------------------------------------
-# TOP NAVBAR
-# ---------------------------------------------
+# -------------------------------------------------------------
+# ÜST KURUMSAL HEADER & YATAY MENÜ (SIDEBARSIZ TAM EKRAN)
+# -------------------------------------------------------------
 st.markdown(f"""
-<div class="moonstar-nav">
-    <div>
-        <div class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></div>
-        <div style="font-size:11px; color:#bae6fd;">Compact Fleet & Driver Asset Dossier Console</div>
+<div class="top-header">
+    <div style="display:flex; align-items:center; gap:16px;">
+        <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
+        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Fleet Portal</span>
     </div>
-    <div>
-        <span style="background: rgba(255,255,255,0.15); padding: 4px 10px; border-radius: 12px; font-size: 11px;">
-            🟢 <b>{st.session_state.get('current_user')}</b>
-        </span>
+    <div style="font-size:12px; color:#f1f5f9;">
+        Active User: <b>{st.session_state.get('current_user')}</b>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# -------------------------------------------------------------
-# 1. BÖLÜM: TRUCKS & TRAILERS (MINI TILES & IN-CARD EDIT/DOCS)
-# -------------------------------------------------------------
-if menu == "🚛 Trucks & Trailers (Grid)":
-    # FİLTRELEME & YENİ ARAÇ BUTONU
-    f_c1, f_c2, f_c3, f_c4 = st.columns([1.5, 1.5, 2, 1.5])
-    with f_c1:
-        type_filter = st.selectbox("Equipment:", ["All", "Trucks Only", "Trailers Only"])
-    with f_c2:
-        status_filter = st.selectbox("Status:", ["All Statuses", "🚨 Red Overdue", "🟡 Yellow Warning", "🟢 Green Good"])
-    with f_c3:
-        search_box = st.text_input("Search Unit #, Driver, Make:", placeholder="e.g. 95, Cascadia...")
-    with f_c4:
-        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        add_new_veh = st.button("➕ New Equipment", use_container_width=True)
+# YATAY NAVİGASYON (ÜST MENÜ BAR)
+nav_col1, nav_col2 = st.columns([5, 1])
+with nav_col1:
+    top_menu = st.radio(
+        "Navigation",
+        ["🚛 Trucks & Trailers", "👤 Drivers Compliance", "💬 Dispatch Team Chat", "🔧 Service Ledger"],
+        horizontal=True,
+        label_visibility="collapsed"
+    )
+with nav_col2:
+    if st.button("🚪 Sign Out", use_container_width=True):
+        st.session_state["authenticated"] = False
+        st.rerun()
 
-    # Yeni Araç Ekleme Modalı
-    if add_new_veh:
-        with st.form("modal_add_v"):
-            st.markdown("##### ➕ Register New Equipment")
-            nv_col1, nv_col2 = st.columns(2)
-            with nv_col1:
-                acomp = st.selectbox("Company", ["MOONSTAR", "LIONSTAR"])
-                atype = st.selectbox("Type", ["TRUCK", "TRAILER"])
-                aunit = st.text_input("Unit Number")
-                adriver = st.text_input("Assigned Driver")
-            with nv_col2:
-                avin = st.text_input("VIN")
-                aplate = st.text_input("Plate")
-                amodel = st.text_input("Make / Model / Year")
-            if st.form_submit_button("Save Asset") and aunit:
-                cur = conn.cursor()
-                cur.execute("INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model) VALUES (?, ?, ?, ?, ?, ?, ?)", 
-                            (acomp, atype, aunit.strip(), adriver.strip(), avin.strip(), aplate.strip(), amodel.strip()))
-                conn.commit()
-                st.success(f"{atype} #{aunit} registered!")
+st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
+
+# -------------------------------------------------------------
+# 1. MODÜL: TRUCKS & TRAILERS (BEYAZ TİLE + DİREKT TIKLAMALI DOSYA)
+# -------------------------------------------------------------
+if top_menu == "🚛 Trucks & Trailers":
+    # Session state for selected vehicle
+    if "selected_unit" not in st.session_state:
+        st.session_state["selected_unit"] = None
+
+    # TIKLANAN ARACIN DOSYASI (ÜSTTE AÇILIR)
+    if st.session_state["selected_unit"]:
+        u = st.session_state["selected_unit"]
+        row_sel = df_v[df_v["unit_number"] == u].iloc[0]
+        
+        st.markdown(f"""
+        <div class="dossier-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #e2e8f0; padding-bottom:8px; margin-bottom:12px;">
+                <h3 style="margin:0; color:#0b1f3a;">📂 Equipment Dossier: Unit #{row_sel['unit_number']} ({row_sel['unit_type']})</h3>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c_close, _ = st.columns([1, 5])
+        with c_close:
+            if st.button("✖️ Close Dossier"):
+                st.session_state["selected_unit"] = None
                 st.rerun()
 
-    df_grid = df_v.copy()
-    if type_filter == "Trucks Only":
-        df_grid = df_grid[df_grid["unit_type"] == "TRUCK"]
-    elif type_filter == "Trailers Only":
-        df_grid = df_grid[df_grid["unit_type"] == "TRAILER"]
+        dt1, dt2, dt3 = st.tabs(["✏️ Edit Specifications & Mileage", "📎 Upload Documents & Photos", "🚨 Decommission Asset"])
+        
+        with dt1:
+            with st.form(f"form_veh_{u}"):
+                ev_c1, ev_c2, ev_c3 = st.columns(3)
+                with ev_c1:
+                    e_drv = st.text_input("Assigned Driver", value=row_sel['driver'] or "")
+                    e_plt = st.text_input("Plate Number", value=row_sel['plate_number'] or "")
+                with ev_c2:
+                    e_vin = st.text_input("VIN / Serial", value=row_sel['vin'] or "")
+                    e_mdl = st.text_input("Make / Model / Year", value=row_sel['make_model'] or "")
+                with ev_c3:
+                    e_cur = st.number_input("Current Odometer", value=int(row_sel['current_mileage'] or 0))
+                    e_oil = st.number_input("Last Oil Change Mileage", value=int(row_sel['last_oil_mileage'] or 0))
+                
+                if st.form_submit_button("Save Updates to Database"):
+                    cur = conn.cursor()
+                    cur.execute("""
+                        UPDATE vehicles 
+                        SET driver=?, plate_number=?, vin=?, make_model=?, current_mileage=?, last_oil_mileage=?
+                        WHERE unit_number=?
+                    """, (e_drv, e_plt, e_vin, e_mdl, e_cur, e_oil, u))
+                    conn.commit()
+                    st.success(f"Unit #{u} specifications successfully updated!")
+                    st.rerun()
 
-    def get_asset_tile_color(row):
-        if row["oil_icon"] == "🔴" or row["insp_icon"] == "🔴":
-            return "tile-red", "badge-red", "OVERDUE"
-        elif row["oil_icon"] == "🟡" or row["insp_icon"] == "🟡":
-            return "tile-yellow", "badge-yellow", "DUE SOON"
+        with dt2:
+            st.markdown(f"**Attach Documents / Inspection Photos for Unit #{u}**")
+            up_col1, up_col2 = st.columns([2, 3])
+            with up_col1:
+                v_cat = st.selectbox("Document Type", ["Registration Card", "Annual DOT Inspection Report", "Truck/Trailer Photo", "Insurance Certificate", "Repair Invoice"], key=f"cat_{u}")
+                v_file = st.file_uploader("Select File / Photo", type=["pdf", "png", "jpg", "jpeg"], key=f"file_{u}")
+                if v_file and st.button("Upload to Asset Dossier", key=f"btn_up_{u}"):
+                    s_name = f"EQUIP_{u}_{v_cat.replace(' ','_')}_{v_file.name}"
+                    with open(os.path.join(UPLOAD_DIR, s_name), "wb") as f:
+                        f.write(v_file.getbuffer())
+                    st.success("File uploaded to asset file!")
+                    st.rerun()
+            with up_col2:
+                st.markdown("**Archived Documents & Condition Photos:**")
+                found_v = [f for f in os.listdir(UPLOAD_DIR) if f"EQUIP_{u}_" in f]
+                if found_v:
+                    for doc in found_v:
+                        st.write(f"📄 `{doc}`")
+                else:
+                    st.caption("No files uploaded for this equipment yet.")
+
+        with dt3:
+            st.markdown(f"Permanently remove Unit #{u} from active fleet operations.")
+            if st.button(f"🚨 Delete Equipment #{u} from Fleet", type="secondary"):
+                cur = conn.cursor()
+                cur.execute("DELETE FROM vehicles WHERE unit_number = ?", (u,))
+                conn.commit()
+                st.session_state["selected_unit"] = None
+                st.warning(f"Unit #{u} removed!")
+                st.rerun()
+
+        st.markdown("---")
+
+    # FİLTRELER & YENİ ARAÇ EKLEME
+    f1, f2, f3, f4 = st.columns([1.5, 1.5, 2, 1.2])
+    with f1:
+        f_type = st.selectbox("Equipment Type:", ["All Equipment", "Trucks Only", "Trailers Only"])
+    with f2:
+        f_stat = st.selectbox("Status Filter:", ["All Statuses", "🚨 Red Overdue", "🟡 Yellow Warning", "🟢 Green Ready"])
+    with f3:
+        f_srch = st.text_input("Quick Search (Unit, Driver, Make):", placeholder="Type to filter...")
+    with f4:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        btn_new_eq = st.button("➕ Add Equipment", use_container_width=True)
+
+    if btn_new_eq:
+        with st.form("new_asset_top_form"):
+            st.markdown("##### ➕ Register New Equipment to Fleet")
+            na_c1, na_c2 = st.columns(2)
+            with na_c1:
+                nu_comp = st.selectbox("Company", ["MOONSTAR", "LIONSTAR"])
+                nu_type = st.selectbox("Type", ["TRUCK", "TRAILER"])
+                nu_num = st.text_input("Unit Number (e.g. 95)")
+                nu_drv = st.text_input("Assigned Driver")
+            with na_c2:
+                nu_vin = st.text_input("VIN")
+                nu_plt = st.text_input("Plate Number")
+                nu_mdl = st.text_input("Make / Model / Year")
+            if st.form_submit_button("Save Equipment") and nu_num:
+                cur = conn.cursor()
+                cur.execute("INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (nu_comp, nu_type, nu_num.strip(), nu_drv.strip(), nu_vin.strip(), nu_plt.strip(), nu_mdl.strip()))
+                conn.commit()
+                st.success(f"{nu_type} #{nu_num} registered!")
+                st.rerun()
+
+    df_view = df_v.copy()
+    if f_type == "Trucks Only":
+        df_view = df_view[df_view["unit_type"] == "TRUCK"]
+    elif f_type == "Trailers Only":
+        df_view = df_view[df_view["unit_type"] == "TRAILER"]
+
+    def calc_overall(row):
+        if row["oil_badge"] == "badge-overdue" or row["insp_badge"] == "badge-overdue":
+            return "badge-overdue", "OVERDUE"
+        elif row["oil_badge"] == "badge-due" or row["insp_badge"] == "badge-due":
+            return "badge-due", "DUE SOON"
         else:
-            return "tile-green", "badge-green", "READY"
+            return "badge-ready", "READY"
 
-    tile_data = df_grid.apply(get_asset_tile_color, axis=1)
-    df_grid["tile_class"] = [t[0] for t in tile_data]
-    df_grid["badge_class"] = [t[1] for t in tile_data]
-    df_grid["overall_text"] = [t[2] for t in tile_data]
+    ov_data = df_view.apply(calc_overall, axis=1)
+    df_view["overall_badge"] = [x[0] for x in ov_data]
+    df_view["overall_text"] = [x[1] for x in ov_data]
 
-    if status_filter == "🚨 Red Overdue":
-        df_grid = df_grid[df_grid["tile_class"] == "tile-red"]
-    elif status_filter == "🟡 Yellow Warning":
-        df_grid = df_grid[df_grid["tile_class"] == "tile-yellow"]
-    elif status_filter == "🟢 Green Good":
-        df_grid = df_grid[df_grid["tile_class"] == "tile-green"]
+    if f_stat == "🚨 Red Overdue":
+        df_view = df_view[df_view["overall_badge"] == "badge-overdue"]
+    elif f_stat == "🟡 Yellow Warning":
+        df_view = df_view[df_view["overall_badge"] == "badge-due"]
+    elif f_stat == "🟢 Green Ready":
+        df_view = df_view[df_view["overall_badge"] == "badge-ready"]
 
-    if search_box:
-        s = search_box.strip().lower()
-        df_grid = df_grid[
-            df_grid["unit_number"].str.lower().str.contains(s) |
-            df_grid["driver"].str.lower().str.contains(s) |
-            df_grid["make_model"].str.lower().str.contains(s)
+    if f_srch:
+        s = f_srch.strip().lower()
+        df_view = df_view[
+            df_view["unit_number"].str.lower().str.contains(s) |
+            df_view["driver"].str.lower().str.contains(s) |
+            df_view["make_model"].str.lower().str.contains(s)
         ]
 
-    st.caption(f"Showing **{len(df_grid)}** equipment boxes")
+    st.caption(f"Showing **{len(df_view)}** equipment units (Click any box to inspect & edit)")
 
-    # 4 KOLONLU KOMPAKT KUTULAR
-    cols = st.columns(4)
-    for idx, (_, row) in enumerate(df_grid.iterrows()):
-        with cols[idx % 4]:
-            oil_line = f"{row['oil_icon']} Oil: {row['oil_status']}" if row['unit_type'] == 'TRUCK' else "⚪ Oil: Exempt"
-            insp_line = f"{row['insp_icon']} DOT: {row['insp_status']}"
+    # 5 KOLONLU TEMİZ VE BEYAZ TİLE GRID
+    cols_v = st.columns(5)
+    for i, (_, row) in enumerate(df_view.iterrows()):
+        with cols_v[i % 5]:
+            oil_text = f"{row['oil_status']}" if row['unit_type'] == 'TRUCK' else "Exempt"
             
             st.markdown(f"""
-            <div class="mini-tile {row['tile_class']}">
-                <div class="tile-header">
-                    <span class="tile-title">#{row['unit_number']} ({row['unit_type']})</span>
-                    <span class="tile-badge {row['badge_class']}">{row['overall_text']}</span>
+            <div class="clean-tile">
+                <div class="tile-head">
+                    <span class="tile-unit-title">#{row['unit_number']} ({row['unit_type']})</span>
+                    <span class="badge {row['overall_badge']}">{row['overall_text']}</span>
                 </div>
-                <div class="tile-meta">
+                <div class="tile-body">
                     👤 <b>{row['driver'] if row['driver'] else 'Unassigned'}</b><br>
-                    🔖 {row['make_model'] if row['make_model'] else '-'}<br>
-                    🛢️ {oil_line}<br>
-                    📋 {insp_line}
+                    🛢️ Oil: <span class="badge {row['oil_badge']}">{oil_text}</span><br>
+                    📋 DOT: <span class="badge {row['insp_badge']}">{row['insp_status']}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
             
-            # KART İÇİNDEN DOSYA VE DÜZENLEME AÇMA
-            with st.expander(f"📂 Unit #{row['unit_number']} Dossier & Edit"):
-                u_tab1, u_tab2, u_tab3 = st.tabs(["✏️ Edit", "📎 Files", "🚨 Delete"])
-                with u_tab1:
-                    with st.form(f"edit_veh_{row['unit_number']}"):
-                        e_driver = st.text_input("Assigned Driver", value=row['driver'])
-                        e_plate = st.text_input("Plate", value=row['plate_number'])
-                        e_vin = st.text_input("VIN", value=row['vin'])
-                        e_curr_mil = st.number_input("Current Odometer", value=int(row['current_mileage'] or 0))
-                        e_oil_mil = st.number_input("Last Oil Change", value=int(row['last_oil_mileage'] or 0))
-                        if st.form_submit_button("Update Info"):
-                            cur = conn.cursor()
-                            cur.execute("""
-                                UPDATE vehicles SET driver=?, plate_number=?, vin=?, current_mileage=?, last_oil_mileage=?
-                                WHERE unit_number=?
-                            """, (e_driver, e_plate, e_vin, e_curr_mil, e_oil_mil, row['unit_number']))
-                            conn.commit()
-                            st.success("Updated!")
-                            st.rerun()
-                with u_tab2:
-                    st.markdown("**Attach Photo / Document to Unit**")
-                    u_file = st.file_uploader(f"File for #{row['unit_number']}", type=["pdf","png","jpg","jpeg"], key=f"f_{row['unit_number']}")
-                    if u_file and st.button("Upload to Dossier", key=f"btn_u_{row['unit_number']}"):
-                        f_name = f"Unit_{row['unit_number']}_{u_file.name}"
-                        with open(os.path.join(UPLOAD_DIR, f_name), "wb") as f:
-                            f.write(u_file.getbuffer())
-                        st.success("File uploaded!")
-                        st.rerun()
-                    
-                    found = [f for f in os.listdir(UPLOAD_DIR) if f"Unit_{row['unit_number']}_" in f]
-                    for f in found:
-                        st.write(f"📄 `{f}`")
-                with u_tab3:
-                    if st.button(f"🗑️ Delete Unit #{row['unit_number']}", type="secondary", key=f"del_{row['unit_number']}"):
-                        cur = conn.cursor()
-                        cur.execute("DELETE FROM vehicles WHERE unit_number = ?", (row['unit_number'],))
-                        conn.commit()
-                        st.warning(f"Unit #{row['unit_number']} deleted!")
-                        st.rerun()
+            # KUTUYA TIKLAMA BUTONU
+            if st.button(f"Open #{row['unit_number']}", key=f"tile_{row['unit_number']}", use_container_width=True):
+                st.session_state["selected_unit"] = row['unit_number']
+                st.rerun()
 
 # -------------------------------------------------------------
-# 2. BÖLÜM: DRIVERS (MINI TILES & IN-CARD EDIT/DOCS)
+# 2. MODÜL: DRIVERS COMPLIANCE (BEYAZ TİLE + DİREKT TIKLAMALI DOSYA)
 # -------------------------------------------------------------
-elif menu == "👤 Drivers Compliance (Grid)":
-    st.markdown("#### 👤 Driver Compliance Boxes *(Click Box to Open Dossier, Edit or Add Docs)*")
+elif top_menu == "👤 Drivers Compliance":
+    if "selected_driver" not in st.session_state:
+        st.session_state["selected_driver"] = None
 
-    # FİLTRELEME & YENİ ŞOFÖR BUTONU
-    df_c1, df_c2, df_c3 = st.columns([2, 2, 1.5])
-    with df_c1:
-        d_filter = st.selectbox("Status Filter:", ["All Drivers", "🚨 Action Needed (Red)", "🟡 Expiring Soon (Yellow)", "🟢 Fully Compliant (Green)"])
-    with df_c2:
-        d_srch = st.text_input("Search Driver Name or Phone:")
-    with df_c3:
-        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        add_new_dr = st.button("➕ Onboard Driver", use_container_width=True)
+    # TIKLANAN ŞOFÖRÜN DOSYASI (ÜSTTE AÇILIR)
+    if st.session_state["selected_driver"] and not df_d.empty:
+        s_dr = st.session_state["selected_driver"]
+        dr_row = df_d[df_d["Name"] == s_dr].iloc[0]
+        
+        st.markdown(f"""
+        <div class="dossier-card">
+            <h3 style="margin:0; color:#0b1f3a;">👤 Driver Master Dossier: {dr_row['Name']}</h3>
+            <div style="font-size:12px; color:#64748b; margin-top:4px;">Phone: {dr_row['Telephone']} | CDL #: {dr_row.get('License Number','-')}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        c_dr_close, _ = st.columns([1, 5])
+        with c_dr_close:
+            if st.button("✖️ Close Driver File"):
+                st.session_state["selected_driver"] = None
+                st.rerun()
 
-    if add_new_dr:
-        with st.form("modal_add_dr"):
-            st.markdown("##### ➕ Onboard New Driver")
-            nd_name = st.text_input("Full Name")
-            nd_phone = st.text_input("Phone")
-            nd_email = st.text_input("Email")
-            nd_cdl = st.text_input("CDL Number")
-            nd_cdl_exp = st.date_input("CDL Expiration")
-            nd_med_exp = st.date_input("Medical Due Date")
-            if st.form_submit_button("Save Driver") and nd_name:
-                new_dr_entry = {
-                    "Name": nd_name.strip(), "Telephone": nd_phone.strip(), "E-mail": nd_email.strip(),
-                    "License Number": nd_cdl.strip(), "License Expiry": str(nd_cdl_exp), "Next Medical": str(nd_med_exp)
-                }
-                df_d = pd.concat([df_d, pd.DataFrame([new_dr_entry])], ignore_index=True)
+        dr_t1, dr_t2, dr_t3 = st.tabs(["✏️ Edit Driver Info", "📸 Upload CDL, Medical & Photos", "🚨 Remove Driver"])
+        
+        with dr_t1:
+            with st.form(f"edit_driver_form_{s_dr}"):
+                de_c1, de_c2 = st.columns(2)
+                with de_c1:
+                    u_phone = st.text_input("Phone Number", value=dr_row['Telephone'])
+                    u_email = st.text_input("Email", value=dr_row['E-mail'])
+                    u_cdl_no = st.text_input("CDL Number", value=dr_row['License Number'])
+                with de_c2:
+                    u_cdl_exp = st.text_input("CDL Expiration (YYYY-MM-DD)", value=dr_row['License Expiry'])
+                    u_med_exp = st.text_input("Medical Due (YYYY-MM-DD)", value=dr_row['Next Medical'])
+                
+                if st.form_submit_button("Save Driver Updates"):
+                    df_d.loc[df_d["Name"] == s_dr, "Telephone"] = u_phone
+                    df_d.loc[df_d["Name"] == s_dr, "E-mail"] = u_email
+                    df_d.loc[df_d["Name"] == s_dr, "License Number"] = u_cdl_no
+                    df_d.loc[df_d["Name"] == s_dr, "License Expiry"] = u_cdl_exp
+                    df_d.loc[df_d["Name"] == s_dr, "Next Medical"] = u_med_exp
+                    df_d.to_excel(DRIVERS_FILE, index=False)
+                    st.success("Driver profile updated!")
+                    st.rerun()
+
+        with dr_t2:
+            st.markdown(f"**Upload Documents & Incident Photos for {s_dr}**")
+            dup_c1, dup_c2 = st.columns([2, 3])
+            with dup_c1:
+                d_cat = st.selectbox("Category", ["CDL Scan / PDF", "Medical Card Certificate", "Truck Check-in Photo", "Truck Check-out Photo", "Accident Photo", "DOT Citation"], key=f"dcat_{s_dr}")
+                d_file = st.file_uploader("Select File / Photo", type=["pdf", "png", "jpg", "jpeg"], key=f"dfile_{s_dr}")
+                if d_file and st.button("Save to Driver Dossier", key=f"dbtn_{s_dr}"):
+                    save_dr_name = f"DR_{s_dr.replace(' ','_')}_{d_cat.replace(' ','_')}_{d_file.name}"
+                    with open(os.path.join(UPLOAD_DIR, save_dr_name), "wb") as f:
+                        f.write(d_file.getbuffer())
+                    st.success("File added to driver dossier!")
+                    st.rerun()
+            with dup_c2:
+                st.markdown("**Archived Driver Documents & Photos:**")
+                found_dr = [f for f in os.listdir(UPLOAD_DIR) if f"DR_{s_dr.replace(' ','_')}_" in f]
+                if found_dr:
+                    for doc in found_dr:
+                        st.write(f"📄 `{doc}`")
+                else:
+                    st.caption("No files recorded for this driver yet.")
+
+        with dr_t3:
+            if st.button(f"🚨 Offboard / Delete {s_dr}", type="secondary"):
+                df_d = df_d[df_d["Name"] != s_dr]
                 df_d.to_excel(DRIVERS_FILE, index=False)
-                st.success(f"Driver '{nd_name}' added!")
+                st.session_state["selected_driver"] = None
+                st.warning(f"Driver {s_dr} deleted!")
+                st.rerun()
+
+        st.markdown("---")
+
+    # FİLTRELER & YENİ ŞOFÖR BUTONU
+    df1, df2, df3 = st.columns([2, 2, 1.2])
+    with df1:
+        d_status_filter = st.selectbox("Driver Status:", ["All Drivers", "🚨 Action Needed (Red)", "🟡 Expiring Soon (Yellow)", "🟢 Fully Compliant (Green)"])
+    with df2:
+        d_search = st.text_input("Search Driver Name or Phone:")
+    with df3:
+        st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
+        btn_new_dr = st.button("➕ Onboard Driver", use_container_width=True)
+
+    if btn_new_dr:
+        with st.form("modal_add_driver_top"):
+            st.markdown("##### ➕ Onboard New Driver")
+            in_name = st.text_input("Full Name")
+            in_phone = st.text_input("Phone Number")
+            in_cdl = st.text_input("CDL Number")
+            in_cdl_exp = st.date_input("CDL Expiration")
+            in_med_exp = st.date_input("Medical Due Date")
+            if st.form_submit_button("Save Driver") and in_name:
+                new_row = {"Name": in_name.strip(), "Telephone": in_phone.strip(), "License Number": in_cdl.strip(), "License Expiry": str(in_cdl_exp), "Next Medical": str(in_med_exp)}
+                df_d = pd.concat([df_d, pd.DataFrame([new_row])], ignore_index=True)
+                df_d.to_excel(DRIVERS_FILE, index=False)
+                st.success(f"Driver '{in_name}' added!")
                 st.rerun()
 
     if not df_d.empty:
-        df_d_grid = df_d.copy()
+        df_d_view = df_d.copy()
 
-        def get_driver_tile_color(row):
-            if row["CDL_Icon"] == "🔴" or row["Med_Icon"] == "🔴":
-                return "tile-red", "badge-red", "ACTION NEEDED"
-            elif row["CDL_Icon"] == "🟡" or row["Med_Icon"] == "🟡":
-                return "tile-yellow", "badge-yellow", "EXPIRING SOON"
+        def calc_dr_overall(row):
+            if row["CDL_Badge"] == "badge-overdue" or row["Med_Badge"] == "badge-overdue":
+                return "badge-overdue", "ACTION NEEDED"
+            elif row["CDL_Badge"] == "badge-due" or row["Med_Badge"] == "badge-due":
+                return "badge-due", "DUE SOON"
             else:
-                return "tile-green", "badge-green", "COMPLIANT"
+                return "badge-ready", "COMPLIANT"
 
-        dr_tile_data = df_d_grid.apply(get_driver_tile_color, axis=1)
-        df_d_grid["tile_class"] = [t[0] for t in dr_tile_data]
-        df_d_grid["badge_class"] = [t[1] for t in dr_tile_data]
-        df_d_grid["overall_text"] = [t[2] for t in dr_tile_data]
+        dr_ov = df_d_view.apply(calc_dr_overall, axis=1)
+        df_d_view["overall_badge"] = [x[0] for x in dr_ov]
+        df_d_view["overall_text"] = [x[1] for x in dr_ov]
 
-        if d_filter == "🚨 Action Needed (Red)":
-            df_d_grid = df_d_grid[df_d_grid["tile_class"] == "tile-red"]
-        elif d_filter == "🟡 Expiring Soon (Yellow)":
-            df_d_grid = df_d_grid[df_d_grid["tile_class"] == "tile-yellow"]
-        elif d_filter == "🟢 Fully Compliant (Green)":
-            df_d_grid = df_d_grid[df_d_grid["tile_class"] == "tile-green"]
+        if d_status_filter == "🚨 Action Needed (Red)":
+            df_d_view = df_d_view[df_d_view["overall_badge"] == "badge-overdue"]
+        elif d_status_filter == "🟡 Expiring Soon (Yellow)":
+            df_d_view = df_d_view[df_d_view["overall_badge"] == "badge-due"]
+        elif d_status_filter == "🟢 Fully Compliant (Green)":
+            df_d_view = df_d_view[df_d_view["overall_badge"] == "badge-ready"]
 
-        if d_srch:
-            ds = d_srch.strip().lower()
-            df_d_grid = df_d_grid[
-                df_d_grid["Name"].str.lower().str.contains(ds) |
-                df_d_grid["Telephone"].str.lower().str.contains(ds)
+        if d_search:
+            ds = d_search.strip().lower()
+            df_d_view = df_d_view[
+                df_d_view["Name"].str.lower().str.contains(ds) |
+                df_d_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.caption(f"Showing **{len(df_d_grid)}** driver profiles")
+        st.caption(f"Showing **{len(df_d_view)}** driver compliance profiles")
 
-        # 3 KOLONLU KOMPAKT KUTULAR
-        d_cols = st.columns(3)
-        for idx, (_, d_row) in enumerate(df_d_grid.iterrows()):
-            with d_cols[idx % 3]:
+        # 4 KOLONLU ŞOFÖR TİLE GRID
+        cols_d = st.columns(4)
+        for j, (_, d_row) in enumerate(df_d_view.iterrows()):
+            with cols_d[j % 4]:
                 st.markdown(f"""
-                <div class="mini-tile {d_row['tile_class']}">
-                    <div class="tile-header">
-                        <span class="tile-title">{d_row['Name']}</span>
-                        <span class="tile-badge {d_row['badge_class']}">{d_row['overall_text']}</span>
+                <div class="clean-tile">
+                    <div class="tile-head">
+                        <span class="tile-unit-title">{d_row['Name']}</span>
+                        <span class="badge {d_row['overall_badge']}">{d_row['overall_text']}</span>
                     </div>
-                    <div class="tile-meta">
+                    <div class="tile-body">
                         📞 {d_row['Telephone']}<br>
-                        🪪 CDL: {d_row['CDL_Icon']} {d_row['CDL_Status']}<br>
-                        🏥 Med: {d_row['Med_Icon']} {d_row['Med_Status']}
+                        🪪 CDL: <span class="badge {d_row['CDL_Badge']}">{d_row['CDL_Status']}</span><br>
+                        🏥 Med: <span class="badge {d_row['Med_Badge']}">{d_row['Med_Status']}</span>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-
-                # ŞOFÖR KARTININ İÇİNDEN AÇILAN DOSYA & DÜZENLEME
-                with st.expander(f"👤 {d_row['Name']} Dossier & Edit"):
-                    d_tab1, d_tab2, d_tab3 = st.tabs(["✏️ Edit Info", "📸 Photos & Docs", "🚨 Remove"])
-                    with d_tab1:
-                        with st.form(f"edit_dr_{idx}"):
-                            ed_phone = st.text_input("Phone", value=d_row['Telephone'])
-                            ed_email = st.text_input("Email", value=d_row['E-mail'])
-                            ed_cdl_no = st.text_input("CDL #", value=d_row['License Number'])
-                            ed_cdl_exp = st.text_input("CDL Expiry (YYYY-MM-DD)", value=d_row['License Expiry'])
-                            ed_med_exp = st.text_input("Next Med (YYYY-MM-DD)", value=d_row['Next Medical'])
-                            if st.form_submit_button("Save Driver Info"):
-                                df_d.loc[df_d["Name"] == d_row["Name"], "Telephone"] = ed_phone
-                                df_d.loc[df_d["Name"] == d_row["Name"], "E-mail"] = ed_email
-                                df_d.loc[df_d["Name"] == d_row["Name"], "License Number"] = ed_cdl_no
-                                df_d.loc[df_d["Name"] == d_row["Name"], "License Expiry"] = ed_cdl_exp
-                                df_d.loc[df_d["Name"] == d_row["Name"], "Next Medical"] = ed_med_exp
-                                df_d.to_excel(DRIVERS_FILE, index=False)
-                                st.success("Driver updated!")
-                                st.rerun()
-                    with d_tab2:
-                        st.markdown("**Upload Check-in/out Photos, Accident or Citations**")
-                        doc_type = st.selectbox("Category", ["Check-in/out Photo", "Accident / Damage", "DOT / Citation", "CDL/Med Document"], key=f"cat_{idx}")
-                        dr_up_file = st.file_uploader("Select File / Photo", type=["pdf","png","jpg","jpeg"], key=f"dr_up_{idx}")
-                        if dr_up_file and st.button("Save to Dossier", key=f"btn_dr_{idx}"):
-                            safe_name = f"DR_{d_row['Name'].replace(' ','_')}_{doc_type.replace(' ','_')}_{dr_up_file.name}"
-                            with open(os.path.join(UPLOAD_DIR, safe_name), "wb") as f:
-                                f.write(dr_up_file.getbuffer())
-                            st.success("File added to driver dossier!")
-                            st.rerun()
-
-                        st.markdown("**Archived Files for this Driver:**")
-                        d_found = [f for f in os.listdir(UPLOAD_DIR) if f"DR_{d_row['Name'].replace(' ','_')}_" in f]
-                        for f in d_found:
-                            st.write(f"📄 `{f}`")
-                    with d_tab3:
-                        if st.button(f"🚨 Offboard {d_row['Name']}", type="secondary", key=f"del_dr_{idx}"):
-                            df_d = df_d[df_d["Name"] != d_row['Name']]
-                            df_d.to_excel(DRIVERS_FILE, index=False)
-                            st.warning(f"Driver {d_row['Name']} removed!")
-                            st.rerun()
+                
+                if st.button(f"Open {d_row['Name']}", key=f"dr_tile_{j}", use_container_width=True):
+                    st.session_state["selected_driver"] = d_row['Name']
+                    st.rerun()
 
 # -------------------------------------------------------------
-# 3. BÖLÜM: TEAM CHAT
+# 3. MODÜL: DISPATCH TEAM CHAT
 # -------------------------------------------------------------
-elif menu == "💬 Team Chat":
-    st.markdown("#### 💬 Dispatch Operations Notes")
-    with st.form("chat_form", clear_on_submit=True):
+elif top_menu == "💬 Dispatch Team Chat":
+    st.markdown("#### 💬 Dispatch Operations & Shift Notes")
+    with st.form("chat_form_top", clear_on_submit=True):
         cm1, cm2 = st.columns([5, 1])
         with cm1:
-            msg_txt = st.text_input("Write note...", placeholder="E.g., Unit 14 delivered in Laredo.")
+            msg_txt = st.text_input("Write note...", placeholder="E.g., Unit 14 delivered in Laredo, driver taking rest.")
         with cm2:
             if st.form_submit_button("Post Note") and msg_txt.strip():
                 cur = conn.cursor()
@@ -610,37 +683,38 @@ elif menu == "💬 Team Chat":
                 conn.commit()
                 st.rerun()
 
-    df_c = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 40", conn)
+    df_c = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 50", conn)
     for _, r in df_c.iterrows():
         st.markdown(f"""
-        <div style="background:#ffffff; border-left:4px solid #0284c7; padding:8px 12px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
+        <div style="background:#ffffff; border-left:4px solid #0284c7; padding:8px 14px; border-radius:6px; margin-bottom:6px; border:1px solid #e2e8f0;">
             <b style="color:#0b1f3a; font-size:13px;">👤 {r['sender']}</b> <span style="font-size:10px; color:#64748b; margin-left:8px;">🕒 {r['timestamp']}</span>
             <div style="margin-top:2px; font-size:13px; color:#0f172a;">{r['message']}</div>
         </div>
         """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 4. BÖLÜM: QUICK SERVICE ENTRY
+# 4. MODÜL: SERVICE LEDGER
 # -------------------------------------------------------------
-elif menu == "🔧 Quick Service Entry":
-    st.markdown("#### 🔧 Log Oil Change or Service")
-    with st.form("service_quick", clear_on_submit=True):
-        c1, c2, c3 = st.columns(3)
-        with c1:
+elif top_menu == "🔧 Service Ledger":
+    st.markdown("#### 🔧 Log Equipment Maintenance & Service Record")
+    with st.form("service_top", clear_on_submit=True):
+        sc1, sc2, sc3 = st.columns(3)
+        with sc1:
             sel_u = st.selectbox("Unit #", df_v["unit_number"].tolist())
-            s_date = st.date_input("Date")
-        with c2:
+            s_date = st.date_input("Service Date")
+        with sc2:
             s_type = st.selectbox("Type", ["Oil Change (PM)", "Tires / Brakes", "Annual DOT", "Repair", "Other"])
             s_mil = st.number_input("Odometer (mi)", min_value=0, step=1000)
-        with c3:
+        with sc3:
             s_cost = st.number_input("Cost ($)", min_value=0.0, step=50.0)
             s_inv = st.file_uploader("Upload Invoice (PDF/JPG)")
 
-        if st.form_submit_button("Record Service"):
+        if st.form_submit_button("Record Service Entry"):
             cur = conn.cursor()
             cur.execute("INSERT INTO logs (unit_number, log_date, log_type, mileage, cost) VALUES (?, ?, ?, ?, ?)", (sel_u, str(s_date), s_type, s_mil, s_cost))
             if s_type == "Oil Change (PM)" and s_mil > 0:
                 cur.execute("UPDATE vehicles SET last_oil_mileage = ?, current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (s_mil, s_mil, sel_u))
             conn.commit()
-            st.success("Logged successfully!")
+            st.success("Service recorded successfully!")
             st.rerun()
+        

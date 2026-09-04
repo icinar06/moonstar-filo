@@ -8,63 +8,100 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR TMS - Fleet Portal",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise Portal",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- SIKI VE TEMİZ KURUMSAL TMS ARAYÜZ STİLİ ---
+# SCHNEIDER & SWIFT KURUMSAL TASARIM SİSTEMİ
 st.markdown("""
 <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap');
+    
+    html, body, [class*="css"], .stApp {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f5f7 !important;
+        color: #1e293b;
+    }
+    
     /* Üst Kurumsal Header */
-    .tms-navbar {
-        background-color: #0b1f3a;
-        background: linear-gradient(90deg, #0b1f3a 0%, #1e3a8a 100%);
-        padding: 14px 20px;
-        border-radius: 6px;
-        color: #ffffff;
+    .corp-header {
+        background: #ffffff;
+        border-bottom: 3px solid #ea580c;
+        padding: 16px 28px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        margin-bottom: 24px;
     }
-    .tms-title {
+    .corp-brand {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 26px;
+        font-weight: 900;
+        color: #0b1f3a;
+        letter-spacing: -0.5px;
+    }
+    .corp-tag {
+        color: #ea580c;
+        font-weight: 800;
+    }
+    
+    /* Schneider Tarzı Modüler Kartlar */
+    .schneider-card {
+        background: #ffffff;
+        border-radius: 8px;
+        padding: 24px 20px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        margin-bottom: 16px;
+        border-top: 4px solid #0b1f3a;
+        transition: transform 0.15s ease;
+    }
+    .schneider-card-accent {
+        border-top: 4px solid #ea580c !important;
+    }
+    .card-kicker {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #ea580c;
+        margin-bottom: 4px;
+    }
+    .card-title-lg {
+        font-family: 'Montserrat', sans-serif;
         font-size: 20px;
         font-weight: 800;
-        letter-spacing: 0.5px;
-        margin: 0;
-        color: #ffffff !important;
-    }
-    .tms-subtitle {
-        font-size: 12px;
-        color: #93c5fd;
-        margin: 0;
-    }
-    .tms-user {
-        font-size: 12px;
-        background: rgba(255,255,255,0.15);
-        padding: 5px 12px;
-        border-radius: 15px;
-        border: 1px solid rgba(255,255,255,0.25);
-    }
-    /* Metrik Kartları */
-    div[data-testid="metric-container"] {
-        background-color: #f8fafc;
-        border: 1px solid #e2e8f0;
-        padding: 10px 14px;
-        border-radius: 6px;
-    }
-    /* Chat Balonu */
-    .chat-card {
-        background: #f8fafc;
-        border-left: 4px solid #0284c7;
-        padding: 8px 12px;
-        border-radius: 4px;
+        color: #0f172a;
         margin-bottom: 8px;
-        border-top: 1px solid #e2e8f0;
-        border-right: 1px solid #e2e8f0;
-        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    /* Durum Rozetleri */
+    .badge-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .badge-crit { background: #fee2e2; color: #991b1b; }
+    .badge-warn { background: #fef3c7; color: #92400e; }
+    .badge-good { background: #dcfce7; color: #166534; }
+    
+    /* Form Butonları */
+    .stButton>button {
+        background-color: #0b1f3a !important;
+        color: white !important;
+        font-weight: 700 !important;
+        border-radius: 6px !important;
+        border: none !important;
+        padding: 8px 20px !important;
+    }
+    .stButton>button:hover {
+        background-color: #ea580c !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -77,27 +114,28 @@ SERVICE_LOGS_CSV = "Service logs.csv"
 
 os.makedirs(INVOICE_DIR, exist_ok=True)
 
-# --- KURUMSAL GİRİŞ KONTROLÜ ---
+# --- KURUMSAL GİRİŞ ---
 if "authenticated" not in st.session_state:
     st.session_state["authenticated"] = False
 
 if not st.session_state["authenticated"]:
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
         if os.path.exists("logo.jpg"):
             st.image("logo.jpg", width=220)
-        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — TMS PORTAL")
-        with st.form("login_form"):
-            email = st.text_input("Kurumsal E-Posta", placeholder="ornek@moonstarpa...")
-            password = st.text_input("Şifre", type="password")
-            submit = st.form_submit_button("Giriş Yap")
-        if submit:
-            if "@moonstarpa" in email.strip().lower() and password == "Moonstar2026!":
-                st.session_state["authenticated"] = True
-                st.session_state["current_user"] = email.strip().lower()
-                st.rerun()
-            else:
-                st.error("Yetkisiz erişim! Geçersiz kurumsal e-posta veya şifre.")
+        st.markdown("### 🔒 MOONSTAR ENTERPRISE PORTAL")
+        st.caption("Fleet Management, Compliance & Operations Control")
+        with st.form("login_box"):
+            email = st.text_input("Kurumsal E-Posta", placeholder="ismail@moonstarpa.com")
+            pwd = st.text_input("Şifre", type="password")
+            if st.form_submit_button("Sisteme Giriş Yap"):
+                if "@moonstarpa" in email.strip().lower() and pwd == "Moonstar2026!":
+                    st.session_state["authenticated"] = True
+                    st.session_state["current_user"] = email.strip().lower()
+                    st.rerun()
+                else:
+                    st.error("Hatalı e-posta veya şifre!")
     st.stop()
 
 # ---------------------------------------------
@@ -109,8 +147,7 @@ def check_driver_expiry(date_str):
         return "Tarih Yok", "⚪"
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
-        today = datetime.now().date()
-        diff = (dt - today).days
+        diff = (dt - datetime.now().date()).days
         if diff < 0:
             return f"Doldu ({abs(diff)}g)", "🔴"
         elif diff <= 30:
@@ -147,47 +184,6 @@ def extract_unit_no(asset_str):
         return ""
     m = re.search(r'\b\d+\b', asset_str)
     return m.group(0) if m else asset_str.strip()
-
-def parse_updated_sheet(filepath):
-    try:
-        df_raw = pd.read_excel(filepath)
-    except Exception:
-        return []
-    records = []
-    curr_company = "MOONSTAR"
-    curr_type = "TRUCK"
-
-    for _, row in df_raw.iterrows():
-        m_val = str(row.get("MOONSTAR", "")).strip().upper()
-        u_val = str(row.get("UNIT", "")).strip()
-
-        if "TRAILER" in m_val:
-            curr_type = "TRAILER"
-            continue
-        elif "LIONSTAR" in m_val:
-            curr_company = "LIONSTAR"
-            curr_type = "TRUCK"
-            continue
-
-        if not u_val or u_val.upper() == "UNIT" or u_val.lower() == "nan":
-            continue
-
-        records.append({
-            "company": curr_company,
-            "unit_type": curr_type,
-            "unit_number": u_val,
-            "driver": str(row.get("DRIVER", "")).strip() if pd.notna(row.get("DRIVER")) else "",
-            "vin": str(row.get("VIN", "")).strip() if pd.notna(row.get("VIN")) else "",
-            "plate_number": str(row.get("PLATE", "")).strip() if pd.notna(row.get("PLATE")) else "",
-            "make_model": str(row.get("MAKE-MODEL-YEAR", "")).strip() if pd.notna(row.get("MAKE-MODEL-YEAR")) else "",
-            "plate_expiry": str(row.get("REGISTRATION", "")).split(" ")[0].replace("0000-00-00", "") if pd.notna(row.get("REGISTRATION")) else "",
-            "dot_inspection": str(row.get("ANNUAL INSPECTION", "")).split(" ")[0].replace("0000-00-00", "") if pd.notna(row.get("ANNUAL INSPECTION")) else "",
-            "state_inspection": str(row.get("PA INSPECTION", "")).split(" ")[0].replace("0000-00-00", "") if pd.notna(row.get("PA INSPECTION")) else "",
-            "current_mileage": 0,
-            "last_oil_mileage": 0,
-            "oil_interval": 25000 if curr_type == "TRUCK" else 0
-        })
-    return records
 
 def init_db():
     conn = get_connection()
@@ -232,21 +228,6 @@ def init_db():
     """)
     conn.commit()
 
-    c.execute("SELECT COUNT(*) FROM vehicles")
-    if c.fetchone()[0] == 0 and os.path.exists(FLEET_EXCEL):
-        records = parse_updated_sheet(FLEET_EXCEL)
-        for r in records:
-            c.execute("""
-                INSERT OR IGNORE INTO vehicles 
-                (company, unit_type, unit_number, driver, vin, plate_number, make_model, plate_expiry, dot_inspection, state_inspection, current_mileage, last_oil_mileage, oil_interval)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                r["company"], r["unit_type"], r["unit_number"], r["driver"], r["vin"],
-                r["plate_number"], r["make_model"], r["plate_expiry"], r["dot_inspection"],
-                r["state_inspection"], r["current_mileage"], r["last_oil_mileage"], r["oil_interval"]
-            ))
-        conn.commit()
-
     if os.path.exists(SERVICE_LOGS_CSV):
         try:
             df_csv = pd.read_csv(SERVICE_LOGS_CSV)
@@ -267,222 +248,229 @@ def init_db():
             conn.commit()
         except Exception:
             pass
-
     conn.close()
 
 init_db()
-
-def evaluate_status(row):
-    status = "GEÇERLİ"
-    today = datetime.now().date()
-    for col in ["plate_expiry", "dot_inspection", "state_inspection"]:
-        d_str = str(row.get(col, "")).strip()
-        if d_str and d_str not in ["nan", "None", "", "-"]:
-            try:
-                dt = datetime.strptime(d_str[:10], "%Y-%m-%d").date()
-                days = (dt - today).days
-                if days < 0:
-                    return "GECİKMİŞ ❌"
-                elif days <= 30:
-                    status = "YAKLAŞIYOR ⚠️"
-            except:
-                pass
-    return status
 
 conn = get_connection()
 df_v = pd.read_sql_query("SELECT * FROM vehicles ORDER BY unit_number ASC", conn)
 df_logs = pd.read_sql_query("SELECT * FROM logs ORDER BY log_date DESC", conn)
 
-cost_totals = df_logs.groupby("unit_number")["cost"].sum().to_dict() if not df_logs.empty else {}
-df_v["total_spent"] = df_v["unit_number"].map(cost_totals).fillna(0.0).apply(lambda x: f"${x:,.2f}")
-df_v["muayene_durum"] = df_v.apply(evaluate_status, axis=1)
+def evaluate_insp(row):
+    today = datetime.now().date()
+    for col in ["plate_expiry", "dot_inspection", "state_inspection"]:
+        d_str = str(row.get(col, "")).strip()
+        if d_str and d_str not in ["nan", "None", "", "-"]:
+            try:
+                diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
+                if diff < 0:
+                    return "GECİKMİŞ ❌"
+                elif diff <= 30:
+                    return "YAKLAŞIYOR ⚠️"
+            except:
+                pass
+    return "GEÇERLİ"
 
-oil_results = df_v.apply(check_oil_status, axis=1)
-df_v["yag_durumu"] = [res[0] for res in oil_results]
-df_v["yag_ikon"] = [res[1] for res in oil_results]
-df_v["kalan_yag_mili"] = [res[2] for res in oil_results]
+df_v["muayene_durum"] = df_v.apply(evaluate_insp, axis=1)
+oil_res = df_v.apply(check_oil_status, axis=1)
+df_v["yag_durumu"] = [r[0] for r in oil_res]
+df_v["yag_ikon"] = [r[1] for r in oil_res]
+df_v["kalan_yag_mili"] = [r[2] for r in oil_res]
 
 total_trucks = len(df_v[df_v["unit_type"] == "TRUCK"])
 total_trailers = len(df_v[df_v["unit_type"] == "TRAILER"])
-crit_oil_df = df_v[df_v["yag_ikon"].isin(["🔴", "🟡"])]
-crit_insp_df = df_v[df_v["muayene_durum"].str.contains("❌|⚠️")]
-all_spending = df_logs["cost"].sum() if not df_logs.empty else 0.0
+crit_oil = df_v[df_v["yag_ikon"].isin(["🔴", "🟡"])]
+crit_insp = df_v[df_v["muayene_durum"].str.contains("❌|⚠️")]
 
 # -------------------------------------------------------------
-# YAN PANEL (SOL MENÜ)
+# SCHNEIDER / SWIFT TARZI YAN PANEL
 # -------------------------------------------------------------
 with st.sidebar:
     if os.path.exists("logo.jpg"):
-        st.image("logo.jpg", width=170)
-    st.markdown("### 🏢 MOONSTAR TMS")
-    st.caption(f"Aktif Kullanıcı: **{st.session_state.get('current_user')}**")
+        st.image("logo.jpg", width=180)
+    st.markdown("### MOONSTAR **TMS**")
+    st.caption(f"👤 {st.session_state.get('current_user')}")
     
     st.markdown("---")
     menu = st.radio(
-        "ANA MODÜLLER",
+        "MENÜ",
         [
-            "🚛 Dispatch & Filo Tablosu",
-            "👤 Şoförler & CDL/Medical",
-            "💬 Ekip İçi Chat (Operasyon)",
-            "🔧 Bakım & Servis Kaydı Ekle",
-            "📁 Evrak & Fatura Arşivi"
-        ],
-        index=0
+            "🏢 Operasyon Merkezi",
+            "🚛 Çekici & Dorse Masası",
+            "👤 Şoförler & Compliance",
+            "💬 Ekip İçi Chat",
+            "🔧 Bakım & Fatura Girişi"
+        ]
     )
-    
     st.markdown("---")
-    st.markdown("**Hızlı Filo Özeti**")
-    st.write(f"🚛 **Truck:** {total_trucks}  |  🚚 **Trailer:** {total_trailers}")
-    st.write(f"🚨 **Yağ Alarmı:** {len(crit_oil_df)} çekici")
-    st.write(f"⚠️ **Muayene Alarmı:** {len(crit_insp_df)} araç")
-    
-    st.markdown("---")
-    if st.button("🚪 Güvenli Çıkış"):
+    if st.button("🚪 Çıkış Yap"):
         st.session_state["authenticated"] = False
         st.rerun()
 
 # -------------------------------------------------------------
-# ÜST KURUMSAL ŞERİT (NAVBAR)
+# ÜST KURUMSAL ŞERİT
 # -------------------------------------------------------------
 st.markdown(f"""
-<div class="tms-navbar">
+<div class="corp-header">
     <div>
-        <div class="tms-title">MOONSTAR EXPRESS LLC — DISPATCH & OPERATIONS PORTAL</div>
-        <div class="tms-subtitle">Bensalem, PA • Fleet Maintenance, Driver Compliance & Live Tracking</div>
+        <span class="corp-brand">MOONSTAR <span class="corp-tag">EXPRESS</span></span>
+        <div style="font-size:12px; color:#64748b; font-weight:600;">FLEET MANAGEMENT & TRANSPORTATION SOLUTIONS • BENSALEM, PA</div>
     </div>
-    <div class="tms-user">
-        🟢 Canlı Oturum: <b>{st.session_state.get('current_user')}</b>
+    <div style="text-align:right;">
+        <span style="font-size:13px; font-weight:700; color:#0b1f3a;">DOT Active</span> | 
+        <span style="font-size:12px; color:#ea580c; font-weight:700;">{st.session_state.get('current_user')}</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. BÖLÜM: DİSPATCH & FİLO TABLOSU (GERÇEK TMS GÖRÜNÜMÜ)
+# 1. MODÜL: OPERASYON MERKEZİ (SCHNEIDER KARTLARI)
 # -------------------------------------------------------------
-if menu == "🚛 Dispatch & Filo Tablosu":
-    # 4 Temiz ve Şık Metrik
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Kayıtlı Ekipman", f"{total_trucks} Çekici / {total_trailers} Dorse")
-    m2.metric("Yağ Değişimi Alarmı", f"{len(crit_oil_df)} Çekici", delta_color="inverse")
-    m3.metric("Muayene Alarmı", f"{len(crit_insp_df)} Araç", delta_color="inverse")
-    m4.metric("Toplam Servis Harcaması", f"${all_spending:,.2f}")
+if menu == "🏢 Operasyon Merkezi":
+    st.markdown("#### 📌 Filo Durum Özeti")
+
+    c1, c2, c3, c4 = st.columns(4)
+    with c1:
+        st.markdown(f"""
+        <div class="schneider-card">
+            <div class="card-kicker">Kayıtlı Ekipman</div>
+            <div class="card-title-lg">{total_trucks} Çekici</div>
+            <div style="color:#64748b; font-size:13px;">{total_trailers} Aktif Dorse</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+    with c2:
+        st.markdown(f"""
+        <div class="schneider-card schneider-card-accent">
+            <div class="card-kicker">Yağ Değişimi Alarmı</div>
+            <div class="card-title-lg" style="color:#b91c1c;">{len(crit_oil)} Çekici</div>
+            <div style="color:#64748b; font-size:13px;">Acil / 3,000 mil altı</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c3:
+        st.markdown(f"""
+        <div class="schneider-card">
+            <div class="card-kicker">Muayene / DOT Alarmı</div>
+            <div class="card-title-lg" style="color:#b45309;">{len(crit_insp)} Araç</div>
+            <div style="color:#64748b; font-size:13px;">Günü geçen veya 30 gün altı</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with c4:
+        st.markdown(f"""
+        <div class="schneider-card">
+            <div class="card-kicker">Compliance Güvenlik</div>
+            <div class="card-title-lg" style="color:#15803d;">%98.4</div>
+            <div style="color:#64748b; font-size:13px;">Yola elverişlilik oranı</div>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown("#### 🚨 Müdahale Gerektiren Kritik Araçlar")
+    if len(crit_oil) > 0:
+        st.dataframe(
+            crit_oil[["unit_number", "driver", "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu"]].rename(columns={
+                "unit_number": "Unit", "driver": "Şoför", "current_mileage": "Güncel Mil", "last_oil_mileage": "Son Yağ Mili", "yag_ikon": "İkon", "yag_durumu": "Yağ Durumu"
+            }),
+            use_container_width=True, hide_index=True
+        )
+    else:
+        st.success("Tüm araçların bakımları güncel!")
 
-    # FİLTRELEME ÇUBUĞU (TEK SIRADA TEMİZ)
-    f1, f2, f3, f4 = st.columns([1, 1, 1, 2])
+# -------------------------------------------------------------
+# 2. MODÜL: ÇEKİCİ & DORSE MASASI
+# -------------------------------------------------------------
+elif menu == "🚛 Çekici & Dorse Masası":
+    st.markdown("#### 🚛 Ekipman & Filo Listesi")
+
+    f1, f2, f3 = st.columns([1, 1, 2])
     with f1:
-        f_comp = st.selectbox("Firma:", ["HEPSİ", "MOONSTAR", "LIONSTAR"])
+        s_comp = st.selectbox("Şirket:", ["HEPSİ", "MOONSTAR", "LIONSTAR"])
     with f2:
-        f_type = st.selectbox("Ekipman:", ["HEPSİ", "TRUCK", "TRAILER"])
+        s_type = st.selectbox("Tür:", ["HEPSİ", "TRUCK", "TRAILER", "🚨 Sadece Yağ Alarmları"])
     with f3:
-        f_alert = st.selectbox("Filtre:", ["Tümü", "🚨 Sadece Yağ Alarmları", "⚠️ Sadece Muayene Alarmları"])
-    with f4:
-        f_search = st.text_input("Ara (Unit, Şoför, Plaka, Model):")
+        s_srch = st.text_input("Unit, Şoför veya Plaka ile Ara:")
 
-    df_view = df_v.copy()
-    if f_comp != "HEPSİ":
-        df_view = df_view[df_view["company"] == f_comp]
-    if f_type == "TRUCK":
-        df_view = df_view[df_view["unit_type"] == "TRUCK"]
-    elif f_type == "TRAILER":
-        df_view = df_view[df_view["unit_type"] == "TRAILER"]
-    
-    if f_alert == "🚨 Sadece Yağ Alarmları":
-        df_view = df_view[df_view["yag_ikon"].isin(["🔴", "🟡"])]
-    elif f_alert == "⚠️ Sadece Muayene Alarmları":
-        df_view = df_view[df_view["muayene_durum"].str.contains("❌|⚠️")]
+    df_show = df_v.copy()
+    if s_comp != "HEPSİ":
+        df_show = df_show[df_show["company"] == s_comp]
+    if s_type == "TRUCK":
+        df_show = df_show[df_show["unit_type"] == "TRUCK"]
+    elif s_type == "TRAILER":
+        df_show = df_show[df_show["unit_type"] == "TRAILER"]
+    elif s_type == "🚨 Sadece Yağ Alarmları":
+        df_show = df_show[df_show["yag_ikon"].isin(["🔴", "🟡"])]
 
-    if f_search:
-        s = f_search.strip().lower()
-        df_view = df_view[
-            df_view["unit_number"].str.lower().str.contains(s) |
-            df_view["driver"].str.lower().str.contains(s) |
-            df_view["plate_number"].str.lower().str.contains(s) |
-            df_view["make_model"].str.lower().str.contains(s)
+    if s_srch:
+        s = s_srch.strip().lower()
+        df_show = df_show[
+            df_show["unit_number"].str.lower().str.contains(s) |
+            df_show["driver"].str.lower().str.contains(s) |
+            df_show["plate_number"].str.lower().str.contains(s)
         ]
 
-    # CANLI DÜZENLENEBİLİR VE NET TABLO (ITS DISPATCH TARZI)
-    cols = [
-        "unit_number", "company", "unit_type", "driver", "make_model", 
-        "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu",
-        "plate_number", "plate_expiry", "dot_inspection", "state_inspection", "muayene_durum"
-    ]
-
     st.dataframe(
-        df_view[cols].rename(columns={
-            "unit_number": "Unit",
-            "company": "Şirket",
-            "unit_type": "Tür",
-            "driver": "Şoför",
-            "make_model": "Model / Yıl",
-            "current_mileage": "Güncel Mil",
-            "last_oil_mileage": "Son Yağ Mili",
-            "yag_ikon": "Yağ",
-            "yag_durumu": "Yağ Durumu",
-            "plate_number": "Plaka",
-            "plate_expiry": "Registration",
-            "dot_inspection": "Annual / DOT",
-            "state_inspection": "PA / State",
-            "muayene_durum": "Muayene"
+        df_show[[
+            "unit_number", "company", "unit_type", "driver", "make_model",
+            "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu",
+            "plate_number", "plate_expiry", "dot_inspection", "muayene_durum"
+        ]].rename(columns={
+            "unit_number": "Unit", "company": "Şirket", "unit_type": "Tür", "driver": "Şoför",
+            "make_model": "Model", "current_mileage": "Güncel Mil", "last_oil_mileage": "Son Yağ",
+            "yag_ikon": "Yağ", "yag_durumu": "Yağ Detay", "plate_number": "Plaka",
+            "plate_expiry": "Reg Bitiş", "dot_inspection": "DOT Insp", "muayene_durum": "Muayene"
         }),
-        use_container_width=True,
-        height=500,
-        hide_index=True
+        use_container_width=True, height=450, hide_index=True
     )
 
-    # ALTTAN HIZLI EKLEME / SİLME FORMU
-    with st.expander("⚙️ Araç Yönetimi (Yeni Çekici / Dorse Ekle & Sil)"):
-        ca, cb = st.columns(2)
-        with ca:
-            st.markdown("**➕ Yeni Ekipman Ekle**")
-            with st.form("add_v_form"):
-                acomp = st.selectbox("Firma", ["MOONSTAR", "LIONSTAR"])
-                atype = st.selectbox("Tür", ["TRUCK", "TRAILER"])
-                aunit = st.text_input("Unit No (Örn: 95)")
-                adriver = st.text_input("Şoför")
-                avin = st.text_input("VIN")
-                aplate = st.text_input("Plaka")
-                amodel = st.text_input("Model / Yıl")
-                areg = st.date_input("Registration Bitiş")
-                adot = st.date_input("DOT Muayene")
-                astate = st.date_input("State Muayene")
-                if st.form_submit_button("Aracı Kaydet"):
-                    if aunit:
-                        cur = conn.cursor()
-                        cur.execute("""
-                            INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model, plate_expiry, dot_inspection, state_inspection)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (acomp, atype, aunit.strip(), adriver.strip(), avin.strip(), aplate.strip(), amodel.strip(), str(areg), str(adot), str(astate)))
-                        conn.commit()
-                        st.success(f"{atype} #{aunit} kaydedildi!")
-                        st.rerun()
-                    else:
-                        st.error("Unit No zorunludur.")
-        with cb:
-            st.markdown("**❌ Sistemden Araç Sil**")
-            all_u = df_v["unit_number"].dropna().tolist()
-            u_to_del = st.selectbox("Silinecek Araç:", ["Seçiniz..."] + all_u)
-            if st.button("🚨 Seçili Aracı Sil", type="secondary"):
-                if u_to_del != "Seçiniz...":
+    with st.expander("➕ Sisteme Yeni Çekici / Dorse Ekle & Sil"):
+        ea, eb = st.columns(2)
+        with ea:
+            st.markdown("**Yeni Araç Ekle**")
+            with st.form("veh_add_box"):
+                nc = st.selectbox("Firma", ["MOONSTAR", "LIONSTAR"])
+                nt = st.selectbox("Tür", ["TRUCK", "TRAILER"])
+                nu = st.text_input("Unit No")
+                nd = st.text_input("Şoför")
+                nv = st.text_input("VIN")
+                np = st.text_input("Plaka")
+                nm = st.text_input("Model / Yıl")
+                n_reg = st.date_input("Registration Bitiş")
+                n_dot = st.date_input("Annual / DOT")
+                n_sta = st.date_input("PA / State Muayene")
+                if st.form_submit_button("Aracı Kaydet") and nu:
                     cur = conn.cursor()
-                    cur.execute("DELETE FROM vehicles WHERE unit_number = ?", (u_to_del,))
+                    cur.execute("""
+                        INSERT INTO vehicles (company, unit_type, unit_number, driver, vin, plate_number, make_model, plate_expiry, dot_inspection, state_inspection)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (nc, nt, nu.strip(), nd.strip(), nv.strip(), np.strip(), nm.strip(), str(n_reg), str(n_dot), str(n_sta)))
                     conn.commit()
-                    st.warning(f"Unit #{u_to_del} silindi!")
+                    st.success(f"{nt} #{nu} kaydedildi!")
                     st.rerun()
 
+        with eb:
+            st.markdown("**Sistemden Araç Sil**")
+            all_units = df_v["unit_number"].dropna().tolist()
+            u_del = st.selectbox("Silinecek Araç:", ["Seçiniz..."] + all_units)
+            if st.button("🚨 Aracı Tamamen Sil") and u_del != "Seçiniz...":
+                cur = conn.cursor()
+                cur.execute("DELETE FROM vehicles WHERE unit_number = ?", (u_del,))
+                conn.commit()
+                st.warning(f"Unit #{u_del} silindi!")
+                st.rerun()
+
 # -------------------------------------------------------------
-# 2. BÖLÜM: ŞOFÖRLER & COMPLIANCE
+# 3. MODÜL: ŞOFÖRLER & COMPLIANCE
 # -------------------------------------------------------------
-elif menu == "👤 Şoförler & CDL/Medical":
-    st.markdown("#### 👤 Şoförler, CDL Ehliyet & Medical Card Masası")
+elif menu == "👤 Şoförler & Compliance":
+    st.markdown("#### 👤 Şoför Masası (CDL & Medical Compliance)")
 
     if os.path.exists(DRIVERS_FILE):
         df_d = pd.read_excel(DRIVERS_FILE)
         df_d = df_d[df_d["Name"].notna()].copy()
         df_d["License Expiry"] = df_d["License Expiry"].astype(str).str.strip()
         df_d["Next Medical"] = df_d["Next Medical"].astype(str).str.strip()
-        df_d["E-mail"] = df_d["E-mail"].fillna("-").astype(str).str.strip()
         df_d["Telephone"] = df_d["Telephone"].fillna("-").astype(str).str.strip()
         df_d["License Number"] = df_d["License Number"].fillna("-").astype(str).str.strip()
 
@@ -491,111 +479,53 @@ elif menu == "👤 Şoförler & CDL/Medical":
         df_d["Medical Durumu"] = df_d["Next Medical"].apply(lambda d: check_driver_expiry(d)[0])
         df_d["Medical İkon"] = df_d["Next Medical"].apply(lambda d: check_driver_expiry(d)[1])
 
-        c_lic = df_d[df_d["Ehliyet İkon"].isin(["🔴", "🟡"])]
-        c_med = df_d[df_d["Medical İkon"].isin(["🔴", "🟡"])]
-
-        d1, d2, d3, d4 = st.columns(4)
-        d1.metric("Toplam Şoför", len(df_d))
-        d2.metric("Aktif Şoförler", len(df_d[df_d["Status"] == "Active"]))
-        d3.metric("Kritik CDL", len(c_lic), delta_color="inverse")
-        d4.metric("Kritik Medical Card", len(c_med), delta_color="inverse")
-
-        if len(c_lic) > 0:
-            st.error(f"🚨 **DİKKAT:** {len(c_lic)} şoförün CDL lisans süresi dolmuş veya dolmak üzere!")
-        if len(c_med) > 0:
-            st.warning(f"⚠️ **DİKKAT:** {len(c_med)} şoförün Medical Card süresi kritik seviyede!")
-
-        d_cols = [
-            "Name", "Telephone", "E-mail", "License Number", 
-            "License Expiry", "Ehliyet İkon", "Ehliyet Durumu", 
-            "Next Medical", "Medical İkon", "Medical Durumu"
-        ]
-
         st.dataframe(
-            df_d[d_cols].rename(columns={
-                "Name": "Şoför Adı Soyadı",
-                "Telephone": "Telefon",
-                "E-mail": "Kurumsal / Şahsi E-Posta",
-                "License Number": "CDL Lisans No",
-                "License Expiry": "CDL Bitiş",
-                "Ehliyet İkon": "CDL",
-                "Next Medical": "Medical Bitiş",
-                "Medical İkon": "Med"
+            df_d[[
+                "Name", "Telephone", "License Number", "License Expiry", 
+                "Ehliyet İkon", "Ehliyet Durumu", "Next Medical", "Medical İkon", "Medical Durumu"
+            ]].rename(columns={
+                "Name": "Şoför", "Telephone": "Telefon", "License Number": "CDL No",
+                "License Expiry": "CDL Bitiş", "Ehliyet İkon": "CDL", "Next Medical": "Med Bitiş", "Medical İkon": "Med"
             }),
-            use_container_width=True,
-            hide_index=True
+            use_container_width=True, hide_index=True
         )
 
-        with st.expander("👤 Yeni Şoför Ekle & Sil"):
-            da, db = st.columns(2)
-            with da:
-                st.markdown("**Yeni Şoför Ekle**")
-                with st.form("new_dr_form"):
-                    dn = st.text_input("Ad Soyad")
-                    dp = st.text_input("Telefon")
-                    de = st.text_input("E-Posta")
-                    dl = st.text_input("CDL Lisans No")
-                    dle = st.date_input("CDL Bitiş Tarihi")
-                    dme = st.date_input("Medical Card Bitiş Tarihi")
-                    if st.form_submit_button("Şoförü Kaydet") and dn:
-                        new_r = {
-                            "Status": "Active", "Name": dn.strip(), "Telephone": dp.strip(),
-                            "E-mail": de.strip(), "License Number": dl.strip(),
-                            "License Expiry": str(dle), "Next Medical": str(dme)
-                        }
-                        df_d = pd.concat([df_d, pd.DataFrame([new_r])], ignore_index=True)
-                        df_d.to_excel(DRIVERS_FILE, index=False)
-                        st.success(f"{dn} eklendi!")
-                        st.rerun()
-            with db:
-                st.markdown("**Şoför Sil**")
-                all_drs = df_d["Name"].dropna().tolist()
-                del_dr = st.selectbox("Silinecek Şoför:", ["Seçiniz..."] + all_drs)
-                if st.button("🚨 Şoförü Sil") and del_dr != "Seçiniz...":
-                    df_d = df_d[df_d["Name"] != del_dr]
-                    df_d.to_excel(DRIVERS_FILE, index=False)
-                    st.warning(f"{del_dr} silindi!")
-                    st.rerun()
-
 # -------------------------------------------------------------
-# 3. BÖLÜM: EKİP İÇİ CANLI CHAT
+# 4. MODÜL: EKİP İÇİ CHAT
 # -------------------------------------------------------------
-elif menu == "💬 Ekip İçi Chat (Operasyon)":
-    st.markdown("#### 💬 Moonstar Ekip İçi Operasyon Mesajlaşması")
-    with st.form("chat_box", clear_on_submit=True):
-        cm1, cm2 = st.columns([5, 1])
-        with cm1:
-            msg = st.text_input("Mesajınızı yazın...", placeholder="Örn: Unit 12'nin servisi tamamlandı, sefere çıkıyor.", label_visibility="collapsed")
-        with cm2:
-            if st.form_submit_button("Gönder 🚀", use_container_width=True) and msg.strip():
+elif menu == "💬 Ekip İçi Chat":
+    st.markdown("#### 💬 Ekip İçi Operasyon Chat")
+    with st.form("chat_b", clear_on_submit=True):
+        col_m1, col_m2 = st.columns([5, 1])
+        with col_m1:
+            msg = st.text_input("Mesajınızı yazın...", placeholder="Örn: Unit 12 yola çıktı.")
+        with col_m2:
+            if st.form_submit_button("Gönder 🚀") and msg.strip():
                 cur = conn.cursor()
                 now_str = datetime.now().strftime("%d.%m.%Y %H:%M")
                 cur.execute("INSERT INTO team_chat (sender, message, timestamp) VALUES (?, ?, ?)", (st.session_state.get("current_user"), msg.strip(), now_str))
                 conn.commit()
                 st.rerun()
 
-    df_chat = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 50", conn)
-    if not df_chat.empty:
-        for _, r in df_chat.iterrows():
-            st.markdown(f"""
-            <div class="chat-card">
-                <b>👤 {r['sender']}</b> <span style="color:#64748b; font-size:11px; margin-left:8px;">🕒 {r['timestamp']}</span>
-                <div style="margin-top:4px; font-size:14px; color:#1e293b;">{r['message']}</div>
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.info("Henüz bir mesaj paylaşılmamış.")
+    df_chat = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 40", conn)
+    for _, r in df_chat.iterrows():
+        st.markdown(f"""
+        <div style="background:#ffffff; border-left:4px solid #ea580c; padding:10px 14px; border-radius:6px; margin-bottom:8px; border:1px solid #e2e8f0;">
+            <b style="color:#0b1f3a;">👤 {r['sender']}</b> <span style="font-size:11px; color:#64748b; margin-left:8px;">🕒 {r['timestamp']}</span>
+            <div style="margin-top:4px; font-size:14px;">{r['message']}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 4. BÖLÜM: BAKIM & SERVİS GİRİŞİ
+# 5. MODÜL: BAKIM & FATURA GİRİŞİ
 # -------------------------------------------------------------
-elif menu == "🔧 Bakım & Servis Kaydı Ekle":
-    st.markdown("#### 🔧 Servis & Bakım Girişi")
-    with st.form("log_form", clear_on_submit=True):
+elif menu == "🔧 Bakım & Fatura Girişi":
+    st.markdown("#### 🔧 Yeni Bakım & Servis Kaydı")
+    with st.form("serv_form", clear_on_submit=True):
         c1, c2, c3 = st.columns(3)
         with c1:
             sel_u = st.selectbox("Unit Seçin", df_v["unit_number"].tolist())
-            l_date = st.date_input("İşlem Tarihi")
+            l_date = st.date_input("Servis Tarihi")
         with c2:
             l_type = st.selectbox("İşlem Türü", ["Yağ Değişimi", "Lastik / Fren", "DOT Muayene", "Arıza / Onarım", "Periyodik Bakım", "Diğer"])
             l_mil = st.number_input("İşlem Mili", min_value=0, step=1000)
@@ -603,31 +533,19 @@ elif menu == "🔧 Bakım & Servis Kaydı Ekle":
             l_cost = st.number_input("Tutar ($)", min_value=0.0, step=50.0)
             inv_file = st.file_uploader("Fatura / Belge", type=["pdf", "png", "jpg", "jpeg"])
         
-        l_notes = st.text_area("Açıklamalar")
+        notes = st.text_area("Açıklama")
         if st.form_submit_button("Servisi Kaydet"):
             s_file = ""
             if inv_file:
-                s_file = f"Unit_{sel_u}_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{inv_file.name}"
+                s_file = f"Unit_{sel_u}_{inv_file.name}"
                 with open(os.path.join(INVOICE_DIR, s_file), "wb") as f:
                     f.write(inv_file.getbuffer())
             cur = conn.cursor()
-            cur.execute("INSERT INTO logs (unit_number, log_date, log_type, mileage, cost, invoice_filename, notes) VALUES (?, ?, ?, ?, ?, ?, ?)", (sel_u, str(l_date), l_type, l_mil, l_cost, s_file, l_notes))
+            cur.execute("INSERT INTO logs (unit_number, log_date, log_type, mileage, cost, invoice_filename, notes) VALUES (?, ?, ?, ?, ?, ?, ?)", (sel_u, str(l_date), l_type, l_mil, l_cost, s_file, notes))
             if l_type == "Yağ Değişimi" and l_mil > 0:
                 cur.execute("UPDATE vehicles SET last_oil_mileage = ?, current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (l_mil, l_mil, sel_u))
             elif l_mil > 0:
                 cur.execute("UPDATE vehicles SET current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (l_mil, sel_u))
             conn.commit()
-            st.success("Kayıt başarıyla tamamlandı!")
+            st.success("Servis kaydı başarıyla eklendi!")
             st.rerun()
-
-# -------------------------------------------------------------
-# 5. BÖLÜM: EVRAK & FATURA ARŞİVİ
-# -------------------------------------------------------------
-elif menu == "📁 Evrak & Fatura Arşivi":
-    st.markdown("#### 📁 Fatura & Belge Deposu")
-    all_files = os.listdir(INVOICE_DIR) if os.path.exists(INVOICE_DIR) else []
-    if all_files:
-        for f in all_files:
-            st.write(f"📄 `{f}`")
-    else:
-        st.info("Arşivde yüklü evrak bulunmuyor.")

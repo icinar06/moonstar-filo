@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Kurumsal TMS Teması & Özel CSS
+# Kurumsal TMS Teması
 st.markdown("""
 <style>
     .top-header {
@@ -93,6 +93,34 @@ def check_driver_expiry(date_str):
             return f"Geçerli ({diff}g)", "🟢"
     except Exception:
         return "Geçersiz", "⚪"
+
+def check_oil_status(row):
+    """Yağ durumu: Kırmızı (Geçti), Sarı (Yaklaşıyor), Yeşil (Geçerli), Gri (Dorse)"""
+    if row.get("unit_type") == "TRAILER":
+        return "Muaf (Dorse)", "⚪", "-"
+    
+    try:
+        c_m = int(row.get("current_mileage") or 0)
+        l_o = int(row.get("last_oil_mileage") or 0)
+        interval = int(row.get("oil_interval") or 25000)
+        
+        if interval <= 0:
+            return "Tanımsız", "⚪", "-"
+        
+        if l_o == 0 and c_m == 0:
+            return "Kayıt Yok", "⚪", "-"
+            
+        miles_driven = c_m - l_o
+        remaining = interval - miles_driven
+        
+        if remaining < 0:
+            return f"Geçti ({abs(remaining):,} mil)", "🔴", f"{remaining:,}"
+        elif remaining <= 3000:
+            return f"Yaklaşıyor ({remaining:,} mil)", "🟡", f"{remaining:,}"
+        else:
+            return f"Geçerli ({remaining:,} mil)", "🟢", f"{remaining:,}"
+    except Exception:
+        return "Hesap Hatası", "⚪", "-"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -199,7 +227,6 @@ def init_db():
             ))
         conn.commit()
 
-    # Service logs.csv'den son yağ değişim milini güncelle
     if os.path.exists(SERVICE_LOGS_CSV):
         try:
             df_csv = pd.read_csv(SERVICE_LOGS_CSV)
@@ -240,18 +267,6 @@ def evaluate_status(row):
                     status = "YAKLAŞIYOR ⚠️"
             except:
                 pass
-    try:
-        c_m = int(row.get("current_mileage") or 0)
-        l_o = int(row.get("last_oil_mileage") or 0)
-        o_i = int(row.get("oil_interval") or 0)
-        if o_i > 0 and l_o > 0:
-            miles_run = c_m - l_o
-            if miles_run >= o_i:
-                return "GECİKMİŞ ❌"
-            elif (o_i - miles_run) <= 3000:
-                status = "YAKLAŞIYOR ⚠️"
-    except:
-        pass
     return status
 
 conn = get_connection()
@@ -260,16 +275,19 @@ df_logs = pd.read_sql_query("SELECT * FROM logs ORDER BY log_date DESC", conn)
 
 cost_totals = df_logs.groupby("unit_number")["cost"].sum().to_dict() if not df_logs.empty else {}
 df_v["total_spent"] = df_v["unit_number"].map(cost_totals).fillna(0.0).apply(lambda x: f"${x:,.2f}")
-df_v["durum"] = df_v.apply(evaluate_status, axis=1)
-df_v["kalan_yag_mili"] = df_v.apply(
-    lambda r: "-" if r["unit_type"] == "TRAILER" or int(r["oil_interval"] or 0) == 0 else str(int(r["oil_interval"] or 0) - (int(r["current_mileage"] or 0) - int(r["last_oil_mileage"] or 0))),
-    axis=1
-)
+df_v["muayene_durum"] = df_v.apply(evaluate_status, axis=1)
+
+# Yağ durumu analizi
+oil_results = df_v.apply(check_oil_status, axis=1)
+df_v["yag_durumu"] = [res[0] for res in oil_results]
+df_v["yag_ikon"] = [res[1] for res in oil_results]
+df_v["kalan_yag_mili"] = [res[2] for res in oil_results]
 
 total_trucks = len(df_v[df_v["unit_type"] == "TRUCK"])
 total_trailers = len(df_v[df_v["unit_type"] == "TRAILER"])
-total_expired = len(df_v[df_v["durum"] == "GECİKMİŞ ❌"])
-total_warning = len(df_v[df_v["durum"] == "YAKLAŞIYOR ⚠️"])
+total_expired = len(df_v[df_v["muayene_durum"] == "GECİKMİŞ ❌"])
+total_warning = len(df_v[df_v["muayene_durum"] == "YAKLAŞIYOR ⚠️"])
+crit_oil_count = len(df_v[df_v["yag_ikon"].isin(["🔴", "🟡"])])
 all_spending = df_logs["cost"].sum() if not df_logs.empty else 0.0
 
 # -------------------------------------------------------------
@@ -296,9 +314,10 @@ with st.sidebar:
     st.markdown("**Hızlı İstatistikler**")
     st.write(f"🚛 **Trucks:** {total_trucks}")
     st.write(f"🚚 **Trailers:** {total_trailers}")
-    st.write(f"🔴 **Geciken:** {total_expired}")
-    st.write(f"🟡 **Yaklaşan:** {total_warning}")
-    st.write(f"💵 **Harcama:** ${all_spending:,.2f}")
+    st.write(f"🔴 **Kritik Yağ Değişimi:** {crit_oil_count}")
+    st.write(f"🔴 **Geciken Muayene:** {total_expired}")
+    st.write(f"🟡 **Yaklaşan Muayene:** {total_warning}")
+    st.write(f"💵 **Toplam Harcama:** ${all_spending:,.2f}")
     
     st.markdown("---")
     if st.button("🚪 Güvenli Çıkış Yap"):
@@ -327,17 +346,20 @@ if menu == "📊 Dispatch & Filo Yönetimi":
     k1, k2, k3, k4, k5 = st.columns(5)
     k1.metric("Aktif Çekici (Truck)", f"{total_trucks}")
     k2.metric("Aktif Dorse (Trailer)", f"{total_trailers}")
-    k3.metric("Kritik / Geciken Muayene", total_expired, delta_color="inverse")
-    k4.metric("Yaklaşan Muayene (30g)", total_warning, delta_color="off")
+    k3.metric("🚨 Yağ Değişimi Kritik", crit_oil_count, delta_color="inverse")
+    k4.metric("Kritik Muayene", total_expired, delta_color="inverse")
     k5.metric("Toplam Masraf", f"${all_spending:,.2f}")
 
-    st.markdown("#### 📋 Canlı Araç & Ekipman Takip Listesi")
+    if crit_oil_count > 0:
+        st.error(f"⚠️ **DİKKAT:** {crit_oil_count} adet çekicinin yağ değişim mili geçmiş veya 3,000 milden az kalmış!")
+
+    st.markdown("#### 📋 Canlı Araç, Ekipman & Yağ Takip Tablosu")
 
     c_filter, t_filter, s_box = st.columns([1, 1, 2])
     with c_filter:
         f_comp = st.selectbox("Şirket:", ["HEPSİ", "MOONSTAR", "LIONSTAR"])
     with t_filter:
-        f_type = st.selectbox("Ekipman Türü:", ["HEPSİ", "TRUCK", "TRAILER", "ACİL / GECİKENLER"])
+        f_type = st.selectbox("Filtre:", ["HEPSİ", "TRUCK", "TRAILER", "🔴 YAĞI GEÇENLER", "🟡 YAĞI YAKLAŞANLAR", "ACİL MUAYENELER"])
     with s_box:
         f_search = st.text_input("Arama (Unit, Şoför, Plaka, VIN):")
 
@@ -348,8 +370,13 @@ if menu == "📊 Dispatch & Filo Yönetimi":
         df_show = df_show[df_show["unit_type"] == "TRUCK"]
     elif f_type == "TRAILER":
         df_show = df_show[df_show["unit_type"] == "TRAILER"]
-    elif f_type == "ACİL / GECİKENLER":
-        df_show = df_show[df_show["durum"].str.contains("❌|⚠️")]
+    elif f_type == "🔴 YAĞI GEÇENLER":
+        df_show = df_show[df_show["yag_ikon"] == "🔴"]
+    elif f_type == "🟡 YAĞI YAKLAŞANLAR":
+        df_show = df_show[df_show["yag_ikon"] == "🟡"]
+    elif f_type == "ACİL MUAYENELER":
+        df_show = df_show[df_show["muayene_durum"].str.contains("❌|⚠️")]
+        
     if f_search:
         s = f_search.strip().lower()
         df_show = df_show[
@@ -361,19 +388,19 @@ if menu == "📊 Dispatch & Filo Yönetimi":
 
     cols = [
         "id", "company", "unit_type", "unit_number", "driver", "vin", "make_model",
-        "plate_number", "plate_expiry", "dot_inspection", "state_inspection",
-        "current_mileage", "last_oil_mileage", "kalan_yag_mili", "total_spent", "durum"
+        "current_mileage", "last_oil_mileage", "yag_ikon", "yag_durumu",
+        "plate_number", "plate_expiry", "dot_inspection", "state_inspection", "muayene_durum"
     ]
 
     edited_df = st.data_editor(
         df_show[cols],
         column_config={
             "id": st.column_config.TextColumn("ID", disabled=True),
-            "total_spent": st.column_config.TextColumn("Toplam Masraf", disabled=True),
-            "durum": st.column_config.TextColumn("Durum", disabled=True),
-            "kalan_yag_mili": st.column_config.TextColumn("Kalan Yağ Mili", disabled=True),
-            "last_oil_mileage": st.column_config.NumberColumn("Son Yağ Mili", help="En son yağ değişim mili"),
-            "current_mileage": st.column_config.NumberColumn("Güncel Mil", help="Aracın güncel sayacı"),
+            "yag_ikon": st.column_config.TextColumn("İkon", disabled=True),
+            "yag_durumu": st.column_config.TextColumn("Yağ Bakım Durumu", disabled=True),
+            "muayene_durum": st.column_config.TextColumn("Muayene", disabled=True),
+            "last_oil_mileage": st.column_config.NumberColumn("Son Yağ Mili"),
+            "current_mileage": st.column_config.NumberColumn("Güncel Mil"),
             "company": st.column_config.SelectboxColumn("Firma", options=["MOONSTAR", "LIONSTAR"]),
             "unit_type": st.column_config.SelectboxColumn("Tür", options=["TRUCK", "TRAILER"]),
         },
@@ -549,7 +576,6 @@ elif menu == "👤 Şoförler & Compliance (CDL/Medical)":
 elif menu == "🔧 Bakım & Servis Kayıtları":
     st.markdown("#### 🔧 Araç Bakım, Yağ Değişimi & Servis Kayıtları")
 
-    # Service logs.csv geçmişi
     if os.path.exists(SERVICE_LOGS_CSV):
         with st.expander("📜 Service logs.csv Geçmiş Kayıtları (Sistem İçi)", expanded=True):
             df_s_csv = pd.read_csv(SERVICE_LOGS_CSV)
@@ -620,7 +646,7 @@ elif menu == "🧾 Muhasebe, Faturalar & Evrak Arşivi":
         with bb:
             st.markdown("**Arşivdeki Belgeler & Silme**")
             existing_files = os.listdir(INVOICE_DIR) if os.path.exists(INVOICE_DIR) else []
-            f_del = st.selectbox("Silinecek Dosyayı Seçin:", ["Seçiniz..."] + all_docs if 'all_docs' in locals() else ["Seçiniz..."] + existing_files)
+            f_del = st.selectbox("Silinecek Dosyayı Seçin:", ["Seçiniz..."] + existing_files)
             if st.button("🗑️ Dosyayı Sil", type="secondary"):
                 if f_del != "Seçiniz...":
                     del_p = os.path.join(INVOICE_DIR, f_del)

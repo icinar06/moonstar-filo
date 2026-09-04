@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# RENKLİ KENAR ÇİZGİLERİ VE DURUM ROZETLERİNE SAHİP ENTERPRISE KART STİLİ
+# SCHNEIDER / SAMSARA ELITE PORTAL STYLING & BORDER ACCENTS
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
@@ -68,7 +68,7 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* RENKLİ KENARLI SCHNEIDER / SAMSARA PORTAL KARTLARI */
+    /* RENKLİ KENARLI VE SOL ŞERİTLİ PORTAL KARTLARI */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
         border-radius: 12px !important;
@@ -86,7 +86,6 @@ st.markdown("""
         margin-bottom: 16px !important;
     }
     
-    /* Duruma Göre Sol Şerit ve Kenar Renkleri */
     div[data-testid*="stButton"] > button.btn-critical {
         border: 1.5px solid #fca5a5 !important;
         border-left: 6px solid #dc2626 !important;
@@ -155,37 +154,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "READY", 999
+        return "No Record", "btn-healthy", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "CRITICAL ACTION", diff
+            return f"Expired ({abs(diff)}d ago)", "btn-critical", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "DUE SOON", diff
+            return f"Due in {diff}d", "btn-warning", diff
         else:
-            return f"Valid ({diff}d left)", "READY", diff
+            return f"Valid ({diff}d left)", "btn-healthy", diff
     except Exception:
-        return "Invalid", "READY", 999
+        return "Invalid", "btn-healthy", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)"
+        return "Exempt (Trailer)", "btn-healthy"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record"
+            return "No Record", "btn-healthy"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi"
+            return f"Overdue by {abs(rem):,} mi", "btn-critical"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi"
+            return f"Due in {rem:,} mi", "btn-warning"
         else:
-            return f"Valid ({rem:,} mi left)"
+            return f"Valid ({rem:,} mi left)", "btn-healthy"
     except Exception:
-        return "Not Set"
+        return "Not Set", "btn-healthy"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -272,23 +271,26 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "CRITICAL"
+                    return f"Expired ({abs(diff)}d ago)", "btn-critical"
                 elif diff <= 30:
-                    return f"Due in {diff}d", "WARNING"
+                    return f"Due in {diff}d", "btn-warning"
             except:
                 pass
-    return "Valid", "HEALTHY"
+    return "Valid", "btn-healthy"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_level"] = [r[1] for r in insp_res]
-    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
+    df_v["insp_class"] = [r[1] for r in insp_res]
+
+    oil_res = df_v.apply(check_oil_status, axis=1)
+    df_v["oil_status"] = [r[0] for r in oil_res]
+    df_v["oil_class"] = [r[1] for r in oil_res]
 
     def get_overall_priority(row):
-        if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
+        if row["oil_class"] == "btn-critical" or row["insp_class"] == "btn-critical":
             return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
+        elif row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
             return "🟡 [DUE SOON]", "btn-warning", 2
         else:
             return "🟢 [READY]", "btn-healthy", 3
@@ -298,8 +300,8 @@ if not df_v.empty:
     df_v["btn_class"] = [p[1] for p in v_prio]
     df_v["priority_order"] = [p[2] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
-    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
+    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-critical"])
+    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-critical"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -318,16 +320,18 @@ if os.path.exists(DRIVERS_FILE):
 
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
+    df_d["CDL_Class"] = [r[1] for r in cdl_res]
+    df_d["CDL_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Diff"] = [r[1] for r in med_res]
+    df_d["Med_Class"] = [r[1] for r in med_res]
+    df_d["Med_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
+        if row["CDL_Class"] == "btn-critical" or row["Med_Class"] == "btn-critical":
             return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
+        elif row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
             return "🟡 [DUE SOON]", "btn-warning", 2
         else:
             return "🟢 [READY]", "btn-healthy", 3
@@ -584,7 +588,7 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # SCHNEIDER TARZI 3'LÜ RENKLİ PORTAL KARTLARI (ÖZEL CSS SINIFLARI İLE)
+    # SCHNEIDER TARZI 3'LÜ RENKLİ PORTAL KARTLARI
     cols = st.columns(3)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 3]:
@@ -601,11 +605,6 @@ if top_menu == "Trucks & Trailers":
                 f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
                 f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
             )
-            
-            # Streamlit butonuna özel CSS sınıfı enjekte etme hilesi
-            btn_html_wrapper = f"""
-            <div class="{r['btn_class']}">
-            """
             
             if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])

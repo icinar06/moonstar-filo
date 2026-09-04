@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR RESMİ WEBSİTESİ VE LÜKS KART STİLLERİ
+# ORİJİNAL MOONSTAR WEBSİTESİ VE ENTERPRISE KONSOL STİLLERİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -25,32 +25,46 @@ st.markdown("""
         color: #0f172a;
     }
     
-    /* Moonstar Web Sitesi Header Navbar */
-    .moonstar-nav {
+    /* Orijinal Moonstar Navbar Tasarımı */
+    .moonstar-header {
         background: #ffffff;
-        padding: 16px 32px;
+        padding: 16px 40px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     }
-    .moonstar-menu {
-        display: flex;
-        gap: 24px;
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #0f172a;
-        letter-spacing: 0.5px;
+    .brand-logo {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        color: #0b1f3a;
+        letter-spacing: 1px;
     }
-    .moonstar-menu span {
-        cursor: pointer;
-        transition: color 0.15s;
+
+    /* Navbar Butonlarını Orijinal Metin Linkine Çevirme */
+    div[data-testid*="column"] button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        color: #0f172a !important;
+        font-family: 'Montserrat', sans-serif !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        padding: 6px 12px !important;
+        min-height: unset !important;
+        height: auto !important;
+        transition: color 0.15s ease !important;
     }
-    .moonstar-menu span:hover {
-        color: #0284c7;
+    div[data-testid*="column"] button:hover {
+        color: #0284c7 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        transform: none !important;
     }
 
     /* Hero Banner (Home Ekranı) */
@@ -66,11 +80,11 @@ st.markdown("""
     .hero-left {
         flex: 1;
         background: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1000&auto=format&fit=crop') center/cover;
-        min-height: 380px;
+        min-height: 400px;
     }
     .hero-right {
         flex: 1;
-        padding: 50px 40px;
+        padding: 60px 50px;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -123,11 +137,12 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU, KOYU KENARLI VE GÖLGELİ PORTAL KARTLARI */
-    div[data-testid*="stButton"] > button {
+    /* 4 KOLONLU LÜKS KURUMSAL PORTAL KARTLARI */
+    div[data-testid*="stButton"] > button.fleet-card-btn {
         background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 12px !important;
-        padding: 16px 18px !important;
+        padding: 18px 20px !important;
         min-height: 210px !important;
         height: auto !important;
         width: 100% !important;
@@ -140,31 +155,18 @@ st.markdown("""
         transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
         margin-bottom: 16px !important;
     }
-    
-    div[data-testid*="stButton"] > button.btn-critical {
-        border: 2px solid #cbd5e1 !important;
-        border-left: 7px solid #dc2626 !important;
-    }
-    div[data-testid*="stButton"] > button.btn-warning {
-        border: 2px solid #cbd5e1 !important;
-        border-left: 7px solid #d97706 !important;
-    }
-    div[data-testid*="stButton"] > button.btn-healthy {
-        border: 2px solid #cbd5e1 !important;
-        border-left: 7px solid #16a34a !important;
-    }
-
-    div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
+    div[data-testid*="stButton"] > button.fleet-card-btn:hover {
+        border-color: #0284c7 !important;
+        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15) !important;
         transform: translateY(-3px) !important;
         background-color: #ffffff !important;
     }
-    div[data-testid*="stButton"] > button p {
+    div[data-testid*="stButton"] > button.fleet-card-btn p {
         font-family: 'Inter', sans-serif !important;
         font-size: 12px !important;
         font-weight: 500 !important;
         margin: 0 !important;
-        line-height: 1.5 !important;
+        line-height: 1.6 !important;
         text-align: left !important;
         white-space: pre-line !important;
         width: 100% !important;
@@ -188,39 +190,38 @@ if "web_page" not in st.session_state:
     st.session_state["web_page"] = "Home"
 
 if not st.session_state["authenticated"]:
-    # Moonstar Resmi Web Sitesi Navigasyonu
-    st.markdown("""
-    <div class="moonstar-nav">
-        <div style="font-family:'Montserrat',sans-serif; font-size:20px; font-weight:900; color:#0b1f3a;">
-            MOONSTAR <span style="color:#0284c7;">EXPRESS</span>
+    # Orijinal Web Sitesi Header Navbar Düzeni
+    hdr_left, hdr_right = st.columns([1.5, 3.5])
+    with hdr_left:
+        st.markdown("""
+        <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:900; color:#0b1f3a; padding: 10px 0;">
+            MOONSTAR <span style="color:#0284c7; font-size:12px; display:block; font-weight:600; letter-spacing:3px;">EXPRESS</span>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Menü butonları için Streamlit kolonları
-    nav_b1, nav_b2, nav_b3, nav_b4, nav_b5 = st.columns(5)
-    with nav_b1:
-        if st.button("🏠 Home", use_container_width=True):
-            st.session_state["web_page"] = "Home"
-            st.rerun()
-    with nav_b2:
-        if st.button("ℹ️ About Us", use_container_width=True):
-            st.session_state["web_page"] = "About Us"
-            st.rerun()
-    with nav_b3:
-        if st.button("📞 Contact Us", use_container_width=True):
-            st.session_state["web_page"] = "Contact Us"
-            st.rerun()
-    with nav_b4:
-        if st.button("⚙️ Services", use_container_width=True):
-            st.session_state["web_page"] = "Services"
-            st.rerun()
-    with nav_b5:
-        if st.button("👥 Portal Login", use_container_width=True):
-            st.session_state["web_page"] = "Login"
-            st.rerun()
+        """, unsafe_allow_html=True)
+    with hdr_right:
+        nav_b1, nav_b2, nav_b3, nav_b4, nav_b5 = st.columns(5)
+        with nav_b1:
+            if st.button("HOME", key="nav_home"):
+                st.session_state["web_page"] = "Home"
+                st.rerun()
+        with nav_b2:
+            if st.button("ABOUT US", key="nav_about"):
+                st.session_state["web_page"] = "About Us"
+                st.rerun()
+        with nav_b3:
+            if st.button("CONTACT US", key="nav_contact"):
+                st.session_state["web_page"] = "Contact Us"
+                st.rerun()
+        with nav_b4:
+            if st.button("SERVICES", key="nav_services"):
+                st.session_state["web_page"] = "Services"
+                st.rerun()
+        with nav_b5:
+            if st.button("PORTAL LOGIN", key="nav_login"):
+                st.session_state["web_page"] = "Login"
+                st.rerun()
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<hr style='margin:0 0 20px 0; border-color:#e2e8f0;'>", unsafe_allow_html=True)
 
     # SAYFA İÇERİKLERİ
     if st.session_state["web_page"] == "Home":
@@ -237,8 +238,8 @@ if not st.session_state["authenticated"]:
         <div class="hero-container">
             <div class="hero-left"></div>
             <div class="hero-right">
-                <h1 style="font-family:'Montserrat',sans-serif; font-size:32px; font-weight:900; margin-bottom:12px; color:#ffffff;">RELIABLE TRANSPORTATION SOLUTIONS</h1>
-                <p style="font-size:14px; color:#a1a1aa; margin-bottom:24px;">Your trusted partner for safe and efficient travel across the United States.</p>
+                <h1 style="font-family:'Montserrat',sans-serif; font-size:30px; font-weight:900; margin-bottom:12px; color:#ffffff;">RELIABLE TRANSPORTATION SOLUTIONS</h1>
+                <p style="font-size:14px; color:#a1a1aa; margin-bottom:20px;">Your trusted partner for safe and efficient travel across the United States.</p>
                 <div style="font-size:14px; color:#38bdf8; font-weight:700;">📞 +1 215-666-0595</div>
             </div>
         </div>
@@ -308,37 +309,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "btn-healthy", 999
+        return "No Record", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "btn-critical", diff
+            return f"Expired ({abs(diff)}d ago)", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "btn-warning", diff
+            return f"Due in {diff}d", diff
         else:
-            return f"Valid ({diff}d left)", "btn-healthy", diff
+            return f"Valid ({diff}d left)", diff
     except Exception:
-        return "Invalid", "btn-healthy", 999
+        return "Invalid", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)", "btn-healthy"
+        return "Exempt (Trailer)"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record", "btn-healthy"
+            return "No Record"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi", "btn-critical"
+            return f"Overdue by {abs(rem):,} mi"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi", "btn-warning"
+            return f"Due in {rem:,} mi"
         else:
-            return f"Valid ({rem:,} mi left)", "btn-healthy"
+            return f"Valid ({rem:,} mi left)"
     except Exception:
-        return "Not Set", "btn-healthy"
+        return "Not Set"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -431,37 +432,33 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "btn-critical"
+                    return f"Expired ({abs(diff)}d ago)", "CRITICAL"
                 elif diff <= 30:
-                    return f"Due in {diff}d", "btn-warning"
+                    return f"Due in {diff}d", "WARNING"
             except:
                 pass
-    return "Valid", "btn-healthy"
+    return "Valid", "HEALTHY"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_class"] = [r[1] for r in insp_res]
-
-    oil_res = df_v.apply(check_oil_status, axis=1)
-    df_v["oil_status"] = [r[0] for r in oil_res]
-    df_v["oil_class"] = [r[1] for r in oil_res]
+    df_v["insp_level"] = [r[1] for r in insp_res]
+    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
 
     def get_overall_priority(row):
-        if row["oil_class"] == "btn-critical" or row["insp_class"] == "btn-critical":
-            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
-            return "🟡 [DUE SOON]", "btn-warning", 2
+        if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
+            return "🔴 [CRITICAL ACTION]", 1
+        elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
+            return "🟡 [DUE SOON]", 2
         else:
-            return "🟢 [READY]", "btn-healthy", 3
+            return "🟢 [READY]", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["btn_class"] = [p[1] for p in v_prio]
-    df_v["priority_order"] = [p[2] for p in v_prio]
+    df_v["priority_order"] = [p[1] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-critical"])
-    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-critical"])
+    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
+    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -470,26 +467,23 @@ else:
 if not df_d.empty:
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Class"] = [r[1] for r in cdl_res]
-    df_d["CDL_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in cdl_res]
+    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Class"] = [r[1] for r in med_res]
-    df_d["Med_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in med_res]
+    df_d["Med_Diff"] = [r[1] for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Class"] == "btn-critical" or row["Med_Class"] == "btn-critical":
-            return "🔴 [CRITICAL ACTION]", "btn-critical", 1
-        elif row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
-            return "🟡 [DUE SOON]", "btn-warning", 2
+        if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
+            return "🔴 [CRITICAL ACTION]", 1
+        elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
+            return "🟡 [DUE SOON]", 2
         else:
-            return "🟢 [READY]", "btn-healthy", 3
+            return "🟢 [READY]", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["btn_class"] = [p[1] for p in dr_prio]
-    df_d["priority_order"] = [p[2] for p in dr_prio]
+    df_d["priority_order"] = [p[1] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
@@ -628,7 +622,7 @@ def open_driver_dossier(driver_name):
             st.rerun()
 
 # -------------------------------------------------------------
-# TOP NAVBAR (GİRİŞ YAPILDIKTAN SONRA MOONSTAR LOGOLU KONSOL)
+# TOP NAVBAR (GİRİŞ SONRASI KURUMSAL KONSOL)
 # -------------------------------------------------------------
 st.markdown(f"""
 <div class="top-header">
@@ -658,7 +652,7 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, GÖLGELİ VE BELİRGİN KARTLAR)
+# 1. MODÜL: TRUCKS & TRAILERS (4 KOLON, NET BAŞLIKLI KUTULAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
@@ -746,15 +740,14 @@ if top_menu == "Trucks & Trailers":
 
     st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # 4 KOLONLU KUTUCUKLAR (BAŞLIK AYRI KUTU, GÖLGE VE BELİRGİN KENARLAR)
+    # 4 KOLONLU KUTUCUKLAR (NET BAŞLIK AYRIMI VE KUSURSUZ HİZALAMA)
     cols = st.columns(4)
     for idx, (_, r) in enumerate(df_filtered.iterrows()):
         with cols[idx % 4]:
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            # Üst kutu başlığı ve alt gövde ayrımı
-            card_title = f"━━━━━━━━━━━━━━━━━━━━\nUNIT #{r['unit_number']} ({r['unit_type']}) | {r['priority_label']}\n━━━━━━━━━━━━━━━━━━━━"
+            card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})\n{r['priority_label']}"
             card_body = (
                 f"Driver: {driver_str}\n"
                 f"Hooked: {hook_str}\n"
@@ -764,7 +757,7 @@ if top_menu == "Trucks & Trailers":
                 f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
             )
             
-            if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
+            if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True, help="Click to open dossier"):
                 open_equipment_dossier(r['unit_number'])
 
 # -------------------------------------------------------------
@@ -840,7 +833,7 @@ elif top_menu == "Drivers Compliance":
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
-                card_title = f"━━━━━━━━━━━━━━━━━━━━\n{d_row['Name']} | {d_row['priority_label']}\n━━━━━━━━━━━━━━━━━━━━"
+                card_title = f"{d_row['Name']}\n{d_row['priority_label']}"
                 card_body = (
                     f"Phone: {d_row['Telephone']}\n"
                     f"Email: {d_row.get('E-mail', '-')}\n"

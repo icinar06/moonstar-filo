@@ -8,34 +8,34 @@ import pandas as pd
 import streamlit as st
 
 st.set_page_config(
-    page_title="MOONSTAR EXPRESS LLC — Executive Fleet Intelligence",
+    page_title="MOONSTAR EXPRESS LLC — Enterprise Portal",
     page_icon="⭐",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# ULTRA-PREMIUM ENTERPRISE TMS STYLING (SAMSARA & MOTIVE GRADE)
+# SCHNEIDER / SAMSARA ELITE PORTAL CARD STYLING
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
     
     html, body, [class*="css"], .stApp {
         font-family: 'Inter', sans-serif;
-        background-color: #f8fafc !important;
-        color: #0f172a;
+        background-color: #f4f4f5 !important;
+        color: #18181b;
     }
     
     .top-header {
-        background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 50%, #0284c7 100%);
-        padding: 16px 28px;
+        background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
+        padding: 18px 32px;
         border-radius: 10px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: white;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(11, 31, 58, 0.18);
-        border-bottom: 3px solid #38bdf8;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px rgba(11, 31, 58, 0.15);
+        border-bottom: 4px solid #f97316; /* Schneider Turuncu Vurgusu */
     }
     .brand-title {
         font-size: 22px;
@@ -46,66 +46,62 @@ st.markdown("""
     }
 
     /* Üst KPI Metrik Kartları */
-    .kpi-box {
+    .kpi-card {
         background: #ffffff;
         border-radius: 10px;
-        padding: 16px 20px;
-        border: 1px solid #e2e8f0;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        padding: 18px 22px;
+        border: 1px solid #e4e4e7;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
         margin-bottom: 20px;
-        transition: transform 0.15s ease;
-    }
-    .kpi-box:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(0,0,0,0.06);
     }
     .kpi-title {
         font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        color: #64748b;
+        color: #71717a;
         letter-spacing: 0.8px;
     }
     .kpi-num {
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 900;
-        color: #0b1f3a;
+        color: #09090b;
         margin-top: 6px;
     }
 
-    /* Kurumsal Tablo Kapsayıcısı */
-    .enterprise-table-container {
-        background: #ffffff;
-        border: 1px solid #cbd5e1;
-        border-radius: 10px;
-        overflow: hidden;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        margin-bottom: 20px;
+    /* SCHNEIDER TARZI BÜYÜK BEYAZ PORTAL KARTLARI */
+    div[data-testid*="stButton"] > button {
+        background-color: #ffffff !important;
+        border: 1px solid #e4e4e7 !important;
+        border-radius: 12px !important;
+        padding: 24px 22px !important;
+        min-height: 210px !important;
+        height: auto !important;
+        width: 100% !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.03) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        justify-content: space-between !important;
+        text-align: left !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-bottom: 16px !important;
     }
-    
-    /* Kurumsal Rozetler */
-    .badge {
-        font-size: 10px;
-        font-weight: 700;
-        padding: 4px 10px;
-        border-radius: 4px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: inline-block;
+    div[data-testid*="stButton"] > button:hover {
+        border-color: #f97316 !important; /* Schneider Turuncu Hover */
+        box-shadow: 0 12px 30px rgba(249, 115, 22, 0.12) !important;
+        transform: translateY(-4px) !important;
+        background-color: #ffffff !important;
     }
-    .badge-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-    .badge-healthy { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-
-    /* İletişim Linkleri */
-    a.corp-link {
-        color: #0284c7;
-        text-decoration: none;
-        font-weight: 600;
-    }
-    a.corp-link:hover {
-        text-decoration: underline;
-        color: #0369a1;
+    div[data-testid*="stButton"] > button p {
+        font-family: 'Inter', sans-serif !important;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+        line-height: 1.6 !important;
+        text-align: left !important;
+        white-space: pre-line !important;
+        width: 100% !important;
+        color: #3f3f46 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -127,7 +123,7 @@ if not st.session_state["authenticated"]:
         st.markdown("<br><br>", unsafe_allow_html=True)
         if os.path.exists("logo.jpg"):
             st.image("logo.jpg", width=220)
-        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — EXECUTIVE LOGIN")
+        st.markdown("### 🔒 MOONSTAR EXPRESS LLC — EXECUTIVE PORTAL LOGIN")
         with st.form("login_form"):
             email = st.text_input("Corporate Email", placeholder="ismail@moonstarpa.com")
             pwd = st.text_input("Password", type="password")
@@ -146,37 +142,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "badge-healthy", 999
+        return "No Record", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "badge-critical", diff
+            return f"Expired ({abs(diff)}d ago)", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "badge-warning", diff
+            return f"Due in {diff}d", diff
         else:
-            return f"Valid ({diff}d left)", "badge-healthy", diff
+            return f"Valid ({diff}d left)", diff
     except Exception:
-        return "Invalid", "badge-healthy", 999
+        return "Invalid", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)", "badge-healthy"
+        return "Exempt (Trailer)"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record", "badge-healthy"
+            return "No Record"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi", "badge-critical"
+            return f"Overdue by {abs(rem):,} mi"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi", "badge-warning"
+            return f"Due in {rem:,} mi"
         else:
-            return f"Valid ({rem:,} mi left)", "badge-healthy"
+            return f"Valid ({rem:,} mi left)"
     except Exception:
-        return "Not Set", "badge-healthy"
+        return "Not Set"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -263,37 +259,33 @@ def evaluate_insp(row):
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
                 if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "badge-critical"
+                    return f"Expired ({abs(diff)}d ago)", "CRITICAL"
                 elif diff <= 30:
-                    return f"Due in {diff}d", "badge-warning"
+                    return f"Due in {diff}d", "WARNING"
             except:
                 pass
-    return "Valid", "badge-healthy"
+    return "Valid", "HEALTHY"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_badge"] = [r[1] for r in insp_res]
-
-    oil_res = df_v.apply(check_oil_status, axis=1)
-    df_v["oil_status"] = [r[0] for r in oil_res]
-    df_v["oil_badge"] = [r[1] for r in oil_res]
+    df_v["insp_level"] = [r[1] for r in insp_res]
+    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
 
     def get_overall_priority(row):
-        if row["oil_badge"] == "badge-critical" or row["insp_badge"] == "badge-critical":
-            return "CRITICAL ACTION", "badge-critical", 1
-        elif row["oil_badge"] == "badge-warning" or row["insp_badge"] == "badge-warning":
-            return "DUE SOON", "badge-warning", 2
+        if "Overdue" in row["oil_status"] or row["insp_level"] == "CRITICAL":
+            return "CRITICAL ACTION", 1
+        elif "Due in" in row["oil_status"] or row["insp_level"] == "WARNING":
+            return "DUE SOON", 2
         else:
-            return "READY", "badge-healthy", 3
+            return "READY", 3
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["priority_badge"] = [p[1] for p in v_prio]
-    df_v["priority_order"] = [p[2] for p in v_prio]
+    df_v["priority_order"] = [p[1] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_badge"] == "badge-critical"])
-    insp_crit_count = len(df_v[df_v["insp_badge"] == "badge-critical"])
+    oil_crit_count = len(df_v[df_v["oil_status"].str.contains("Overdue")])
+    insp_crit_count = len(df_v[df_v["insp_level"] == "CRITICAL"])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
@@ -312,26 +304,23 @@ if os.path.exists(DRIVERS_FILE):
 
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Badge"] = [r[1] for r in cdl_res]
-    df_d["CDL_Diff"] = [r[2] for r in cdl_res]
+    df_d["CDL_Diff"] = [r[1] for r in cdl_res]
 
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Badge"] = [r[1] for r in med_res]
-    df_d["Med_Diff"] = [r[2] for r in med_res]
+    df_d["Med_Diff"] = [r[1] for r in med_res]
 
     def get_dr_priority(row):
         if row["CDL_Diff"] < 0 or row["Med_Diff"] < 0:
-            return "CRITICAL ACTION", "badge-critical", 1
+            return "CRITICAL ACTION", 1
         elif row["CDL_Diff"] <= 30 or row["Med_Diff"] <= 30:
-            return "DUE SOON", "badge-warning", 2
+            return "DUE SOON", 2
         else:
-            return "COMPLIANT", "badge-healthy", 3
+            return "READY", 3
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["priority_badge"] = [p[1] for p in dr_prio]
-    df_d["priority_order"] = [p[2] for p in dr_prio]
+    df_d["priority_order"] = [p[1] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
@@ -441,7 +430,7 @@ def open_driver_dossier(driver_name):
     with dt2:
         d_up1, d_up2 = st.columns([2, 3])
         with d_up1:
-            dr_cat = st.selectbox("Category", ["CDL Scan", "Medical Card Certificate", "Truck Check-in Photo", "Truck Check-out Photo", "Accident Photo", "DOT Citation"], key=f"drcat_{driver_name}")
+            dr_cat = st.selectbox("Category", ["CDL Scan", "Medical Card Certificate", "Truck Check-in/out Photo", "Accident Photo", "DOT Citation"], key=f"drcat_{driver_name}")
             dr_fil = st.file_uploader("Select File / Photo", type=["pdf", "png", "jpg", "jpeg"], key=f"drfil_{driver_name}")
             if dr_fil and st.button("Save to Driver Dossier", key=f"drbtn_{driver_name}"):
                 save_dr = f"DR_{driver_name.replace(' ', '_')}_{dr_cat.replace(' ', '_')}_{dr_fil.name}"
@@ -467,8 +456,8 @@ def open_driver_dossier(driver_name):
 st.markdown(f"""
 <div class="top-header">
     <div style="display:flex; align-items:center; gap:16px;">
-        <span class="brand-title">MOONSTAR <span style="color:#38bdf8;">EXPRESS LLC</span></span>
-        <span style="font-size:12px; color:#93c5fd; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Management Console</span>
+        <span class="brand-title">MOONSTAR <span style="color:#f97316;">EXPRESS LLC</span></span>
+        <span style="font-size:12px; color:#cbd5e1; border-left:1px solid #334155; padding-left:12px;">Executive Fleet Management Console</span>
     </div>
     <div style="font-size:12px; color:#f1f5f9;">
         User: <b>{st.session_state.get('current_user')}</b>
@@ -492,34 +481,34 @@ with nav_c2:
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
-# 1. MODÜL: TRUCKS & TRAILERS (KURUMSAL TABLO)
+# 1. MODÜL: TRUCKS & TRAILERS (SCHNEIDER TARZI BÜYÜK KARTLAR)
 # -------------------------------------------------------------
 if top_menu == "Trucks & Trailers":
     k1, k2, k3, k4 = st.columns(4)
     with k1:
         st.markdown(f"""
-        <div class="kpi-box" style="border-left: 5px solid #0284c7;">
+        <div class="kpi-card" style="border-left: 5px solid #0284c7;">
             <div class="kpi-title">Monthly Fleet Gross (ITS)</div>
             <div class="kpi-num" style="color:#0284c7;">${total_fleet_gross:,.2f}</div>
         </div>
         """, unsafe_allow_html=True)
     with k2:
         st.markdown(f"""
-        <div class="kpi-box" style="border-left: 5px solid #dc2626;">
+        <div class="kpi-card" style="border-left: 5px solid #dc2626;">
             <div class="kpi-title">Total Monthly Fuel Cost</div>
             <div class="kpi-num" style="color:#dc2626;">${total_fleet_fuel:,.2f}</div>
         </div>
         """, unsafe_allow_html=True)
     with k3:
         st.markdown(f"""
-        <div class="kpi-box" style="border-left: 5px solid #d97706;">
+        <div class="kpi-card" style="border-left: 5px solid #d97706;">
             <div class="kpi-title">Inspections Overdue / Due</div>
             <div class="kpi-num" style="color:#d97706;">{insp_crit_count} Assets</div>
         </div>
         """, unsafe_allow_html=True)
     with k4:
         st.markdown(f"""
-        <div class="kpi-box" style="border-left: 5px solid #16a34a;">
+        <div class="kpi-card" style="border-left: 5px solid #16a34a;">
             <div class="kpi-title">Active Fleet Total</div>
             <div class="kpi-num" style="color:#16a34a;">{len(df_v[df_v['unit_type']=='TRUCK'])} Trucks / {len(df_v[df_v['unit_type']=='TRAILER'])} Trailers</div>
         </div>
@@ -578,87 +567,53 @@ if top_menu == "Trucks & Trailers":
             df_filtered["make_model"].str.lower().str.contains(s)
         ]
 
-    st.markdown("### 📋 Fleet Operations & Financial Master Table")
-    
-    # HTML TABLO BAŞLIĞI VE SATIRLARI (ENTERPRISE GRADE)
-    table_html = """
-    <div class="enterprise-table-container">
-        <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-            <thead>
-                <tr style="background:#0b1f3a; color:#ffffff; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
-                    <th style="padding:12px 16px;">Unit #</th>
-                    <th style="padding:12px 12px;">Type</th>
-                    <th style="padding:12px 12px;">Driver</th>
-                    <th style="padding:12px 12px;">Hooked</th>
-                    <th style="padding:12px 12px;">Oil Service</th>
-                    <th style="padding:12px 12px;">Annual DOT</th>
-                    <th style="padding:12px 12px;">Gross (ITS)</th>
-                    <th style="padding:12px 12px;">Fuel Cost</th>
-                    <th style="padding:12px 12px;">Net Profit</th>
-                    <th style="padding:12px 12px; text-align:center;">Status</th>
-                    <th style="padding:12px 16px; text-align:right;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-    """
-    
-    for _, r in df_filtered.iterrows():
-        b_class = r['priority_badge']
-        p_label = r['priority_label']
-        driver_txt = r['driver'] if r['driver'] else '<span style="color:#94a3b8;">Unassigned</span>'
-        hook_txt = f"#{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else '-'
-        
-        table_html += f"""
-                <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.1s;">
-                    <td style="padding:12px 16px; font-weight:800; color:#0b1f3a;">#{r['unit_number']}</td>
-                    <td style="padding:12px 12px; font-weight:600; color:#475569;">{r['unit_type']}</td>
-                    <td style="padding:12px 12px; font-weight:600; color:#1e293b;">{driver_txt}</td>
-                    <td style="padding:12px 12px; color:#334155;">{hook_txt}</td>
-                    <td style="padding:12px 12px; color:#334155;">{r['oil_status']}</td>
-                    <td style="padding:12px 12px; color:#334155;">{r['insp_status']}</td>
-                    <td style="padding:12px 12px; font-weight:700; color:#0284c7;">${r['monthly_gross']:,.0f}</td>
-                    <td style="padding:12px 12px; font-weight:700; color:#dc2626;">${r['monthly_fuel_cost']:,.0f}</td>
-                    <td style="padding:12px 12px; font-weight:800; color:#16a34a;">${r['net_profit']:,.0f}</td>
-                    <td style="padding:12px 12px; text-align:center;"><span class="badge {b_class}">{p_label}</span></td>
-                    <td style="padding:12px 16px; text-align:right;" id="row_btn_{r['unit_number']}"></td>
-                </tr>
-        """
-    
-    table_html += """
-            </tbody>
-        </table>
-    </div>
-    """
-    st.markdown(table_html, unsafe_allow_html=True)
+    st.markdown("### 📦 Fleet Equipment Portal (Click any card to open master dossier)")
 
-    # Streamlit Aksiyon Butonları (Her Satır İçin Yan Yana Dosya Açma)
-    for _, r in df_filtered.iterrows():
-        if st.button(f"📂 Open Dossier #{r['unit_number']}", key=f"tbl_btn_{r['unit_number']}"):
-            open_equipment_dossier(r['unit_number'])
+    # SCHNEIDER TARZI 3'LÜ BÜYÜK PORTAL KARTLARI GRID YAPISI
+    cols = st.columns(3)
+    for idx, (_, r) in enumerate(df_filtered.iterrows()):
+        with cols[idx % 3]:
+            driver_str = r['driver'] if r['driver'] else 'Unassigned'
+            hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
+            
+            # Kartın üstündeki kurumsal başlık ve metinler
+            card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})"
+            card_body = (
+                f"Status: {r['priority_label']}\n"
+                f"Driver: {driver_str}\n"
+                f"Hooked: {hook_str}\n"
+                f"Oil Service: {r['oil_status']}\n"
+                f"Annual DOT: {r['insp_status']}\n"
+                f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
+                f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
+            )
+            
+            if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
+                open_equipment_dossier(r['unit_number'])
 
 # -------------------------------------------------------------
-# 2. MODÜL: DRIVERS COMPLIANCE (CLICK-TO-CALL & CLICK-TO-EMAIL)
+# 2. MODÜL: DRIVERS COMPLIANCE
 # -------------------------------------------------------------
 elif top_menu == "Drivers Compliance":
     if not df_d.empty:
         dk1, dk2, dk3 = st.columns(3)
         with dk1:
             st.markdown(f"""
-            <div class="kpi-box" style="border-left: 5px solid #dc2626;">
+            <div class="kpi-card" style="border-left: 5px solid #dc2626;">
                 <div class="kpi-title">CDL / Medical Expired</div>
                 <div class="kpi-num" style="color:#dc2626;">{dr_crit_count} Drivers</div>
             </div>
             """, unsafe_allow_html=True)
         with dk2:
             st.markdown(f"""
-            <div class="kpi-box" style="border-left: 5px solid #d97706;">
+            <div class="kpi-card" style="border-left: 5px solid #d97706;">
                 <div class="kpi-title">Expiring in 30 Days</div>
                 <div class="kpi-num" style="color:#d97706;">{len(df_d[df_d['priority_order']==2])} Drivers</div>
             </div>
             """, unsafe_allow_html=True)
         with dk3:
             st.markdown(f"""
-            <div class="kpi-box" style="border-left: 5px solid #16a34a;">
+            <div class="kpi-card" style="border-left: 5px solid #16a34a;">
                 <div class="kpi-title">Total Drivers Roster</div>
                 <div class="kpi-num" style="color:#16a34a;">{len(df_d)} Drivers</div>
             </div>
@@ -703,56 +658,25 @@ elif top_menu == "Drivers Compliance":
                 df_dr_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.markdown("### 👤 Driver Safety & Compliance Master Table")
-        
-        driver_table_html = """
-        <div class="enterprise-table-container">
-            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-                <thead>
-                    <tr style="background:#0b1f3a; color:#ffffff; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.5px;">
-                        <th style="padding:12px 16px;">Driver Name</th>
-                        <th style="padding:12px 12px;">Phone (Click to Call)</th>
-                        <th style="padding:12px 12px;">Email (Click to Mail)</th>
-                        <th style="padding:12px 12px;">CDL #</th>
-                        <th style="padding:12px 12px;">CDL Expiry</th>
-                        <th style="padding:12px 12px;">Medical Card</th>
-                        <th style="padding:12px 12px; text-align:center;">Status</th>
-                        <th style="padding:12px 16px; text-align:right;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-        """
-        
-        for _, r in df_dr_view.iterrows():
-            phone_clean = re.sub(r'\D', '', str(r['Telephone']))
-            phone_link = f"<a class='corp-link' href='tel:{phone_clean}'>📞 {r['Telephone']}</a>" if phone_clean else "-"
-            
-            email_val = str(r.get('E-mail', '-'))
-            email_link = f"<a class='corp-link' href='mailto:{email_val}'>✉️ {email_val}</a>" if email_val != '-' else "-"
-            
-            driver_table_html += f"""
-                    <tr style="border-bottom:1px solid #e2e8f0;">
-                        <td style="padding:12px 16px; font-weight:800; color:#0b1f3a;">{r['Name']}</td>
-                        <td style="padding:12px 12px;">{phone_link}</td>
-                        <td style="padding:12px 12px;">{email_link}</td>
-                        <td style="padding:12px 12px; color:#334155;">{r['License Number']}</td>
-                        <td style="padding:12px 12px; color:#334155;">{r['License Expiry']}</td>
-                        <td style="padding:12px 12px; color:#334155;">{r['Next Medical']}</td>
-                        <td style="padding:12px 12px; text-align:center;"><span class="badge {r['priority_badge']}">{r['priority_label']}</span></td>
-                        <td style="padding:12px 16px; text-align:right;"></td>
-                    </tr>
-            """
-        
-        driver_table_html += """
-                </tbody>
-            </table>
-        </div>
-        """
-        st.markdown(driver_table_html, unsafe_allow_html=True)
+        st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
 
+        # SCHNEIDER TARZI 3'LÜ ŞOFÖR KARTLARI
+        d_cols = st.columns(3)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
-            if st.button(f"📂 Open Dossier {d_row['Name'].split('/')[0]}", key=f"tbl_dr_btn_{j}"):
-                open_driver_dossier(d_row['Name'])
+            with d_cols[j % 3]:
+                phone_clean = re.sub(r'\D', '', str(d_row['Telephone']))
+                
+                dr_card_title = f"{d_row['Name']}"
+                dr_card_body = (
+                    f"Status: {d_row['priority_label']}\n"
+                    f"Phone: {d_row['Telephone']} (Click to Call)\n"
+                    f"Email: {d_row.get('E-mail', '-')}\n"
+                    f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
+                    f"Medical Card: {d_row['Med_Status']} ➔ Open Dossier"
+                )
+                
+                if st.button(f"{dr_card_title}\n\n{dr_card_body}", key=f"schneider_dr_{j}", use_container_width=True):
+                    open_driver_dossier(d_row['Name'])
     else:
         st.info("No drivers data found.")
 

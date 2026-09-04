@@ -1,5 +1,6 @@
 import glob
 import os
+import re
 import shutil
 import sqlite3
 from datetime import datetime
@@ -16,7 +17,6 @@ st.set_page_config(
 # Kurumsal TMS Teması & Özel CSS
 st.markdown("""
 <style>
-    /* Üst Bar Stili */
     .top-header {
         background: linear-gradient(90deg, #0b1f3a 0%, #1a365d 60%, #0284c7 100%);
         padding: 12px 24px;
@@ -28,17 +28,8 @@ st.markdown("""
         margin-bottom: 20px;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    .top-title {
-        font-size: 22px;
-        font-weight: 800;
-        letter-spacing: 1px;
-        margin: 0;
-    }
-    .top-sub {
-        font-size: 13px;
-        color: #93c5fd;
-        margin: 0;
-    }
+    .top-title { font-size: 22px; font-weight: 800; letter-spacing: 1px; margin: 0; }
+    .top-sub { font-size: 13px; color: #93c5fd; margin: 0; }
     .account-badge {
         background: rgba(255, 255, 255, 0.15);
         padding: 6px 14px;
@@ -46,10 +37,6 @@ st.markdown("""
         font-size: 12px;
         border: 1px solid rgba(255, 255, 255, 0.3);
     }
-    /* Durum Rozetleri */
-    .badge-open { background-color: #fef08a; color: #854d0e; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-    .badge-route { background-color: #bbf7d0; color: #166534; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
-    .badge-alert { background-color: #fecaca; color: #991b1b; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -57,6 +44,7 @@ DB_FILE = "fleet_database.db"
 INVOICE_DIR = "faturalar"
 DRIVERS_FILE = "Drivers.xlsx"
 FLEET_EXCEL = "Başlıksız e-tablo (2) copy 2.xlsx"
+SERVICE_LOGS_CSV = "Service logs.csv"
 
 os.makedirs(INVOICE_DIR, exist_ok=True)
 
@@ -105,6 +93,12 @@ def check_driver_expiry(date_str):
             return f"Geçerli ({diff}g)", "🟢"
     except Exception:
         return "Geçersiz", "⚪"
+
+def extract_unit_no(asset_str):
+    if not isinstance(asset_str, str):
+        return ""
+    m = re.search(r'\b\d+\b', asset_str)
+    return m.group(0) if m else asset_str.strip()
 
 def parse_updated_sheet(filepath):
     try:
@@ -204,6 +198,29 @@ def init_db():
                 r["state_inspection"], r["current_mileage"], r["last_oil_mileage"], r["oil_interval"]
             ))
         conn.commit()
+
+    # Service logs.csv'den son yağ değişim milini güncelle
+    if os.path.exists(SERVICE_LOGS_CSV):
+        try:
+            df_csv = pd.read_csv(SERVICE_LOGS_CSV)
+            for _, s_row in df_csv.iterrows():
+                u_extracted = extract_unit_no(str(s_row.get("Asset", "")))
+                odo = str(s_row.get("Odometer (mi)", "0")).replace(",", "").strip()
+                try:
+                    odo_val = int(float(odo))
+                    if odo_val > 0 and u_extracted:
+                        c.execute("""
+                            UPDATE vehicles 
+                            SET last_oil_mileage = MAX(last_oil_mileage, ?),
+                                current_mileage = MAX(current_mileage, ?)
+                            WHERE unit_number = ?
+                        """, (odo_val, odo_val, u_extracted))
+                except Exception:
+                    pass
+            conn.commit()
+        except Exception:
+            pass
+
     conn.close()
 
 init_db()
@@ -227,7 +244,7 @@ def evaluate_status(row):
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         o_i = int(row.get("oil_interval") or 0)
-        if o_i > 0:
+        if o_i > 0 and l_o > 0:
             miles_run = c_m - l_o
             if miles_run >= o_i:
                 return "GECİKMİŞ ❌"
@@ -312,7 +329,7 @@ if menu == "📊 Dispatch & Filo Yönetimi":
     k2.metric("Aktif Dorse (Trailer)", f"{total_trailers}")
     k3.metric("Kritik / Geciken Muayene", total_expired, delta_color="inverse")
     k4.metric("Yaklaşan Muayene (30g)", total_warning, delta_color="off")
-    k5.metric("Toplam Filo Masrafı", f"${all_spending:,.2f}")
+    k5.metric("Toplam Masraf", f"${all_spending:,.2f}")
 
     st.markdown("#### 📋 Canlı Araç & Ekipman Takip Listesi")
 
@@ -355,6 +372,8 @@ if menu == "📊 Dispatch & Filo Yönetimi":
             "total_spent": st.column_config.TextColumn("Toplam Masraf", disabled=True),
             "durum": st.column_config.TextColumn("Durum", disabled=True),
             "kalan_yag_mili": st.column_config.TextColumn("Kalan Yağ Mili", disabled=True),
+            "last_oil_mileage": st.column_config.NumberColumn("Son Yağ Mili", help="En son yağ değişim mili"),
+            "current_mileage": st.column_config.NumberColumn("Güncel Mil", help="Aracın güncel sayacı"),
             "company": st.column_config.SelectboxColumn("Firma", options=["MOONSTAR", "LIONSTAR"]),
             "unit_type": st.column_config.SelectboxColumn("Tür", options=["TRUCK", "TRAILER"]),
         },
@@ -525,10 +544,18 @@ elif menu == "👤 Şoförler & Compliance (CDL/Medical)":
                     st.rerun()
 
 # -------------------------------------------------------------
-# 3. SAYFA: BAKIM & SERVİS KAYITLARI
+# 3. SAYFA: BAKIM & SERVİS KAYITLARI (CSV ENTEGRASYONLU)
 # -------------------------------------------------------------
 elif menu == "🔧 Bakım & Servis Kayıtları":
-    st.markdown("#### 🔧 Araç Bakım, Yağ Değişimi & Servis Girişi")
+    st.markdown("#### 🔧 Araç Bakım, Yağ Değişimi & Servis Kayıtları")
+
+    # Service logs.csv geçmişi
+    if os.path.exists(SERVICE_LOGS_CSV):
+        with st.expander("📜 Service logs.csv Geçmiş Kayıtları (Sistem İçi)", expanded=True):
+            df_s_csv = pd.read_csv(SERVICE_LOGS_CSV)
+            st.dataframe(df_s_csv, use_container_width=True, height=280)
+
+    st.markdown("##### ➕ Yeni Servis / Yağ Değişimi Girişi")
     with st.form("log_form", clear_on_submit=True):
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -570,7 +597,7 @@ elif menu == "🧾 Muhasebe, Faturalar & Evrak Arşivi":
     if not df_logs.empty:
         st.dataframe(df_logs, use_container_width=True, hide_index=True)
     else:
-        st.info("Kayıtlı harcama bulunmuyor.")
+        st.info("Kayıtlı fatura girişi bulunmuyor.")
 
     st.markdown("---")
     with st.expander("📁 Belge & Dosya Deposu (Ruhsat, Sigorta, Fatura Yükle / Sil)"):
@@ -593,7 +620,7 @@ elif menu == "🧾 Muhasebe, Faturalar & Evrak Arşivi":
         with bb:
             st.markdown("**Arşivdeki Belgeler & Silme**")
             existing_files = os.listdir(INVOICE_DIR) if os.path.exists(INVOICE_DIR) else []
-            f_del = st.selectbox("Silinecek Dosyayı Seçin:", ["Seçiniz..."] + existing_files)
+            f_del = st.selectbox("Silinecek Dosyayı Seçin:", ["Seçiniz..."] + all_docs if 'all_docs' in locals() else ["Seçiniz..."] + existing_files)
             if st.button("🗑️ Dosyayı Sil", type="secondary"):
                 if f_del != "Seçiniz...":
                     del_p = os.path.join(INVOICE_DIR, f_del)

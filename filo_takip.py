@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR ÜST DÜZEY ENTERPRISE KONSOL STİLLERİ
+# MOONSTAR KUSURSUZ ENTERPRISE KONSOL STİLLERİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -565,10 +565,10 @@ def open_driver_dossier(driver_name):
             st.rerun()
 
 # ---------------------------------------------
-# TOP NAVBAR (KUSURSUZ TEK PARÇA ÜST ÇUBUK VE SIGN OUT)
+# TOP NAVBAR (TEK PARÇA TEMİZ ÜST ÇUBUK VE SIGN OUT)
 # ---------------------------------------------
-nav_top_col1, nav_top_col2 = st.columns([6, 1])
-with nav_top_col1:
+header_c1, header_c2 = st.columns([6, 1])
+with header_c1:
     st.markdown(f"""
     <div style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%); padding:12px 20px; border-radius:8px; border-bottom:3px solid #f97316; color:white;">
         <div style="font-family:'Montserrat',sans-serif; font-size:18px; font-weight:900;">
@@ -580,7 +580,7 @@ with nav_top_col1:
     </div>
     """, unsafe_allow_html=True)
 
-with nav_top_col2:
+with header_c2:
     st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
     if st.button("Sign Out", key="top_sign_out", use_container_width=True):
         st.session_state["authenticated"] = False
@@ -703,9 +703,11 @@ if top_menu == "Trucks & Trailers":
             
             badge_color = "#16a34a" if "READY" in r['priority_label'] else "#d97706"
             
-            card_title = f"<div style='display:flex; justify-content:space-between; width:100%; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:6px; margin-bottom:8px;'><b style='font-size:15px; font-weight:900; color:#0b1f3a;'>UNIT #{r['unit_number']} ({r['unit_type']})</b> <span style='background:{badge_color}15; color:{badge_color}; border:1px solid {badge_color}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;'>{r['priority_label']}</span></div>"
+            card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})"
+            card_status = f"{r['priority_label']}"
             
             card_body = (
+                f"Status: {card_status}\n"
                 f"Driver: {driver_str}\n"
                 f"Hooked: {hook_str}\n"
                 f"Oil Service: {r['oil_status']}\n"
@@ -797,10 +799,10 @@ elif top_menu == "Drivers Compliance":
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
-                badge_color = "#16a34a" if "READY" in d_row['priority_label'] else "#d97706"
-                card_title = f"<div style='display:flex; justify-content:space-between; width:100%; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:6px; margin-bottom:8px;'><b style='font-size:15px; font-weight:900; color:#0b1f3a;'>{d_row['Name']}</b> <span style='background:{badge_color}15; color:{badge_color}; border:1px solid {badge_color}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;'>{d_row['priority_label']}</span></div>"
-                
+                card_title = f"{d_row['Name']}"
+                card_status = f"{d_row['priority_label']}"
                 card_body = (
+                    f"Status: {card_status}\n"
                     f"Phone: {d_row['Telephone']}\n"
                     f"Email: {d_row.get('E-mail', '-')}\n"
                     f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"

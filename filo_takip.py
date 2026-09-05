@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR ORİJİNAL LOGO VE ENTERPRISE KONSOL STİLLERİ
+# MOONSTAR ÜST DÜZEY ENTERPRISE KONSOL STİLLERİ
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -25,77 +25,18 @@ st.markdown("""
         color: #0f172a;
     }
     
-    /* Orijinal Moonstar Web Sitesi Navigasyonu */
-    .moonstar-header {
-        background: #ffffff;
-        padding: 16px 40px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #e2e8f0;
-        margin-bottom: 24px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    }
-
-    /* Navbar Butonları */
-    div[data-testid*="column"] button {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-        color: #0f172a !important;
-        font-family: 'Montserrat', sans-serif !important;
-        font-weight: 700 !important;
-        font-size: 13px !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        padding: 6px 12px !important;
-        min-height: unset !important;
-        height: auto !important;
-        transition: color 0.15s ease !important;
-    }
-    div[data-testid*="column"] button:hover {
-        color: #0284c7 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        transform: none !important;
-    }
-
-    /* Hero Banner (Home Ekranı) */
-    .hero-container {
-        display: flex;
-        background: #111111;
-        border-radius: 12px;
-        overflow: hidden;
-        color: white;
-        margin-bottom: 30px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .hero-left {
-        flex: 1;
-        background: url('https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=1000&auto=format&fit=crop') center/cover;
-        min-height: 400px;
-    }
-    .hero-right {
-        flex: 1;
-        padding: 60px 50px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        background: #18181b;
-    }
-
-    /* Üst Konsol Header (Orijinal Yıldızlı Logo ile) */
+    /* Üst Konsol Header */
     .top-header {
         background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
-        padding: 16px 28px;
-        border-radius: 10px;
+        padding: 14px 24px;
+        border-radius: 8px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         color: white;
         margin-bottom: 20px;
-        box-shadow: 0 4px 20px rgba(11, 31, 58, 0.18);
-        border-bottom: 4px solid #f97316;
+        box-shadow: 0 4px 15px rgba(11, 31, 58, 0.15);
+        border-bottom: 3px solid #f97316;
     }
     .brand-title {
         font-family: 'Montserrat', sans-serif;
@@ -111,8 +52,8 @@ st.markdown("""
         background: #ffffff;
         border-radius: 10px;
         padding: 16px 20px;
-        border: 1px solid #cbd5e1;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        border: 2px solid #0f172a;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
         margin-bottom: 20px;
     }
     .kpi-title {
@@ -130,15 +71,15 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* 4 KOLONLU LÜKS KARTLAR (SARI VE YEŞİL STANDARTLAR) */
+    /* KALIN SİYAH ÇERÇEVELİ SAMSARA KARTLARI */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
         padding: 18px 20px !important;
-        min-height: 210px !important;
+        min-height: 200px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -150,17 +91,17 @@ st.markdown("""
     }
     
     div[data-testid*="stButton"] > button.btn-warning {
-        border: 1.5px solid #cbd5e1 !important;
+        border: 2px solid #0f172a !important;
         border-left: 7px solid #d97706 !important;
     }
     div[data-testid*="stButton"] > button.btn-healthy {
-        border: 1.5px solid #cbd5e1 !important;
+        border: 2px solid #0f172a !important;
         border-left: 7px solid #16a34a !important;
     }
 
     div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15) !important;
-        transform: translateY(-3px) !important;
+        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15) !important;
+        transform: translateY(-2px) !important;
         background-color: #ffffff !important;
     }
     div[data-testid*="stButton"] > button p {
@@ -172,31 +113,7 @@ st.markdown("""
         text-align: left !important;
         white-space: pre-wrap !important;
         width: 100% !important;
-        color: #1e293b !important;
-    }
-
-    /* Yüzen Canlı Chat Balonu (Floating Chat Widget) */
-    .floating-chat-btn {
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        background: #0284c7;
-        color: white;
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 20px rgba(2, 132, 199, 0.4);
-        cursor: pointer;
-        z-index: 99999;
-        font-size: 24px;
-        transition: transform 0.2s;
-    }
-    .floating-chat-btn:hover {
-        transform: scale(1.08);
-        background: #0369a1;
+        color: #0f172a !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -333,37 +250,37 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "No Record", "btn-healthy", 999
+        return "READY", "btn-healthy", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
         if diff < 0:
-            return f"Expired ({abs(diff)}d ago)", "btn-warning", diff
+            return "DUE SOON", "btn-warning", diff
         elif diff <= 30:
-            return f"Due in {diff}d", "btn-warning", diff
+            return f"DUE IN {diff}d", "btn-warning", diff
         else:
-            return f"Valid ({diff}d left)", "btn-healthy", diff
+            return "READY", "btn-healthy", diff
     except Exception:
-        return "Invalid", "btn-healthy", 999
+        return "READY", "btn-healthy", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "Exempt (Trailer)", "btn-healthy"
+        return "READY", "btn-healthy"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "No Record", "btn-healthy"
+            return "READY", "btn-healthy"
         rem = interval - (c_m - l_o)
         if rem < 0:
-            return f"Overdue by {abs(rem):,} mi", "btn-warning"
+            return "DUE SOON", "btn-warning"
         elif rem <= 3000:
-            return f"Due in {rem:,} mi", "btn-warning"
+            return "DUE SOON", "btn-warning"
         else:
-            return f"Valid ({rem:,} mi left)", "btn-healthy"
+            return "READY", "btn-healthy"
     except Exception:
-        return "Not Set", "btn-healthy"
+        return "READY", "btn-healthy"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -412,6 +329,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS team_chat (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             sender TEXT,
+            recipient TEXT,
             message TEXT,
             timestamp TEXT
         )
@@ -455,13 +373,11 @@ def evaluate_insp(row):
         if d_str and d_str not in ["nan", "None", "", "-"]:
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
-                if diff < 0:
-                    return f"Expired ({abs(diff)}d ago)", "btn-warning"
-                elif diff <= 30:
-                    return f"Due in {diff}d", "btn-warning"
+                if diff < 0 or diff <= 30:
+                    return "DUE SOON", "btn-warning"
             except:
                 pass
-    return "Valid", "btn-healthy"
+    return "READY", "btn-healthy"
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
@@ -474,9 +390,9 @@ if not df_v.empty:
 
     def get_overall_priority(row):
         if row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
-            return "🟡 [DUE ACTION]", "btn-warning", 1
+            return "DUE SOON", "btn-warning", 1
         else:
-            return "🟢 [READY]", "btn-healthy", 2
+            return "READY", "btn-healthy", 2
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
@@ -503,9 +419,9 @@ if not df_d.empty:
 
     def get_dr_priority(row):
         if row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
-            return "🟡 [DUE ACTION]", "btn-warning", 1
+            return "DUE SOON", "btn-warning", 1
         else:
-            return "🟢 [READY]", "btn-healthy", 2
+            return "READY", "btn-healthy", 2
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
@@ -649,36 +565,35 @@ def open_driver_dossier(driver_name):
             st.rerun()
 
 # ---------------------------------------------
-# TOP NAVBAR (ORİJİNAL YILDIZLI MOONSTAR LOGOSU İLE)
+# TOP NAVBAR (KUSURSUZ TEK PARÇA ÜST ÇUBUK VE SIGN OUT)
 # ---------------------------------------------
-nav_top_col1, nav_top_col2 = st.columns([4, 1])
+nav_top_col1, nav_top_col2 = st.columns([6, 1])
 with nav_top_col1:
     st.markdown(f"""
-    <div style="display:flex; align-items:center; gap:16px; background:linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%); padding:12px 20px; border-radius:8px; border-bottom:3px solid #f97316; color:white;">
+    <div style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%); padding:12px 20px; border-radius:8px; border-bottom:3px solid #f97316; color:white;">
         <div style="font-family:'Montserrat',sans-serif; font-size:18px; font-weight:900;">
             MOON<span style="color:#f97316;">★</span>TAR <span style="font-size:10px; color:#38bdf8;">EXPRESS LLC</span>
         </div>
-        <div style="font-size:11px; color:#cbd5e1; border-left:1px solid #334155; padding-left:12px;">
+        <div style="font-size:11px; color:#cbd5e1;">
             Executive Fleet Management Console | User: <b>{st.session_state.get('current_user')}</b>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
 with nav_top_col2:
-    if st.button("Sign Out", use_container_width=True):
+    st.markdown("<div style='height: 4px;'></div>", unsafe_allow_html=True)
+    if st.button("Sign Out", key="top_sign_out", use_container_width=True):
         st.session_state["authenticated"] = False
         st.rerun()
 
 st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
 
-nav_c1, nav_c2 = st.columns([5, 1])
-with nav_c1:
-    top_menu = st.radio(
-        "Navigation",
-        ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS/Fuel)", "Service Ledger"],
-        horizontal=True,
-        label_visibility="collapsed"
-    )
+top_menu = st.radio(
+    "Navigation",
+    ["Trucks & Trailers", "Drivers Compliance", "Data Imports (Samsara/ITS/Fuel)", "Service Ledger"],
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
 st.markdown("<div style='height: 10px;'></div>", unsafe_allow_html=True)
 
@@ -725,7 +640,7 @@ if top_menu == "Trucks & Trailers":
         f_srch = st.text_input("Find Unit, Driver or Model:", placeholder="Type Unit # (e.g. 12)...")
     with f4:
         st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-        if st.button("+ Add Equipment", use_container_width=True):
+        if st.button("+ Add Equipment", key="add_eq_btn", use_container_width=True):
             st.session_state["show_add_modal"] = True
 
     if st.session_state.get("show_add_modal", False):
@@ -786,14 +701,17 @@ if top_menu == "Trucks & Trailers":
             driver_str = r['driver'] if r['driver'] else 'Unassigned'
             hook_str = f"Trailer #{r['hooked_trailer']}" if r['hooked_trailer'] and r['hooked_trailer'] != 'None' else 'Bobtail'
             
-            card_title = f"UNIT #{r['unit_number']} ({r['unit_type']})\n{r['priority_label']}"
+            badge_color = "#16a34a" if "READY" in r['priority_label'] else "#d97706"
+            
+            card_title = f"<div style='display:flex; justify-content:space-between; width:100%; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:6px; margin-bottom:8px;'><b style='font-size:15px; font-weight:900; color:#0b1f3a;'>UNIT #{r['unit_number']} ({r['unit_type']})</b> <span style='background:{badge_color}15; color:{badge_color}; border:1px solid {badge_color}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;'>{r['priority_label']}</span></div>"
+            
             card_body = (
                 f"Driver: {driver_str}\n"
                 f"Hooked: {hook_str}\n"
                 f"Oil Service: {r['oil_status']}\n"
                 f"Annual DOT: {r['insp_status']}\n"
                 f"Gross: ${r['monthly_gross']:,.0f} | Fuel: ${r['monthly_fuel_cost']:,.0f}\n"
-                f"Net Profit: ${r['net_profit']:,.0f} ➔ Open Dossier"
+                f"Net Profit: ${r['net_profit']:,.0f}"
             )
             
             st.markdown(f'<div class="{r["btn_class"]}">', unsafe_allow_html=True)
@@ -836,7 +754,7 @@ elif top_menu == "Drivers Compliance":
             dr_search = st.text_input("Find Driver Name or Phone:")
         with df3:
             st.markdown("<div style='height: 28px;'></div>", unsafe_allow_html=True)
-            if st.button("+ Onboard Driver", use_container_width=True):
+            if st.button("+ Onboard Driver", key="add_dr_btn", use_container_width=True):
                 st.session_state["show_add_driver_modal"] = True
 
         if st.session_state.get("show_add_driver_modal", False):
@@ -874,17 +792,19 @@ elif top_menu == "Drivers Compliance":
                 df_dr_view["Telephone"].str.lower().str.contains(ds)
             ]
 
-        st.markdown("### 👤 Driver Roster & Safety Portal (Click any card to open dossier)")
+        st.markdown("### 👤 Driver Roster & Safety Portal")
 
         d_cols = st.columns(4)
         for j, (_, d_row) in enumerate(df_dr_view.iterrows()):
             with d_cols[j % 4]:
-                card_title = f"{d_row['Name']}\n{d_row['priority_label']}"
+                badge_color = "#16a34a" if "READY" in d_row['priority_label'] else "#d97706"
+                card_title = f"<div style='display:flex; justify-content:space-between; width:100%; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:6px; margin-bottom:8px;'><b style='font-size:15px; font-weight:900; color:#0b1f3a;'>{d_row['Name']}</b> <span style='background:{badge_color}15; color:{badge_color}; border:1px solid {badge_color}; font-size:10px; font-weight:800; padding:2px 8px; border-radius:4px;'>{d_row['priority_label']}</span></div>"
+                
                 card_body = (
                     f"Phone: {d_row['Telephone']}\n"
                     f"Email: {d_row.get('E-mail', '-')}\n"
                     f"CDL #{d_row['License Number']}: {d_row['CDL_Status']}\n"
-                    f"Medical Card: {d_row['Med_Status']} ➔ Open Dossier"
+                    f"Medical Card: {d_row['Med_Status']}"
                 )
                 
                 st.markdown(f'<div class="{d_row["btn_class"]}">', unsafe_allow_html=True)
@@ -1020,31 +940,55 @@ elif top_menu == "Service Ledger":
             st.rerun()
 
 # -------------------------------------------------------------
-# YÜZEN DİSPATCH CHAT BALONU (FLOATING CHAT WIDGET)
+# MULTI-USER CHAT & DIRECT MESSAGING (ŞİRKET İÇİ MESAJLAŞMA)
 # -------------------------------------------------------------
-st.markdown("""
-<div class="floating-chat-btn" onclick="alert('Dispatch Chat opened! Use the sidebar panel or chat widget.');">
-    💬
-</div>
-""", unsafe_allow_html=True)
-
 with st.sidebar:
-    st.markdown("### 💬 Dispatch Live Chat")
-    with st.form("chat_form_floating", clear_on_submit=True):
-        msg_txt = st.text_input("Write dispatch note...", placeholder="Unit 14 delivered...")
-        if st.form_submit_button("Send Note") and msg_txt.strip():
+    st.markdown("### 💬 Executive Dispatch & Team Chat")
+    
+    team_members = ["ismail@moonstarpa.com", "seha@moonstarpa.com", "dispatch@moonstarpa.com", "safety@moonstarpa.com"]
+    current_active_profile = st.selectbox("My Active Profile", team_members)
+    
+    st.markdown("---")
+    chat_mode = st.radio("Messaging Mode", ["Global Fleet Group", "Direct Message (DM)"], horizontal=True)
+    
+    recipient = "Everyone"
+    if chat_mode == "Direct Message (DM)":
+        other_members = [m for m in team_members if m != current_active_profile]
+        recipient = st.selectbox("Select Recipient", other_members)
+    
+    st.markdown("---")
+    with st.form("active_chat_form", clear_on_submit=True):
+        msg_input = st.text_area("Type message...", placeholder="Write dispatch note or instructions...")
+        if st.form_submit_button("Send Message", use_container_width=True) and msg_input.strip():
             cur = conn.cursor()
-            now_s = datetime.now().strftime("%m/%d/%Y %I:%M %p")
-            cur.execute("INSERT INTO team_chat (sender, message, timestamp) VALUES (?, ?, ?)", (st.session_state.get("current_user"), msg_txt.strip(), now_s))
+            timestamp_str = datetime.now().strftime("%m/%d %I:%M %p")
+            cur.execute("INSERT INTO team_chat (sender, recipient, message, timestamp) VALUES (?, ?, ?, ?)", 
+                        (current_active_profile, recipient, msg_input.strip(), timestamp_str))
             conn.commit()
+            st.success("Message sent!")
             st.rerun()
 
-    st.markdown("---")
-    df_c = pd.read_sql_query("SELECT * FROM team_chat ORDER BY id DESC LIMIT 20", conn)
-    for _, r in df_c.iterrows():
-        st.markdown(f"""
-        <div style="background:#ffffff; border-left:3px solid #0284c7; padding:8px 10px; border-radius:4px; margin-bottom:6px; font-size:11px; border:1px solid #e2e8f0;">
-            <b>{r['sender']}</b> <span style="color:#64748b; font-size:9px;">{r['timestamp']}</span>
-            <div style="color:#0f172a; margin-top:2px;">{r['message']}</div>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown("#### 📜 Message History")
+    if chat_mode == "Global Fleet Group":
+        chat_df = pd.read_sql_query("SELECT * FROM team_chat WHERE recipient = 'Everyone' ORDER BY id DESC LIMIT 30", conn)
+    else:
+        chat_df = pd.read_sql_query("""
+            SELECT * FROM team_chat 
+            WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) 
+            ORDER BY id DESC LIMIT 30
+        """, conn, params=(current_active_profile, recipient, recipient, current_active_profile))
+    
+    if not chat_df.empty:
+        for _, chat_row in chat_df.iterrows():
+            is_me = chat_row['sender'] == current_active_profile
+            bg_col = "#e0f2fe" if is_me else "#ffffff"
+            align_style = "text-align: right;" if is_me else "text-align: left;"
+            st.markdown(f"""
+            <div style="background:{bg_col}; padding:8px 12px; border-radius:6px; margin-bottom:8px; border:1px solid #cbd5e1; {align_style}">
+                <div style="font-size:10px; font-weight:700; color:#0284c7;">{chat_row['sender']} {('➔ ' + chat_row['recipient']) if chat_row['recipient'] != 'Everyone' else ''}</div>
+                <div style="font-size:12px; color:#0f172a; margin-top:2px;">{chat_row['message']}</div>
+                <div style="font-size:9px; color:#64748b; margin-top:2px;">{chat_row['timestamp']}</div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.caption("No messages in this thread yet.")

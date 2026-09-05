@@ -14,7 +14,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# MOONSTAR KUSURSUZ ENTERPRISE KONSOL STİLLERİ
+# MOONSTAR ORİJİNAL LOGO VE SADE LÜKS KURUMSAL STİLLER
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap');
@@ -28,7 +28,7 @@ st.markdown("""
     /* Üst Konsol Header */
     .top-header {
         background: linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%);
-        padding: 14px 24px;
+        padding: 12px 24px;
         border-radius: 8px;
         display: flex;
         justify-content: space-between;
@@ -38,22 +38,14 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(11, 31, 58, 0.15);
         border-bottom: 3px solid #f97316;
     }
-    .brand-title {
-        font-family: 'Montserrat', sans-serif;
-        font-size: 20px;
-        font-weight: 900;
-        letter-spacing: 0.5px;
-        color: #ffffff;
-        margin: 0;
-    }
 
     /* Üst KPI Metrik Kartları */
     .kpi-card {
         background: #ffffff;
         border-radius: 10px;
         padding: 16px 20px;
-        border: 2px solid #0f172a;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+        border: 1px solid #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03);
         margin-bottom: 20px;
     }
     .kpi-title {
@@ -71,15 +63,16 @@ st.markdown("""
         margin-top: 6px;
     }
 
-    /* KALIN SİYAH ÇERÇEVELİ SAMSARA KARTLARI */
+    /* SADE VE ŞIK PORTAL KARTLARI (GÖNDERDİĞİNİZ FORM STİLİNDE) */
     div[data-testid*="stButton"] > button {
         background-color: #ffffff !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 10px !important;
         padding: 18px 20px !important;
-        min-height: 200px !important;
+        min-height: 190px !important;
         height: auto !important;
         width: 100% !important;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06) !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.03) !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: flex-start !important;
@@ -90,17 +83,9 @@ st.markdown("""
         margin-bottom: 16px !important;
     }
     
-    div[data-testid*="stButton"] > button.btn-warning {
-        border: 2px solid #0f172a !important;
-        border-left: 7px solid #d97706 !important;
-    }
-    div[data-testid*="stButton"] > button.btn-healthy {
-        border: 2px solid #0f172a !important;
-        border-left: 7px solid #16a34a !important;
-    }
-
     div[data-testid*="stButton"] > button:hover {
-        box-shadow: 0 10px 25px rgba(2, 132, 199, 0.15) !important;
+        border-color: #0284c7 !important;
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.12) !important;
         transform: translateY(-2px) !important;
         background-color: #ffffff !important;
     }
@@ -135,11 +120,14 @@ if "web_page" not in st.session_state:
 if not st.session_state["authenticated"]:
     hdr_left, hdr_right = st.columns([1.5, 3.5])
     with hdr_left:
-        st.markdown("""
-        <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:900; color:#0b1f3a; padding: 10px 0; display:flex; align-items:center; gap:8px;">
-            MOON<span style="color:#f97316;">★</span>TAR <span style="font-size:10px; color:#0284c7; border:1px solid #0284c7; padding:2px 6px; border-radius:4px;">EXPRESS</span>
-        </div>
-        """, unsafe_allow_html=True)
+        if os.path.exists("logo.jpg"):
+            st.image("logo.jpg", width=180)
+        else:
+            st.markdown("""
+            <div style="font-family:'Montserrat',sans-serif; font-size:22px; font-weight:900; color:#0b1f3a; padding: 10px 0;">
+                MOON<span style="color:#0284c7;">★</span>TAR <span style="font-size:10px; color:#f97316;">EXPRESS</span>
+            </div>
+            """, unsafe_allow_html=True)
     with hdr_right:
         nav_b1, nav_b2, nav_b3, nav_b4, nav_b5 = st.columns(5)
         with nav_b1:
@@ -169,7 +157,6 @@ if not st.session_state["authenticated"]:
         st.markdown("""
         
             
-            
                 RELIABLE TRANSPORTATION SOLUTIONS
                 Your trusted partner for safe and efficient travel across the United States.
                 📞 +1 215-666-0595
@@ -177,11 +164,10 @@ if not st.session_state["authenticated"]:
         
         """"""
         <div class="hero-container">
-            <div class="hero-left"></div>
-            <div class="hero-right">
-                <h1 style="font-family:'Montserrat',sans-serif; font-size:30px; font-weight:900; margin-bottom:12px; color:#ffffff;">RELIABLE TRANSPORTATION SOLUTIONS</h1>
-                <p style="font-size:14px; color:#a1a1aa; margin-bottom:20px;">Your trusted partner for safe and efficient travel across the United States.</p>
-                <div style="font-size:14px; color:#38bdf8; font-weight:700;">📞 +1 215-666-0595</div>
+            <div class="hero-right" style="padding:40px; background:#0b1f3a; border-radius:10px; color:white; margin-bottom:20px;">
+                <h1 style="font-family:'Montserrat',sans-serif; font-size:26px; font-weight:900; margin-bottom:10px;">RELIABLE TRANSPORTATION SOLUTIONS</h1>
+                <p style="font-size:13px; color:#cbd5e1; margin-bottom:15px;">Your trusted partner for safe and efficient travel across the United States.</p>
+                <div style="font-size:13px; color:#38bdf8; font-weight:700;">📞 +1 215-666-0595</div>
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -250,37 +236,33 @@ def get_connection():
 
 def check_date_status(date_str):
     if not date_str or str(date_str).strip() in ["0000-00-00", "nan", "None", "-", ""]:
-        return "READY", "btn-healthy", 999
+        return "READY", 999
     try:
         dt = datetime.strptime(str(date_str).strip()[:10], "%Y-%m-%d").date()
         diff = (dt - datetime.now().date()).days
-        if diff < 0:
-            return "DUE SOON", "btn-warning", diff
-        elif diff <= 30:
-            return f"DUE IN {diff}d", "btn-warning", diff
+        if diff < 0 or diff <= 30:
+            return "DUE SOON", diff
         else:
-            return "READY", "btn-healthy", diff
+            return "READY", diff
     except Exception:
-        return "READY", "btn-healthy", 999
+        return "READY", 999
 
 def check_oil_status(row):
     if row.get("unit_type") == "TRAILER":
-        return "READY", "btn-healthy"
+        return "READY"
     try:
         c_m = int(row.get("current_mileage") or 0)
         l_o = int(row.get("last_oil_mileage") or 0)
         interval = int(row.get("oil_interval") or 25000)
         if interval <= 0 or (l_o == 0 and c_m == 0):
-            return "READY", "btn-healthy"
+            return "READY"
         rem = interval - (c_m - l_o)
-        if rem < 0:
-            return "DUE SOON", "btn-warning"
-        elif rem <= 3000:
-            return "DUE SOON", "btn-warning"
+        if rem <= 3000:
+            return "DUE SOON"
         else:
-            return "READY", "btn-healthy"
+            return "READY"
     except Exception:
-        return "READY", "btn-healthy"
+        return "READY"
 
 def extract_unit_no(asset_str):
     if not isinstance(asset_str, str):
@@ -335,18 +317,6 @@ def init_db():
         )
     """)
     conn.commit()
-
-    c.execute("PRAGMA table_info(vehicles)")
-    cols = [col[1] for col in c.fetchall()]
-    if "monthly_gross" not in cols:
-        c.execute("ALTER TABLE vehicles ADD COLUMN monthly_gross REAL DEFAULT 0.0")
-    if "monthly_fuel_cost" not in cols:
-        c.execute("ALTER TABLE vehicles ADD COLUMN monthly_fuel_cost REAL DEFAULT 0.0")
-    if "hooked_trailer" not in cols:
-        c.execute("ALTER TABLE vehicles ADD COLUMN hooked_trailer TEXT DEFAULT 'None'")
-    if "current_location" not in cols:
-        c.execute("ALTER TABLE vehicles ADD COLUMN current_location TEXT DEFAULT 'Yard'")
-    conn.commit()
     conn.close()
 
 init_db()
@@ -360,7 +330,6 @@ df_v["total_expenses"] = df_v["unit_number"].map(unit_expenses).fillna(0.0)
 df_v["monthly_fuel_cost"] = df_v["monthly_fuel_cost"].fillna(0.0)
 df_v["net_profit"] = df_v["monthly_gross"] - (df_v["total_expenses"] + df_v["monthly_fuel_cost"])
 
-# DRIVERS READ
 df_d = pd.DataFrame()
 if os.path.exists(DRIVERS_FILE):
     df_d = pd.read_excel(DRIVERS_FILE)
@@ -373,66 +342,54 @@ def evaluate_insp(row):
         if d_str and d_str not in ["nan", "None", "", "-"]:
             try:
                 diff = (datetime.strptime(d_str[:10], "%Y-%m-%d").date() - today).days
-                if diff < 0 or diff <= 30:
-                    return "DUE SOON", "btn-warning"
+                if diff <= 30:
+                    return "DUE SOON", 1
             except:
                 pass
-    return "READY", "btn-healthy"
+    return "READY", 2
 
 if not df_v.empty:
     insp_res = df_v.apply(evaluate_insp, axis=1)
     df_v["insp_status"] = [r[0] for r in insp_res]
-    df_v["insp_class"] = [r[1] for r in insp_res]
-
-    oil_res = df_v.apply(check_oil_status, axis=1)
-    df_v["oil_status"] = [r[0] for r in oil_res]
-    df_v["oil_class"] = [r[1] for r in oil_res]
+    df_v["oil_status"] = df_v.apply(check_oil_status, axis=1)
 
     def get_overall_priority(row):
-        if row["oil_class"] == "btn-warning" or row["insp_class"] == "btn-warning":
-            return "DUE SOON", "btn-warning", 1
+        if row["oil_status"] == "DUE SOON" or row["insp_status"] == "DUE SOON":
+            return "DUE SOON", 1
         else:
-            return "READY", "btn-healthy", 2
+            return "READY", 2
 
     v_prio = df_v.apply(get_overall_priority, axis=1)
     df_v["priority_label"] = [p[0] for p in v_prio]
-    df_v["btn_class"] = [p[1] for p in v_prio]
-    df_v["priority_order"] = [p[2] for p in v_prio]
+    df_v["priority_order"] = [p[1] for p in v_prio]
 
-    oil_crit_count = len(df_v[df_v["oil_class"] == "btn-warning"])
-    insp_crit_count = len(df_v[df_v["insp_class"] == "btn-warning"])
+    insp_crit_count = len(df_v[df_v["priority_order"] == 1])
     total_fleet_gross = df_v["monthly_gross"].sum()
     total_fleet_fuel = df_v["monthly_fuel_cost"].sum()
 else:
-    oil_crit_count, insp_crit_count, total_fleet_gross, total_fleet_fuel = 0, 0, 0.0, 0.0
+    insp_crit_count, total_fleet_gross, total_fleet_fuel = 0, 0.0, 0.0
 
 if not df_d.empty:
     cdl_res = df_d["License Expiry"].apply(check_date_status)
     df_d["CDL_Status"] = [r[0] for r in cdl_res]
-    df_d["CDL_Class"] = [r[1] for r in cdl_res]
-    df_d["CDL_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in cdl_res]
-
     med_res = df_d["Next Medical"].apply(check_date_status)
     df_d["Med_Status"] = [r[0] for r in med_res]
-    df_d["Med_Class"] = [r[1] for r in med_res]
-    df_d["Med_Diff"] = [int(r[2]) if str(r[2]).lstrip('-').isdigit() else 999 for r in med_res]
 
     def get_dr_priority(row):
-        if row["CDL_Class"] == "btn-warning" or row["Med_Class"] == "btn-warning":
-            return "DUE SOON", "btn-warning", 1
+        if row["CDL_Status"] == "DUE SOON" or row["Med_Status"] == "DUE SOON":
+            return "DUE SOON", 1
         else:
-            return "READY", "btn-healthy", 2
+            return "READY", 2
 
     dr_prio = df_d.apply(get_dr_priority, axis=1)
     df_d["priority_label"] = [p[0] for p in dr_prio]
-    df_d["btn_class"] = [p[1] for p in dr_prio]
-    df_d["priority_order"] = [p[2] for p in dr_prio]
+    df_d["priority_order"] = [p[1] for p in dr_prio]
 
 dr_crit_count = len(df_d[df_d["priority_order"] == 1]) if not df_d.empty else 0
 
-# -------------------------------------------------------------
+# ---------------------------------------------
 # DİYALOG MODALLARI
-# -------------------------------------------------------------
+# ---------------------------------------------
 @st.dialog("Equipment Master Dossier & Financial P&L", width="large")
 def open_equipment_dossier(unit_no):
     r_sel = df_v[df_v["unit_number"] == unit_no].iloc[0]
@@ -565,13 +522,13 @@ def open_driver_dossier(driver_name):
             st.rerun()
 
 # ---------------------------------------------
-# TOP NAVBAR (TEK PARÇA TEMİZ ÜST ÇUBUK VE SIGN OUT)
+# TOP NAVBAR (ORİJİNAL LOGO VE SAĞ ÜST SIGN OUT)
 # ---------------------------------------------
 header_c1, header_c2 = st.columns([6, 1])
 with header_c1:
     st.markdown(f"""
     <div style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, #0b1f3a 0%, #0f2c59 60%, #0284c7 100%); padding:12px 20px; border-radius:8px; border-bottom:3px solid #f97316; color:white;">
-        <div style="font-family:'Montserrat',sans-serif; font-size:18px; font-weight:900;">
+        <div style="font-family:'Montserrat',sans-serif; font-size:18px; font-weight:900; display:flex; align-items:center; gap:8px;">
             MOON<span style="color:#f97316;">★</span>TAR <span style="font-size:10px; color:#38bdf8;">EXPRESS LLC</span>
         </div>
         <div style="font-size:11px; color:#cbd5e1;">
@@ -716,10 +673,8 @@ if top_menu == "Trucks & Trailers":
                 f"Net Profit: ${r['net_profit']:,.0f}"
             )
             
-            st.markdown(f'<div class="{r["btn_class"]}">', unsafe_allow_html=True)
             if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_card_{r['unit_number']}", use_container_width=True):
                 open_equipment_dossier(r['unit_number'])
-            st.markdown('</div>', unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # 2. MODÜL: DRIVERS COMPLIANCE
@@ -809,10 +764,8 @@ elif top_menu == "Drivers Compliance":
                     f"Medical Card: {d_row['Med_Status']}"
                 )
                 
-                st.markdown(f'<div class="{d_row["btn_class"]}">', unsafe_allow_html=True)
                 if st.button(f"{card_title}\n\n{card_body}", key=f"schneider_dr_{j}", use_container_width=True):
                     open_driver_dossier(d_row['Name'])
-                st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.info("No drivers data found.")
 
@@ -834,7 +787,7 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
             try:
                 s_df = pd.read_csv(samsara_file)
                 updated_count = 0
-                cur = conn.cursor()
+                cur = get_connection().cursor()
                 asset_col = [c for c in s_df.columns if any(k in c.lower() for k in ["asset", "vehicle", "name"])][0]
                 odo_col = [c for c in s_df.columns if any(k in c.lower() for k in ["odometer", "mileage", "miles"])][0]
 
@@ -849,7 +802,8 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
                                 updated_count += 1
                     except Exception:
                         pass
-                conn.commit()
+                cur.connection.commit()
+                cur.connection.close()
                 st.success(f"Synced odometers for {updated_count} vehicles!")
                 st.rerun()
             except Exception as ex:
@@ -864,7 +818,7 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
             try:
                 its_df = pd.read_csv(its_file) if its_file.name.endswith(".csv") else pd.read_excel(its_file)
                 updated_gross_count = 0
-                cur = conn.cursor()
+                cur = get_connection().cursor()
                 unit_c = [c for c in its_df.columns if any(k in c.lower() for k in ["unit", "truck", "asset"])][0]
                 gross_c = [c for c in its_df.columns if any(k in c.lower() for k in ["gross", "revenue", "amount", "total"])][0]
 
@@ -879,7 +833,8 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
                                 updated_gross_count += 1
                     except Exception:
                         pass
-                conn.commit()
+                cur.connection.commit()
+                cur.connection.close()
                 st.success(f"Synced gross revenues for {updated_gross_count} units!")
                 st.rerun()
             except Exception as ex:
@@ -894,7 +849,7 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
             try:
                 fuel_df = pd.read_csv(fuel_file) if fuel_file.name.endswith(".csv") else pd.read_excel(fuel_file)
                 updated_fuel_count = 0
-                cur = conn.cursor()
+                cur = get_connection().cursor()
                 f_unit = [c for c in fuel_df.columns if any(k in c.lower() for k in ["unit", "truck", "asset", "card"])][0]
                 f_cost = [c for c in fuel_df.columns if any(k in c.lower() for k in ["cost", "amount", "total", "price", "charge"])][0]
 
@@ -909,7 +864,8 @@ elif top_menu == "Data Imports (Samsara/ITS/Fuel)":
                                 updated_fuel_count += 1
                     except Exception:
                         pass
-                conn.commit()
+                cur.connection.commit()
+                cur.connection.close()
                 st.success(f"Synced fuel expenses for {updated_fuel_count} records!")
                 st.rerun()
             except Exception as ex:
@@ -933,11 +889,12 @@ elif top_menu == "Service Ledger":
             s_inv = st.file_uploader("Upload Invoice (PDF/JPG)")
 
         if st.form_submit_button("Record Service Entry"):
-            cur = conn.cursor()
+            cur = get_connection().cursor()
             cur.execute("INSERT INTO logs (unit_number, log_date, log_type, mileage, cost) VALUES (?, ?, ?, ?, ?)", (sel_u, str(s_date), s_type, s_mil, s_cost))
             if s_type == "Oil Change (PM)" and s_mil > 0:
                 cur.execute("UPDATE vehicles SET last_oil_mileage = ?, current_mileage = MAX(current_mileage, ?) WHERE unit_number = ?", (s_mil, s_mil, sel_u))
-            conn.commit()
+            cur.connection.commit()
+            cur.connection.close()
             st.success("Service recorded successfully!")
             st.rerun()
 
@@ -962,23 +919,26 @@ with st.sidebar:
     with st.form("active_chat_form", clear_on_submit=True):
         msg_input = st.text_area("Type message...", placeholder="Write dispatch note or instructions...")
         if st.form_submit_button("Send Message", use_container_width=True) and msg_input.strip():
-            cur = conn.cursor()
+            cur = get_connection().cursor()
             timestamp_str = datetime.now().strftime("%m/%d %I:%M %p")
             cur.execute("INSERT INTO team_chat (sender, recipient, message, timestamp) VALUES (?, ?, ?, ?)", 
                         (current_active_profile, recipient, msg_input.strip(), timestamp_str))
-            conn.commit()
+            cur.connection.commit()
+            cur.connection.close()
             st.success("Message sent!")
             st.rerun()
 
     st.markdown("#### 📜 Message History")
+    chat_conn = get_connection()
     if chat_mode == "Global Fleet Group":
-        chat_df = pd.read_sql_query("SELECT * FROM team_chat WHERE recipient = 'Everyone' ORDER BY id DESC LIMIT 30", conn)
+        chat_df = pd.read_sql_query("SELECT * FROM team_chat WHERE recipient = 'Everyone' ORDER BY id DESC LIMIT 30", chat_conn)
     else:
         chat_df = pd.read_sql_query("""
             SELECT * FROM team_chat 
             WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) 
             ORDER BY id DESC LIMIT 30
-        """, conn, params=(current_active_profile, recipient, recipient, current_active_profile))
+        """, chat_conn, params=(current_active_profile, recipient, recipient, current_active_profile))
+    chat_conn.close()
     
     if not chat_df.empty:
         for _, chat_row in chat_df.iterrows():

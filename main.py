@@ -10,6 +10,7 @@ app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 def load_all_excel_masters():
     trucks, trailers, drivers = [], [], []
 
+    # 1. Trucks.xlsx
     if os.path.exists("Trucks.xlsx"):
         try:
             df = pd.read_excel("Trucks.xlsx", sheet_name=0)
@@ -34,6 +35,7 @@ def load_all_excel_masters():
         except:
             pass
 
+    # 2. Trailers.xlsx
     if os.path.exists("Trailers.xlsx"):
         try:
             df = pd.read_excel("Trailers.xlsx", sheet_name=0)
@@ -53,6 +55,7 @@ def load_all_excel_masters():
         except:
             pass
 
+    # 3. Drivers (2).xlsx - TÜM 56 ŞOFÖRÜ EXCEL'DEN OKUR
     if os.path.exists("Drivers (2).xlsx"):
         try:
             df = pd.read_excel("Drivers (2).xlsx", sheet_name=0)
@@ -78,12 +81,12 @@ def load_all_excel_masters():
     if not trailers:
         trailers = [{"unit": "R14782", "type": "Dry Van", "plate": "31-19733 ME", "plate_expiry": "2031-02-28", "annual_insp": "2026-07-27", "vin": "3AW", "assigned_truck": "None", "files": []}]
     if not drivers:
-        drivers = [{"name": "AT YARD", "phone": "215-555-0144""215-555-0144", "email": "yard@moonstarpa.com", "cdl": "PA-334", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "8", "trailer": "None", "files": []}]
+        drivers = [{"name": "ALTUG BACI", "phone": "954-669-6229""954-669-6229", "email": "altug_baci@hotmail.com", "cdl": "B227-564", "cdl_expiry": "2033-06-04", "medical": "2026-08-26", "truck": "12", "trailer": "None", "files": []}]
 
     return trucks, trailers, drivers
 
-TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_all_excel_masters()
-CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "All 86 Trucks, 35 Trailers and 56 Drivers successfully synchronized.", "time": "10:00 AM"}]
+TRUCKS_LIST, TRAILERS_LIST, DRIVERS_LIST = load_all_excel_masters()
+CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Master Excel datasets loaded successfully.", "time": "10:00 AM"}]
 
 HOME_HTML = """
 
@@ -338,7 +341,7 @@ DASHBOARD_HTML = """
                             <td class="p-3 font-black text-slate-900">#{{ t.unit }}</td>
                             <td class="p-3 text-slate-700">{{ t.type }}</td>
                             <td class="p-3 font-bold text-sky-600">{{ t.driver }}</td>
-                            <td class="p-3 font-bold text-orange-600">Trailer #{{ t.trailer }}</td>
+                            <td class="p-3 font-bold text-orange-600">{% if t.trailer != 'None' %}Trailer #{{ t.trailer }}{% else %}None{% endif %}</td>
                             <td class="p-3 text-emerald-600 font-bold">${{ "{:,.2f}".format(t.gross) }}</td>
                             <td class="p-3 text-orange-600 font-bold">${{ "{:,.2f}".format(t.fuel + t.maintenance) }}</td>
                             <td class="p-3 font-black {% if (t.gross - t.fuel - t.maintenance) >= 0 %}text-emerald-700{% else %}text-red-600{% endif %}">
@@ -373,7 +376,7 @@ DASHBOARD_HTML = """
                             <td class="p-3 text-slate-700">{{ tr.type }}</td>
                             <td class="p-3 text-slate-600">{{ tr.plate }} <br><span class="text-[10px] text-slate-400">Exp: {{ tr.plate_expiry }}</span></td>
                             <td class="p-3 font-semibold text-amber-700">{{ tr.annual_insp }}</td>
-                            <td class="p-3 font-bold text-sky-600">Truck #{{ tr.assigned_truck }}</td>
+                            <td class="p-3 font-bold text-sky-600">{% if tr.assigned_truck != 'None' %}Truck #{{ tr.assigned_truck }}{% else %}None{% endif %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -651,6 +654,8 @@ DASHBOARD_HTML = """
 </html>
 """
 
+TRUCKS_LIST, TRAILERS_LIST, DRIVERS_LIST = load_all_excel_masters()
+
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return Template(HOME_HTML).render()
@@ -673,15 +678,15 @@ def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     
-    selected_unit = next((t for t in TRUCKS_DATA if t["unit"] == dossier), None) if dossier else None
-    selected_trailer = next((tr for tr in TRAILERS_DATA if tr["unit"] == trailer_dossier), None) if trailer_dossier else None
-    selected_driver = next((d for d in DRIVERS_DATA if d["name"] == driver_dossier), None) if driver_dossier else None
+    selected_unit = next((t for t in TRUCKS_LIST if t["unit"] == dossier), None) if dossier else None
+    selected_trailer = next((tr for tr in TRAILERS_LIST if tr["unit"] == trailer_dossier), None) if trailer_dossier else None
+    selected_driver = next((d for d in DRIVERS_LIST if d["name"] == driver_dossier), None) if driver_dossier else None
 
     return Template(DASHBOARD_HTML).render(
         user=user,
-        trucks=TRUCKS_DATA,
-        trailers=TRAILERS_DATA,
-        drivers=DRIVERS_DATA,
+        trucks=TRUCKS_LIST,
+        trailers=TRAILERS_LIST,
+        drivers=DRIVERS_LIST,
         chat_messages=CHAT_MESSAGES,
         tab=tab,
         search=search,
@@ -699,7 +704,7 @@ def send_chat(request: Request, message: str = Form(...)):
 
 @app.post("/update_truck")
 def update_truck(unit: str = Form(...), driver: str = Form(...), trailer: str = Form(...), plate: str = Form(...), dot_insp: str = Form(...), gross: float = Form(0.0), fuel: float = Form(0.0), maintenance: float = Form(0.0)):
-    for t in TRUCKS_DATA:
+    for t in TRUCKS_LIST:
         if t["unit"] == unit:
             t["driver"] = driver
             t["trailer"] = trailer
@@ -712,7 +717,7 @@ def update_truck(unit: str = Form(...), driver: str = Form(...), trailer: str = 
 
 @app.post("/update_trailer")
 def update_trailer(unit: str = Form(...), assigned_truck: str = Form(...), plate: str = Form(...), annual_insp: str = Form(...)):
-    for tr in TRAILERS_DATA:
+    for tr in TRAILERS_LIST:
         if tr["unit"] == unit:
             tr["assigned_truck"] = assigned_truck
             tr["plate"] = plate
@@ -721,7 +726,7 @@ def update_trailer(unit: str = Form(...), assigned_truck: str = Form(...), plate
 
 @app.post("/update_driver")
 def update_driver(original_name: str = Form(...), name: str = Form(...), phone: str = Form(...), truck: str = Form(...), cdl_expiry: str = Form(...), medical: str = Form(...)):
-    for d in DRIVERS_DATA:
+    for d in DRIVERS_LIST:
         if d["name"] == original_name:
             d["name"] = name
             d["phone"] = phone
@@ -732,7 +737,7 @@ def update_driver(original_name: str = Form(...), name: str = Form(...), phone: 
 
 @app.post("/add_truck")
 def add_truck(unit: str = Form(...), type: str = Form(...)):
-    TRUCKS_DATA.append({
+    TRUCKS_LIST.append({
         "unit": unit, "type": type, "plate": "TEMP-PA", "plate_expiry": "2027-05-31",
         "dot_insp": "2027-01-01", "vin": "NEW", "driver": "Unassigned", "trailer": "None",
         "status": "Active", "gross": 15000.0, "fuel": 3500.0, "maintenance": 500.0, "files": []
@@ -741,27 +746,27 @@ def add_truck(unit: str = Form(...), type: str = Form(...)):
 
 @app.get("/delete_truck")
 def delete_truck(unit: str):
-    global TRUCKS_DATA
-    TRUCKS_DATA = [t for t in TRUCKS_DATA if t["unit"] != unit]
+    global TRUCKS_LIST
+    TRUCKS_LIST = [t for t in TRUCKS_LIST if t["unit"] != unit]
     return RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
 
 @app.post("/add_trailer")
 def add_trailer(unit: str = Form(...), type: str = Form(...)):
-    TRAILERS_DATA.append({
+    TRAILERS_LIST.append({
         "unit": unit, "type": type, "plate": "TEMP-ME", "plate_expiry": "2031-02-28",
         "annual_insp": "2027-01-01", "vin": "NEW", "assigned_truck": "None", "files": []
     })
-    return RedirectResponse(url="/dashboard?tab=trailers", status_code=303)
+    return RedirectResponse(url="/dashboard`?tab=trailers", status_code=303)
 
 @app.get("/delete_trailer")
 def delete_trailer(unit: str):
-    global TRAILERS_DATA
-    TRAILERS_DATA = [tr for tr in TRAILERS_DATA if tr["unit"] != unit]
+    global TRAILERS_LIST
+    TRAILERS_LIST = [tr for tr in TRAILERS_LIST if tr["unit"] != unit]
     return RedirectResponse(url="/dashboard?tab=trailers", status_code=303)
 
 @app.post("/add_driver")
 def add_driver(name: str = Form(...), phone: str = Form(...)):
-    DRIVERS_DATA.append({
+    DRIVERS_LIST.append({
         "name": name, "phone": phone, "email": f"{name.lower().replace(' ', '')}@moonstarpa.com",
         "cdl": "CDL-NEW", "cdl_expiry": "2028-01-01", "medical": "2027-01-01", "truck": "Unassigned", "trailer": "None", "files": []
     })
@@ -769,8 +774,8 @@ def add_driver(name: str = Form(...), phone: str = Form(...)):
 
 @app.get("/delete_driver")
 def delete_driver(name: str):
-    global DRIVERS_DATA
-    DRIVERS_DATA = [d for d in DRIVERS_DATA if d["name"] != name]
+    global DRIVERS_LIST
+    DRIVERS_LIST = [d for d in DRIVERS_LIST if d["name"] != name]
     return RedirectResponse(url="/dashboard?tab=drivers", status_code=303)
 
 @app.get("/logout")

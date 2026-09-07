@@ -5,7 +5,7 @@ from datetime import datetime
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-# --- TÜM GERÇEK 56 ŞOFÖR (EKSİKSİZ LİSTE) ---
+# --- TÜM GERÇEK 56 ŞOFÖR ---
 DRIVERS_DATA = [
     {"name": "ALTUG BACI", "phone": "954-669-6229""954-669-6229", "email": "altug_baci@hotmail.com", "cdl": "B227-564", "cdl_expiry": "2033-06-04", "medical": "2026-08-26", "truck": "12"},
     {"name": "FIERALDO", "phone": "267-764-8746""267-764-8746", "email": "Fieraldoshkembii@gmail.com", "cdl": "34593649", "cdl_expiry": "2026-08-26", "medical": "2026-08-26", "truck": "12"},
@@ -79,7 +79,7 @@ TRUCKS_DATA = [
     {"unit": "65", "type": "VOLVO", "plate": "AH84983 PA", "driver": "RIDVAN DENIZ", "gross": 19500.0, "fuel": 4500.0, "maintenance": 500.0}
 ]
 
-# --- RÖMORKLAR (TRAILERS) ---
+# --- RÖMORKLAR ---
 TRAILERS_DATA = [
     {"unit": "127", "type": "22' Van", "plate": "516-6421 ME", "annual_insp": "2027-06-30", "assigned_truck": "FB1907"},
     {"unit": "209536611", "type": "53' Reefer", "plate": "-", "annual_insp": "2027-05-31", "assigned_truck": "8"},
@@ -139,6 +139,7 @@ DASHBOARD_HTML = """
     <aside class="w-20 bg-slate-900 flex flex-col items-center py-6 space-y-8 border-r border-slate-800">
         <div class="brand-font text-sky-400 font-black text-xl">★</div>
         <div class="flex flex-col space-y-6 text-slate-400">
+            <a href="/dashboard?tab=home" title="Home" class="p-3 rounded-xl {% if tab == 'home' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">🏠</a>
             <a href="/dashboard?tab=trucks" title="Trucks" class="p-3 rounded-xl {% if tab == 'trucks' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">🚛</a>
             <a href="/dashboard?tab=trailers" title="Trailers" class="p-3 rounded-xl {% if tab == 'trailers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">📦</a>
             <a href="/dashboard?tab=drivers" title="Drivers" class="p-3 rounded-xl {% if tab == 'drivers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">👤</a>
@@ -158,13 +159,58 @@ DASHBOARD_HTML = """
         </header>
 
         <div class="bg-white border-b border-slate-200 px-8 py-3 flex space-x-3 shadow-sm">
+            <a href="/dashboard?tab=home" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'home' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Home / Analytics</a>
             <a href="/dashboard?tab=trucks" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trucks' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trucks & P&L ({{ trucks|length }})</a>
             <a href="/dashboard?tab=trailers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trailers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trailers Master ({{ trailers|length }})</a>
             <a href="/dashboard?tab=drivers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'drivers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Drivers Roster ({{ drivers|length }})</a>
         </div>
 
         <main class="p-8 space-y-6 flex-1">
-            {% if tab == 'trucks' %}
+            {% if tab == 'home' %}
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Trucks</div>
+                    <div class="text-3xl font-black text-sky-600 mt-2">{{ trucks|length }}</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Trailers</div>
+                    <div class="text-3xl font-black text-orange-600 mt-2">{{ trailers|length }}</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
+                    <div class="text-xs font-bold uppercase text-slate-500">Active Drivers</div>
+                    <div class="text-3xl font-black text-emerald-600 mt-2">{{ drivers|length }}</div>
+                </div>
+                <div class="bg-white p-5 rounded-xl border-l-4 border-indigo-600 shadow-sm">
+                    <div class="text-xs font-bold uppercase text-slate-500">Filo Net Kar (Est.)</div>
+                    <div class="text-3xl font-black text-indigo-600 mt-2">
+                        ${{ "{:,.0f}".format(trucks | sum(attribute='gross') - trucks | sum(attribute='fuel') - trucks | sum(attribute='maintenance')) }}
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                <h3 class="text-lg font-black text-slate-900">🚨 Fleet Compliance & Expiration Watch</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                    <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-2">
+                        <h4 class="font-bold text-amber-900 text-sm">🚚 Trucks & Trailers Inspection Watch</h4>
+                        {% for tr in trailers[:6] %}
+                        <div class="flex justify-between bg-white p-2.5 rounded border border-amber-100">
+                            <span><b>Trailer #{{ tr.unit }}</b> ({{ tr.type }})</span>
+                            <span class="text-amber-700 font-bold">Insp: {{ tr.annual_insp }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="bg-sky-50 p-4 rounded-xl border border-sky-200 space-y-2">
+                        <h4 class="font-bold text-sky-900 text-sm">👤 Drivers CDL & Medical Watch</h4>
+                        {% for d in drivers[:6] %}
+                        <div class="flex justify-between bg-white p-2.5 rounded border border-sky-100">
+                            <span><b>{{ d.name }}</b></span>
+                            <span class="text-sky-700 font-bold">Medical: {{ d.medical }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% elif tab == 'trucks' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <h3 class="font-black text-slate-900 text-base">🚛 Master Trucks Inventory & P&L Ledger</h3>
@@ -302,13 +348,13 @@ def read_root(request: Request):
 @app.post("/login")
 def login_post(request: Request, email: str = Form(...), password: str = Form(...)):
     if "@moonstarpa" in email.strip().lower() and password == "Moonstar2026!":
-        response = RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
+        response = RedirectResponse(url="/dashboard?tab=home", status_code=303)
         response.set_cookie(key="user", value=email.strip().lower())
         return response
     return Template(LOGIN_HTML).render(error="Invalid credentials!")
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, tab: str = "trucks", dossier: str = None):
+def dashboard(request: Request, tab: str = "home", dossier: str = None):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse(url="/", status_code=303)

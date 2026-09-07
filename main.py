@@ -37,7 +37,7 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
             
             
                 User: ismail@moonstarpa.com
-                System Online (SPA)
+                System Online
             
         
 
@@ -97,7 +97,6 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
     
 
     
-    
         function fleetApp() {
             return {
                 tab: 'home',
@@ -120,13 +119,13 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
                     { name: "BULENT / ASIL BAD SHAH", phone: "215-555-0192", email: "asil@moonstarpa.com", cdl: "PA-982341", cdl_expiry: "2027-05-31", medical: "2026-12-01", truck: "06" },
                     { name: "DINDAR RAHMANI", phone: "215-555-0177", email: "dindar@moonstarpa.com", cdl: "PA-112344", cdl_expiry: "2027-05-31", medical: "2027-01-15", truck: "Unassigned" },
                     { name: "HABIB TANIWAL", phone: "215-555-0114", email: "habib@moonstarpa.com", cdl: "PA-598991", cdl_expiry: "2027-05-31", medical: "2026-10-01", truck: "14" },
-                    { name: "BESHARAT SEDEQI", phone: "215-555-0248", "email": "besharat@moonstarpa.com", cdl: "PA-808390", cdl_expiry: "2027-05-31", medical: "2027-03-27", truck: "2486" },
+                    { name: "BESHARAT SEDEQI", phone: "215-555-0248", email: "besharat@moonstarpa.com", cdl: "PA-808390", cdl_expiry: "2027-05-31", medical: "2027-03-27", truck: "2486" },
                     { name: "HUSSAIN ANWARI", phone: "215-555-0892", email: "hussain@moonstarpa.com", cdl: "PA-642540", cdl_expiry: "2027-05-31", medical: "2026-11-26", truck: "8929" },
                     { name: "ISMAIL CINAR", phone: "347-444-1686", email: "ismail@moonstarpa.com", cdl: "PA-OWNER", cdl_expiry: "2028-01-01", medical: "2027-01-01", truck: "41" },
-                    { name: "NOOR SHAHZADIN", phone: "215-555-0155", email: "noor@moonstarpa.com", cdl: "PA-482560", cdl_expiry: "2027-05-31", medical: "2026-11-26", "truck": "55" },
-                    { name: "JOSHUA DIAZ", phone: "215-555-0131", email: "joshua@moonstarpa.com", cdl: "PA-849821", cdl_expiry: "2026-11-30", medical: "2026-11-01", "truck": "31" },
-                    { name: "MOHAMMAD MALAK", phone: "215-555-0101", email: "malak@moonstarpa.com", cdl: "PA-010101", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "01" },
-                    { name: "TEVIN BOBBY", phone: "215-555-1907", email: "tevin@moonstarpa.com", cdl: "PA-190719", cdl_expiry: "2027-05-31", medical: "2026-08-26", "truck": "FB1907" },
+                    { name: "NOOR SHAHZADIN", phone: "215-555-0155", email: "noor@moonstarpa.com", cdl: "PA-482560", cdl_expiry: "2027-05-31", medical: "2026-11-26", truck: "55" },
+                    { name: "JOSHUA DIAZ", phone: "215-555-0131", email: "joshua@moonstarpa.com", cdl: "PA-849821", cdl_expiry: "2026-11-30", medical: "2026-11-01", truck: "31" },
+                    { name: "MOHAMMAD MALAK", phone: "215-555-0101", email: "malak@moonstarpa.com", cdl: "PA-010101", cdl_expiry: "2027-05-31", medical: "2027-01-15", truck: "01" },
+                    { name: "TEVIN BOBBY", phone: "215-555-1907", email: "tevin@moonstarpa.com", cdl: "PA-190719", cdl_expiry: "2027-05-31", medical: "2026-08-26", truck: "FB1907" },
                     { name: "DREW W. DAVIS", phone: "215-555-0115", email: "drew@moonstarpa.com", cdl: "PA-011511", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "0115" },
                     { name: "AT YARD", phone: "215-555-0144", email: "yard@moonstarpa.com", cdl: "PA-334", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "8" }
                 ],
@@ -135,7 +134,7 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
                     { unit: "FB1907", type: "2022 INTERNATIONAL", plate: "AH59897 PA", driver: "TEVIN BOBBY", gross: 19800.0, fuel: 4700.0, maintenance: 500.0 },
                     { unit: "8", type: "VOLVO Vnl64t", plate: "AH35700 PA", driver: "AT YARD", gross: 15000.0, fuel: 4200.0, maintenance: 300.0 },
                     { unit: "10", type: "FREIGHTLINER", plate: "R785774 TX", driver: "OMAID FNU", gross: 21000.0, fuel: 5300.0, maintenance: 650.0 },
-                    { unit: "12", type: "VOLVO 2021", plate: "AH69361 PA", driver: "ALTUG BACI", gross: 22000.0, level: "Active", fuel: 5100.0, maintenance: 500.0 },
+                    { unit: "12", type: "VOLVO 2021", plate: "AH69361 PA", driver: "ALTUG BACI", gross: 22000.0, fuel: 5100.0, maintenance: 500.0 },
                     { unit: "14", type: "FREIGHTLINER", plate: "AH59899 PA", driver: "HABIB TANIWAL", gross: 18500.0, fuel: 4600.0, maintenance: 400.0 }
                 ],
 
@@ -238,7 +237,7 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
             </div>
             <div class="flex items-center space-x-4 text-xs">
                 <span>User: <b>ismail@moonstarpa.com</b></span>
-                <span class="bg-emerald-600 px-3 py-1.5 rounded-lg font-bold uppercase shadow">System Online (SPA)</span>
+                <span class="bg-emerald-600 px-3 py-1.5 rounded-lg font-bold uppercase shadow">System Online</span>
             </div>
         </header>
 
@@ -286,10 +285,6 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
                             <div class="text-xs font-bold uppercase text-slate-500">Filo Net Kar (Est.)</div>
                             <div class="text-3xl font-black text-indigo-600 mt-2" x-text="totalNetProfit"></div>
                         </div>
-                    </div>
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 class="text-lg font-black text-slate-900 mb-4">🚨 Fleet Compliance & Inspection Watch</h3>
-                        <p class="text-xs text-slate-500">All 56 drivers and active equipment loaded successfully with zero server lag.</p>
                     </div>
                 </div>
             </template>
@@ -423,7 +418,6 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
         </div>
     </div>
 
-    <!-- SCRIPT DATA & LOGIC -->
     <script>
         function fleetApp() {
             return {
@@ -447,13 +441,13 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
                     { name: "BULENT / ASIL BAD SHAH", phone: "215-555-0192", email: "asil@moonstarpa.com", cdl: "PA-982341", cdl_expiry: "2027-05-31", medical: "2026-12-01", truck: "06" },
                     { name: "DINDAR RAHMANI", phone: "215-555-0177", email: "dindar@moonstarpa.com", cdl: "PA-112344", cdl_expiry: "2027-05-31", medical: "2027-01-15", truck: "Unassigned" },
                     { name: "HABIB TANIWAL", phone: "215-555-0114", email: "habib@moonstarpa.com", cdl: "PA-598991", cdl_expiry: "2027-05-31", medical: "2026-10-01", truck: "14" },
-                    { name: "BESHARAT SEDEQI", phone: "215-555-0248", "email": "besharat@moonstarpa.com", cdl: "PA-808390", cdl_expiry: "2027-05-31", medical: "2027-03-27", truck: "2486" },
+                    { name: "BESHARAT SEDEQI", phone: "215-555-0248", email: "besharat@moonstarpa.com", cdl: "PA-808390", cdl_expiry: "2027-05-31", medical: "2027-03-27", truck: "2486" },
                     { name: "HUSSAIN ANWARI", phone: "215-555-0892", email: "hussain@moonstarpa.com", cdl: "PA-642540", cdl_expiry: "2027-05-31", medical: "2026-11-26", truck: "8929" },
                     { name: "ISMAIL CINAR", phone: "347-444-1686", email: "ismail@moonstarpa.com", cdl: "PA-OWNER", cdl_expiry: "2028-01-01", medical: "2027-01-01", truck: "41" },
-                    { name: "NOOR SHAHZADIN", phone: "215-555-0155", email: "noor@moonstarpa.com", cdl: "PA-482560", cdl_expiry: "2027-05-31", medical: "2026-11-26", "truck": "55" },
-                    { name: "JOSHUA DIAZ", phone: "215-555-0131", email: "joshua@moonstarpa.com", cdl: "PA-849821", cdl_expiry: "2026-11-30", medical: "2026-11-01", "truck": "31" },
-                    { name: "MOHAMMAD MALAK", phone: "215-555-0101", email: "malak@moonstarpa.com", cdl: "PA-010101", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "01" },
-                    { name: "TEVIN BOBBY", phone: "215-555-1907", email: "tevin@moonstarpa.com", cdl: "PA-190719", cdl_expiry: "2027-05-31", medical: "2026-08-26", "truck": "FB1907" },
+                    { name: "NOOR SHAHZADIN", phone: "215-555-0155", email: "noor@moonstarpa.com", cdl: "PA-482560", cdl_expiry: "2027-05-31", medical: "2026-11-26", truck: "55" },
+                    { name: "JOSHUA DIAZ", phone: "215-555-0131", email: "joshua@moonstarpa.com", cdl: "PA-849821", cdl_expiry: "2026-11-30", medical: "2026-11-01", truck: "31" },
+                    { name: "MOHAMMAD MALAK", phone: "215-555-0101", email: "malak@moonstarpa.com", cdl: "PA-010101", cdl_expiry: "2027-05-31", medical: "2027-01-15", truck: "01" },
+                    { name: "TEVIN BOBBY", phone: "215-555-1907", email: "tevin@moonstarpa.com", cdl: "PA-190719", cdl_expiry: "2027-05-31", medical: "2026-08-26", truck: "FB1907" },
                     { name: "DREW W. DAVIS", phone: "215-555-0115", email: "drew@moonstarpa.com", cdl: "PA-011511", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "0115" },
                     { name: "AT YARD", phone: "215-555-0144", email: "yard@moonstarpa.com", cdl: "PA-334", cdl_expiry: "2027-05-31", medical: "2027-01-15", "truck": "8" }
                 ],
@@ -462,7 +456,7 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
                     { unit: "FB1907", type: "2022 INTERNATIONAL", plate: "AH59897 PA", driver: "TEVIN BOBBY", gross: 19800.0, fuel: 4700.0, maintenance: 500.0 },
                     { unit: "8", type: "VOLVO Vnl64t", plate: "AH35700 PA", driver: "AT YARD", gross: 15000.0, fuel: 4200.0, maintenance: 300.0 },
                     { unit: "10", type: "FREIGHTLINER", plate: "R785774 TX", driver: "OMAID FNU", gross: 21000.0, fuel: 5300.0, maintenance: 650.0 },
-                    { unit: "12", type: "VOLVO 2021", plate: "AH69361 PA", driver: "ALTUG BACI", gross: 22000.0, level: "Active", fuel: 5100.0, maintenance: 500.0 },
+                    { unit: "12", type: "VOLVO 2021", plate: "AH69361 PA", driver: "ALTUG BACI", gross: 22000.0, fuel: 5100.0, maintenance: 500.0 },
                     { unit: "14", type: "FREIGHTLINER", plate: "AH59899 PA", driver: "HABIB TANIWAL", gross: 18500.0, fuel: 4600.0, maintenance: 400.0 }
                 ],
 
@@ -535,4 +529,8 @@ MOONSTAR EXPRESS LLC — Master Fleet Console
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
+    return SPA_HTML
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def read_dashboard():
     return SPA_HTML

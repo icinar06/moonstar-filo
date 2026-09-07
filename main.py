@@ -83,7 +83,7 @@ def load_master_excel_data():
     return trucks, trailers, drivers
 
 TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_master_excel_data()
-CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Master Excel datasets loaded with Click-to-Call, Search, P&L and status filters.", "time": "10:00 AM"}]
+CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Master Excel datasets loaded successfully.", "time": "10:00 AM"}]
 
 HOME_HTML = """
 
@@ -181,11 +181,13 @@ LOGIN_HTML = """
 <head>
 <title>MOONSTAR EXPRESS — Executive Portal</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>.brand-font { font-family: 'Montserrat', sans-serif; }</style>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center">
 <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
     <div class="text-center mb-6">
-        <span class="text-3xl font-black text-slate-900">MOON<span class="text-sky-500">★</span>TAR</span>
+        <span class="brand-font text-3xl font-black text-slate-900">MOON<span class="text-sky-500">★</span>TAR</span>
         <p class="text-xs font-semibold text-sky-600 mt-1 uppercase tracking-wider">Executive Fleet Console</p>
     </div>
     {% if error %}
@@ -220,7 +222,7 @@ DASHBOARD_HTML = """
 <body class="bg-slate-50 min-h-screen flex">
     <!-- MODERN SIDEBAR -->
     <aside class="w-20 bg-slate-900 flex flex-col items-center py-6 space-y-8 border-r border-slate-800">
-        <div class="text-sky-400 font-black text-xl">★</div>
+        <div class="brand-font text-sky-400 font-black text-xl">★</div>
         <div class="flex flex-col space-y-6 text-slate-400">
             <a href="/dashboard?tab=home" title="Home" class="p-3 rounded-xl {% if tab == 'home' %}bg-sky-600 text-white{% else %}hover:bg-slate-800 hover:text-white{% endif %} transition">🏠</a>
             <a href="/dashboard?tab=trucks" title="Trucks" class="p-3 rounded-xl {% if tab == 'trucks' %}bg-sky-600 text-white{% else %}hover:bg-slate-800 hover:text-white{% endif %} transition">🚛</a>
@@ -232,10 +234,11 @@ DASHBOARD_HTML = """
 
     <!-- MAIN CONTENT AREA -->
     <div class="flex-1 flex flex-col min-w-0">
+        <!-- TOP HEADER WITH MOONSTAR LOGO -->
         <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-sky-600 px-8 py-4 shadow-md border-b-4 border-orange-500 flex justify-between items-center text-white">
             <div class="flex items-center space-x-3">
-                <span class="brand-font text-xl font-black tracking-wide">MOON<span class="text-orange-500">★</span>TAR</span>
-                <span class="text-[10px] font-semibold text-sky-300 border border-sky-400 px-2 py-0.5 rounded">EXPRESS LLC</span>
+                <span class="brand-font text-2xl font-black tracking-wide">MOON<span class="text-orange-500">★</span>TAR</span>
+                <span class="text-xs font-semibold text-sky-300 border border-sky-400 px-2 py-0.5 rounded">EXPRESS LLC</span>
             </div>
             <div class="flex items-center space-x-4 text-xs">
                 <span>User: <b>{{ user }}</b></span>
@@ -250,21 +253,30 @@ DASHBOARD_HTML = """
                 <a href="/dashboard?tab=trailers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trailers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trailers Master ({{ trailers|length }})</a>
                 <a href="/dashboard?tab=drivers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'drivers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Drivers Roster ({{ drivers|length }})</a>
             </div>
+            <div>
+                {% if tab == 'trucks' %}
+                <a href="/dashboard?tab=trucks&action=add_truck" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Truck</a>
+                {% elif tab == 'trailers' %}
+                <a href="/dashboard?tab=trailers&action=add_trailer" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Trailer</a>
+                {% elif tab == 'drivers' %}
+                <a href="/dashboard?tab=drivers&action=add_driver" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Driver</a>
+                {% endif %}
+            </div>
         </div>
 
         <main class="p-8 space-y-6 flex-1">
             {% if tab == 'home' %}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Registered Trucks</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Trucks</div>
                     <div class="text-3xl font-black text-sky-600 mt-2">{{ trucks|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Trailers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Trailers</div>
                     <div class="text-3xl font-black text-orange-600 mt-2">{{ trailers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Drivers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Drivers</div>
                     <div class="text-3xl font-black text-emerald-600 mt-2">{{ drivers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-indigo-600 shadow-sm">
@@ -312,13 +324,11 @@ DASHBOARD_HTML = """
                         <tr class="bg-slate-900 text-white">
                             <th class="p-3">Unit #</th>
                             <th class="p-3">Make / Model</th>
-                            <th class="p-3">Status</th>
                             <th class="p-3">Assigned Driver</th>
                             <th class="p-3">Hooked Trailer</th>
                             <th class="p-3">Gross</th>
                             <th class="p-3">Fuel & Maint.</th>
                             <th class="p-3">Net Profit</th>
-                            <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
@@ -327,16 +337,12 @@ DASHBOARD_HTML = """
                         <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=trucks&dossier={{ t.unit }}'">
                             <td class="p-3 font-black text-slate-900">#{{ t.unit }}</td>
                             <td class="p-3 text-slate-700">{{ t.type }}</td>
-                            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">{{ t.status }}</span></td>
                             <td class="p-3 font-bold text-sky-600">{{ t.driver }}</td>
                             <td class="p-3 font-bold text-orange-600">Trailer #{{ t.trailer }}</td>
                             <td class="p-3 text-emerald-600 font-bold">${{ "{:,.2f}".format(t.gross) }}</td>
                             <td class="p-3 text-orange-600 font-bold">${{ "{:,.2f}".format(t.fuel + t.maintenance) }}</td>
                             <td class="p-3 font-black {% if (t.gross - t.fuel - t.maintenance) >= 0 %}text-emerald-700{% else %}text-red-600{% endif %}">
                                 ${{ "{:,.2f}".format(t.gross - t.fuel - t.maintenance) }}
-                            </td>
-                            <td class="p-3 text-right">
-                                <a href="/dashboard?tab=trucks&dossier={{ t.unit }}" class="bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg font-bold hover:bg-sky-600 hover:text-white transition">Open →</a>
                             </td>
                         </tr>
                         {% endif %}
@@ -348,7 +354,7 @@ DASHBOARD_HTML = """
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory ({{ trailers|length }} Units)</h3>
-                    <span class="text-xs text-slate-500">Click any trailer row to manage dossier & hook truck.</span>
+                    <span class="text-xs text-slate-500">Click any trailer row to open dossier.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -358,7 +364,6 @@ DASHBOARD_HTML = """
                             <th class="p-3">Plate & Expiry</th>
                             <th class="p-3">Annual Inspection</th>
                             <th class="p-3">Assigned Truck</th>
-                            <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
@@ -369,9 +374,6 @@ DASHBOARD_HTML = """
                             <td class="p-3 text-slate-600">{{ tr.plate }} <br><span class="text-[10px] text-slate-400">Exp: {{ tr.plate_expiry }}</span></td>
                             <td class="p-3 font-semibold text-amber-700">{{ tr.annual_insp }}</td>
                             <td class="p-3 font-bold text-sky-600">Truck #{{ tr.assigned_truck }}</td>
-                            <td class="p-3 text-right">
-                                <a href="/dashboard?tab=trailers&trailer_dossier={{ tr.unit }}" class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg font-bold hover:bg-orange-600 hover:text-white transition">Open →</a>
-                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -381,7 +383,7 @@ DASHBOARD_HTML = """
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <h3 class="font-black text-slate-900 text-base">👤 Master Drivers Roster ({{ drivers|length }} Active Drivers)</h3>
-                    <span class="text-xs text-slate-500">Click any driver to call directly or manage profile.</span>
+                    <span class="text-xs text-slate-500">Click any driver to call directly or open dossier.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -391,7 +393,6 @@ DASHBOARD_HTML = """
                             <th class="p-3">CDL & Expiry</th>
                             <th class="p-3">DOT Medical Due</th>
                             <th class="p-3">Assigned Truck</th>
-                            <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
@@ -405,9 +406,6 @@ DASHBOARD_HTML = """
                             <td class="p-3 text-slate-700">{{ d.cdl }} <br><span class="text-[10px] text-sky-600 font-bold">Exp: {{ d.cdl_expiry }}</span></td>
                             <td class="p-3 font-bold text-amber-700">{{ d.medical }}</td>
                             <td class="p-3 font-bold text-sky-600">Truck #{{ d.truck }}</td>
-                            <td class="p-3 text-right">
-                                <a href="/dashboard?tab=drivers&driver_dossier={{ d.name }}" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition">Open →</a>
-                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -486,20 +484,6 @@ DASHBOARD_HTML = """
                         <a href="/delete_truck?unit={{ selected_unit.unit }}" class="bg-red-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete</a>
                     </div>
                 </form>
-                <div class="border-t pt-4 space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900">📁 Truck Compliance & Maintenance Files</h4>
-                    <form action="/upload_truck_file" method="POST" enctype="multipart/form-data" class="flex gap-3">
-                        <input type="hidden" name="unit" value="{{ selected_unit.unit }}">
-                        <input type="file" name="filename" required class="flex-1 text-xs border p-2 rounded-lg bg-slate-50">
-                        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold">📎 Add File</button>
-                    </form>
-                    {% for f in selected_unit.files %}
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border text-xs">
-                        <span>📄 {{ f }}</span>
-                        <a href="/delete_truck_file?unit={{ selected_unit.unit }}&file={{ f }}" class="text-red-600 font-bold">Delete</a>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
         </div>
     </div>
@@ -538,20 +522,6 @@ DASHBOARD_HTML = """
                         <a href="/delete_trailer?unit={{ selected_trailer.unit }}" class="bg-red-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete</a>
                     </div>
                 </form>
-                <div class="border-t pt-4 space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900">📁 Trailer Documents</h4>
-                    <form action="/upload_trailer_file" method="POST" enctype="multipart/form-data" class="flex gap-3">
-                        <input type="hidden" name="unit" value="{{ selected_trailer.unit }}">
-                        <input type="file" name="filename" required class="flex-1 text-xs border p-2 rounded-lg bg-slate-50">
-                        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold">📎 Add File</button>
-                    </form>
-                    {% for f in selected_trailer.files %}
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border text-xs">
-                        <span>📄 {{ f }}</span>
-                        <a href="/delete_trailer_file?unit={{ selected_trailer.unit }}&file={{ f }}" class="text-red-600 font-bold">Delete</a>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
         </div>
     </div>
@@ -598,21 +568,82 @@ DASHBOARD_HTML = """
                         <a href="/delete_driver?name={{ selected_driver.name }}" class="bg-red-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete</a>
                     </div>
                 </form>
-                <div class="border-t pt-4 space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900">📁 Driver Compliance Files</h4>
-                    <form action="/upload_driver_file" method="POST" enctype="multipart/form-data" class="flex gap-3">
-                        <input type="hidden" name="driver_name" value="{{ selected_driver.name }}">
-                        <input type="file" name="filename" required class="flex-1 text-xs border p-2 rounded-lg bg-slate-50">
-                        <button type="submit" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold">📎 Add File</button>
-                    </form>
-                    {% for f in selected_driver.files %}
-                    <div class="flex justify-between items-center bg-slate-50 p-2 rounded border text-xs">
-                        <span>📄 {{ f }}</span>
-                        <a href="/delete_driver_file?driver={{ selected_driver.name }}&file={{ f }}" class="text-red-600 font-bold">Delete</a>
-                    </div>
-                    {% endfor %}
-                </div>
             </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADD TRUCK MODAL -->
+    {% if action == 'add_truck' %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">➕ Add New Truck</h3>
+                <a href="/dashboard?tab=trucks" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/add_truck" method="POST" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Unit Number (e.g., 95)</label>
+                    <input type="text" name="unit" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Make / Model</label>
+                    <input type="text" name="type" value="FREIGHTLINER" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">Save Truck</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADD TRAILER MODAL -->
+    {% if action == 'add_trailer' %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">➕ Add New Trailer</h3>
+                <a href="/dashboard?tab=trailers" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/add_trailer" method="POST" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Unit Number (e.g., R150)</label>
+                    <input type="text" name="unit" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Trailer Type</label>
+                    <input type="text" name="type" value="Dry Van 53'" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">Save Trailer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADD DRIVER MODAL -->
+    {% if action == 'add_driver' %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">➕ Add New Driver</h3>
+                <a href="/dashboard?tab=drivers" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/add_driver" method="POST" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+                    <input type="text" name="name" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Phone Number</label>
+                    <input type="text" name="phone" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">Save Driver</button>
+                </div>
+            </form>
         </div>
     </div>
     {% endif %}
@@ -637,7 +668,7 @@ def login_post(request: Request, email: str = Form(...), password: str = Form(..
     return Template(LOGIN_HTML).render(error="Invalid credentials!")
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_dossier: str = None, driver_dossier: str = None, search: str = None):
+def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_dossier: str = None, driver_dossier: str = None, search: str = None, action: str = None):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse(url="/login", status_code=303)
@@ -654,6 +685,7 @@ def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_
         chat_messages=CHAT_MESSAGES,
         tab=tab,
         search=search,
+        action=action,
         selected_unit=selected_unit,
         selected_trailer=selected_trailer,
         selected_driver=selected_driver
@@ -676,10 +708,6 @@ def update_truck(unit: str = Form(...), driver: str = Form(...), trailer: str = 
             t["gross"] = gross
             t["fuel"] = fuel
             t["maintenance"] = maintenance
-            if driver != "Unassigned":
-                for d in DRIVERS_DATA:
-                    if d["name"] == driver:
-                        d["truck"] = unit
     return RedirectResponse(url=f"/dashboard?tab=trucks&dossier={unit}", status_code=303)
 
 @app.post("/update_trailer")
@@ -689,10 +717,6 @@ def update_trailer(unit: str = Form(...), assigned_truck: str = Form(...), plate
             tr["assigned_truck"] = assigned_truck
             tr["plate"] = plate
             tr["annual_insp"] = annual_insp
-            if assigned_truck != "None":
-                for t in TRUCKS_DATA:
-                    if t["unit"] == assigned_truck:
-                        t["trailer"] = unit
     return RedirectResponse(url=f"/dashboard?tab=trailers&trailer_dossier={unit}", status_code=303)
 
 @app.post("/update_driver")
@@ -704,59 +728,50 @@ def update_driver(original_name: str = Form(...), name: str = Form(...), phone: 
             d["truck"] = truck
             d["cdl_expiry"] = cdl_expiry
             d["medical"] = medical
-            if truck != "Unassigned":
-                for t in TRUCKS_DATA:
-                    if t["unit"] == truck:
-                        t["driver"] = name
     return RedirectResponse(url=f"/dashboard?tab=drivers&driver_dossier={name}", status_code=303)
 
-@app.post("/upload_truck_file")
-def upload_truck_file(unit: str = Form(...), filename: UploadFile = File(...)):
-    for t in TRUCKS_DATA:
-        if t["unit"] == unit:
-            if filename.filename and filename.filename not in t["files"]:
-                t["files"].append(filename.filename)
-    return RedirectResponse(url=f"/dashboard?tab=trucks&dossier={unit}", status_code=303)
+@app.post("/add_truck")
+def add_truck(unit: str = Form(...), type: str = Form(...)):
+    TRUCKS_DATA.append({
+        "unit": unit, "type": type, "plate": "TEMP-PA", "plate_expiry": "2027-05-31",
+        "dot_insp": "2027-01-01", "vin": "NEW", "driver": "Unassigned", "trailer": "None",
+        "status": "Active", "gross": 15000.0, "fuel": 3500.0, "maintenance": 500.0, "files": []
+    })
+    return RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
 
-@app.get("/delete_truck_file")
-def delete_truck_file(unit: str, file: str):
-    for t in TRUCKS_DATA:
-        if t["unit"] == unit:
-            if file in t["files"]:
-                t["files"].remove(file)
-    return RedirectResponse(url=f"/dashboard?tab=trucks&dossier={unit}", status_code=303)
+@app.get("/delete_truck")
+def delete_truck(unit: str):
+    global TRUCKS_DATA
+    TRUCKS_DATA = [t for t in TRUCKS_DATA if t["unit"] != unit]
+    return RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
 
-@app.post("/upload_trailer_file")
-def upload_trailer_file(unit: str = Form(...), filename: UploadFile = File(...)):
-    for tr in TRAILERS_DATA:
-        if tr["unit"] == unit:
-            if filename.filename and filename.filename not in tr["files"]:
-                tr["files"].append(filename.filename)
-    return RedirectResponse(url=f"/dashboard?tab=trailers&trailer_dossier={unit}", status_code=303)
+@app.post("/add_trailer")
+def add_trailer(unit: str = Form(...), type: str = Form(...)):
+    TRAILERS_DATA.append({
+        "unit": unit, "type": type, "plate": "TEMP-ME", "plate_expiry": "2031-02-28",
+        "annual_insp": "2027-01-01", "vin": "NEW", "assigned_truck": "None", "files": []
+    })
+    return RedirectResponse(url="/dashboard?tab=trailers", status_code=303)
 
-@app.get("/delete_trailer_file")
-def delete_trailer_file(unit: str, file: str):
-    for tr in TRAILERS_DATA:
-        if tr["unit"] == unit:
-            if file in tr["files"]:
-                tr["files"].remove(file)
-    return RedirectResponse(url=f"/dashboard?tab=trailers&trailer_dossier={unit}", status_code=303)
+@app.get("/delete_trailer")
+def delete_trailer(unit: str):
+    global TRAILERS_DATA
+    TRAILERS_DATA = [tr for tr in TRAILERS_DATA if tr["unit"] != unit]
+    return RedirectResponse(url="/dashboard?tab=trailers", status_code=303)
 
-@app.post("/upload_driver_file")
-def upload_driver_file(driver_name: str = Form(...), filename: UploadFile = File(...)):
-    for d in DRIVERS_DATA:
-        if d["name"] == driver_name:
-            if filename.filename and filename.filename not in d["files"]:
-                d["files"].append(filename.filename)
-    return RedirectResponse(url=f"/dashboard?tab=drivers&driver_dossier={driver_name}", status_code=303)
+@app.post("/add_driver")
+def add_driver(name: str = Form(...), phone: str = Form(...)):
+    DRIVERS_DATA.append({
+        "name": name, "phone": phone, "email": f"{name.lower().replace(' ', '')}@moonstarpa.com",
+        "cdl": "CDL-NEW", "cdl_expiry": "2028-01-01", "medical": "2027-01-01", "truck": "Unassigned", "trailer": "None", "files": []
+    })
+    return RedirectResponse(url="/dashboard?tab=drivers", status_code=303)
 
-@app.get("/delete_driver_file")
-def delete_driver_file(driver: str, file: str):
-    for d in DRIVERS_DATA:
-        if d["name"] == driver:
-            if file in d["files"]:
-                d["files"].remove(file)
-    return RedirectResponse(url=f"/dashboard?tab=drivers&driver_dossier={driver}", status_code=303)
+@app.get("/delete_driver")
+def delete_driver(name: str):
+    global DRIVERS_DATA
+    DRIVERS_DATA = [d for d in DRIVERS_DATA if d["name"] != name]
+    return RedirectResponse(url="/dashboard?tab=drivers", status_code=303)
 
 @app.get("/logout")
 def logout():

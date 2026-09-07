@@ -8,7 +8,6 @@ import pandas as pd
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-# HTML şablonları için 'templates' klasörünü tanıtıyoruz
 templates = Jinja2Templates(directory="templates")
 
 DB_FILE = "fleet_database.db"
@@ -19,12 +18,10 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
-# 1. SAYFA: GİRİŞ EKRANI (MOONSTAR ORİJİNAL WEB SİTESİ)
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-# 2. İŞLEM: GİRİŞ YAPMA KONTROLÜ
 @app.post("/login")
 def login_post(request: Request, email: str = Form(...), password: str = Form(...)):
     if "@moonstarpa" in email.strip().lower() and password == "Moonstar2026!":
@@ -33,7 +30,6 @@ def login_post(request: Request, email: str = Form(...), password: str = Form(..
         return response
     return templates.TemplateResponse("login.html", {"request": request, "error": "Invalid credentials!"})
 
-# 3. SAYFA: ANA FİLO YÖNETİM PANELİ (DASHBOARD)
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request):
     user = request.cookies.get("user")
@@ -50,7 +46,6 @@ def dashboard(request: Request):
         "vehicles": vehicles
     })
 
-# 4. İŞLEM: ÇIKIŞ YAP (SIGN OUT)
 @app.get("/logout")
 def logout():
     response = RedirectResponse(url="/", status_code=303)

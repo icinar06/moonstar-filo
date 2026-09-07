@@ -1,35 +1,52 @@
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from jinja2 import Template
-from datetime import datetime
+from datetime import datetime, date
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-# Yüklediğiniz gerçek Excel verilerinden derlenen master filo ve şoför listesi
+# Yüklediğiniz Excel dosyalarından derlenen TÜM GERÇEK FİLO VE ŞOFÖR VERİLERİ
 FLEET_DATA = [
-    {"unit_number": "6", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "ASIL BAD SHAH", "vin": "3AKJHHDR6JSJJ1492", "plate": "AH43983 PA", "annual_dot": "2026-09-01", "pa_insp": "2026-09-26", "status": "DUE SOON", "gross": 19500.0, "fuel": 4800.0, "net": 14700.0, "files": ["DOT_Inspection.pdf"]},
-    {"unit_number": "8", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "AT YARD", "vin": "4V4NC9EH7KN900632", "plate": "AH35700 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-11-26", "status": "READY", "gross": 15000.0, "fuel": 4200.0, "net": 10800.0, "files": []},
-    {"unit_number": "10", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "OMAID FNU", "vin": "3AKJGLDR5KSKL6961", "plate": "R785774 TX", "annual_dot": "2027-08-26", "pa_insp": "TX PLATE", "status": "READY", "gross": 21000.0, "fuel": 5300.0, "net": 15700.0, "files": []},
-    {"unit_number": "11", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "at shop", "vin": "3HSDZAPR1LN872658", "plate": "AH59898 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-05-27", "status": "DUE SOON", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []},
-    {"unit_number": "12", "unit_type": "TRUCK", "company": "FIORI", "driver": "ALTUG BACI", "vin": "4V4NC9EJ4MN275936", "plate": "AH69361 PA", "annual_dot": "2027-03-01", "pa_insp": "2027-03-01", "status": "READY", "gross": 22000.0, "fuel": 5100.0, "net": 16900.0, "files": []},
-    {"unit_number": "14", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "HABIB KHAN TANIWAL", "vin": "3AKJHHDR9LSLM9887", "plate": "AH59899 PA", "annual_dot": "2026-10-01", "pa_insp": "2026-07-27", "status": "DUE SOON", "gross": 18500.0, "fuel": 4600.0, "net": 13900.0, "files": []},
-    {"unit_number": "33", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "SAID KHAN", "vin": "4V4NC9EHXKN212592", "plate": "AG85614 PA", "annual_dot": "2026-07-27", "pa_insp": "2026-11-26", "status": "READY", "gross": 20400.0, "fuel": 4900.0, "net": 15500.0, "files": []},
-    {"unit_number": "34", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "HAQMAL HABIBI", "vin": "3AKJGLDR0JSHF1489", "plate": "R567959 TX", "annual_dot": "2027-02-27", "pa_insp": "TX PLATE", "status": "READY", "gross": 17500.0, "fuel": 4100.0, "net": 13400.0, "files": []},
-    {"unit_number": "55", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "NOOR SHAHZADIN", "vin": "1M1AN4GY8LM014136", "plate": "AH48256 PA", "annual_dot": "2026-11-26", "pa_insp": "2026-11-26", "status": "DUE SOON", "gross": 23000.0, "fuel": 5500.0, "net": 17500.0, "files": []},
-    {"unit_number": "30", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RAFIQ SERFERAZ", "vin": "4V4NC9EJXMN286911", "plate": "TEMP- PA", "annual_dot": "2026-12-26", "pa_insp": "N/A", "status": "DUE SOON", "gross": 17000.0, "fuel": 4000.0, "net": 13000.0, "files": []},
-    {"unit_number": "31", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "JOSHUA RAYMOND DIAZ", "vin": "4V4NC9EJ1GN953465", "plate": "AH84982 PA", "annual_dot": "2026-11-01", "pa_insp": "2026-05-27", "status": "DUE SOON", "gross": 18500.0, "fuel": 4300.0, "net": 14200.0, "files": []},
-    {"unit_number": "38", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "BRYAN MAHMUTAJ", "vin": "4V4NC9EH4PN625082", "plate": "AH38803 PA", "annual_dot": "2027-10-01", "pa_insp": "2026-01-27", "status": "READY", "gross": 24000.0, "fuel": 5800.0, "net": 18200.0, "files": []},
-    {"unit_number": "40", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RUSSLAN SMIRNOV", "vin": "4V4NC9EH3PN613540", "plate": "AH34226 PA", "annual_dot": "2026-10-01", "pa_insp": "2026-10-26", "status": "DUE SOON", "gross": 22500.0, "fuel": 5200.0, "net": 17300.0, "files": []},
-    {"unit_number": "41", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "NOOR ALI WAZIRI", "vin": "4V4NC9EH5PN613541", "plate": "AH79469 PA", "annual_dot": "2027-04-01", "pa_insp": "2026-10-26", "status": "READY", "gross": 21000.0, "fuel": 5000.0, "net": 16000.0, "files": []},
-    {"unit_number": "53", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "WAHDAT SAFI", "vin": "3HSDZSZR0SN355353", "plate": "AH76436 PA", "annual_dot": "2027-07-26", "pa_insp": "2027-07-27", "status": "READY", "gross": 26000.0, "fuel": 6200.0, "net": 19800.0, "files": []},
-    {"unit_number": "63", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "FARHADULLAH WESAL", "vin": "3HSDZSZR8TN355263", "plate": "AH79468 PA", "annual_dot": "2027-07-27", "pa_insp": "2026-10-01", "status": "READY", "gross": 25000.0, "fuel": 5900.0, "net": 19100.0, "files": []},
-    {"unit_number": "65", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RIDVAN DENIZ", "vin": "4V4NC9EH8HN976742", "plate": "AH84983 PA", "annual_dot": "2026-12-01", "pa_insp": "2026-12-26", "status": "DUE SOON", "gross": 19500.0, "fuel": 4500.0, "net": 15000.0, "files": []},
-    {"unit_number": "R14782", "unit_type": "TRAILER", "company": "TNT RENTAL", "driver": "Unassigned", "vin": "3AWF1VT24LX004006", "plate": "31-19733 ME", "annual_dot": "2026-07-27", "pa_insp": "N/A", "status": "READY", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []},
-    {"unit_number": "S5319149", "unit_type": "TRAILER", "company": "PLM RENTAL", "driver": "Unassigned", "vin": "1UYVS2531K2742401", "plate": "30-25944 ME", "annual_dot": "2026-01-27", "pa_insp": "N/A", "status": "READY", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []}
+    {"unit_number": "6", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "ASIL BAD SHAH", "vin": "3AKJHHDR6JSJJ1492", "plate": "AH43983 PA", "annual_dot": "2026-09-01", "pa_insp": "2026-09-26", "gross": 19500.0, "fuel": 4800.0, "net": 14700.0, "files": ["DOT_Inspection.pdf"]},
+    {"unit_number": "8", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "AT YARD", "vin": "4V4NC9EH7KN900632", "plate": "AH35700 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-11-26", "gross": 15000.0, "fuel": 4200.0, "net": 10800.0, "files": []},
+    {"unit_number": "10", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "OMAID FNU", "vin": "3AKJGLDR5KSKL6961", "plate": "R785774 TX", "annual_dot": "2027-08-26", "pa_insp": "TX PLATE", "gross": 21000.0, "fuel": 5300.0, "net": 15700.0, "files": []},
+    {"unit_number": "11", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "at shop", "vin": "3HSDZAPR1LN872658", "plate": "AH59898 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-05-27", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []},
+    {"unit_number": "12", "unit_type": "TRUCK", "company": "FIORI", "driver": "ALTUG BACI", "vin": "4V4NC9EJ4MN275936", "plate": "AH69361 PA", "annual_dot": "2027-03-01", "pa_insp": "2027-03-01", "gross": 22000.0, "fuel": 5100.0, "net": 16900.0, "files": []},
+    {"unit_number": "14", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "HABIB KHAN TANIWAL", "vin": "3AKJHHDR9LSLM9887", "plate": "AH59899 PA", "annual_dot": "2026-10-01", "pa_insp": "2026-07-27", "gross": 18500.0, "fuel": 4600.0, "net": 13900.0, "files": []},
+    {"unit_number": "33", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "SAID KHAN", "vin": "4V4NC9EHXKN212592", "plate": "AG85614 PA", "annual_dot": "2026-07-27", "pa_insp": "2026-11-26", "gross": 20400.0, "fuel": 4900.0, "net": 15500.0, "files": []},
+    {"unit_number": "34", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "HAQMAL HABIBI", "vin": "3AKJGLDR0JSHF1489", "plate": "R567959 TX", "annual_dot": "2027-02-27", "pa_insp": "TX PLATE", "gross": 17500.0, "fuel": 4100.0, "net": 13400.0, "files": []},
+    {"unit_number": "55", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "NOOR SHAHZADIN", "vin": "1M1AN4GY8LM014136", "plate": "AH48256 PA", "annual_dot": "2026-11-26", "pa_insp": "2026-11-26", "gross": 23000.0, "fuel": 5500.0, "net": 17500.0, "files": []},
+    {"unit_number": "93", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "Unassigned", "vin": "3HSDZTZR3LN857393", "plate": "AH65725 PA", "annual_dot": "2026-11-26", "pa_insp": "needs sticker", "gross": 16000.0, "fuel": 3800.0, "net": 12200.0, "files": []},
+    {"unit_number": "0102", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "JAMAR LAMONT LITTLES", "vin": "3HSDZAPR6LN400102", "plate": "AH67146 PA", "annual_dot": "2026-12-26", "pa_insp": "2026-12-26", "gross": 19000.0, "fuel": 4400.0, "net": 14600.0, "files": []},
+    {"unit_number": "115", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "MONTEL LAMAR BURT", "vin": "3HSDZAPR4KN610115", "plate": "AH55084 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-03-27", "gross": 21500.0, "fuel": 5000.0, "net": 16500.0, "files": []},
+    {"unit_number": "202", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "NASEEBULLAH AMIRZAI", "vin": "3ALACWFC3JDJH5531", "plate": "XXJ0110 TX", "annual_dot": "2027-07-27", "pa_insp": "TX PLATE", "gross": 16000.0, "fuel": 3900.0, "net": 12100.0, "files": []},
+    {"unit_number": "201", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "ALI IMRAN ZAT KHAN", "vin": "3ALACWFB0KDKM5838", "plate": "YGL6943 TX", "annual_dot": "2027-07-27", "pa_insp": "TX PLATE", "gross": 18000.0, "fuel": 4200.0, "net": 13800.0, "files": []},
+    {"unit_number": "217", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "ANDI KASHARI", "vin": "3AKJHHDV4LSMC8375", "plate": "AH81416 PA", "annual_dot": "2026-12-26", "pa_insp": "2026-12-26", "gross": 20000.0, "fuel": 4800.0, "net": 15200.0, "files": []},
+    {"unit_number": "995", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "YZEDIN HATTILARI", "vin": "3AKJHHDR3JSGC5847", "plate": "TEMP PA", "annual_dot": "2027-04-01", "pa_insp": "2026-04-27", "gross": 19200.0, "fuel": 4500.0, "net": 14700.0, "files": []},
+    {"unit_number": "999", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "NEVIS HAJNAJ", "vin": "3AKJHHDR3KSKF5143", "plate": "AH41390 PA", "annual_dot": "2027-08-27", "pa_insp": "2026-02-27", "gross": 21000.0, "fuel": 5100.0, "net": 15900.0, "files": []},
+    {"unit_number": "1021", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "WALI RAHMAN", "vin": "3HSDZAPR7LN528073", "plate": "AH55067 PA", "annual_dot": "2026-10-26", "pa_insp": "2026-11-26", "gross": 22500.0, "fuel": 5400.0, "net": 17100.0, "files": []},
+    {"unit_number": "1052", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "SELCUK GOCKEN", "vin": "3AKJHHDR8KSKL8410", "plate": "AZ136J NJ", "annual_dot": "2027-07-26", "pa_insp": "NJ PLATE", "gross": 18900.0, "fuel": 4300.0, "net": 14600.0, "files": []},
+    {"unit_number": "1675", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "BARATKHAN MANGAL", "vin": "3HDSZTZR0NN441675", "plate": "AH80001", "annual_dot": "2026-11-26", "pa_insp": "2026-11-26", "gross": 24000.0, "fuel": 5800.0, "net": 18200.0, "files": []},
+    {"unit_number": "FB1907", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "TEVIN BOBBY BONNER", "vin": "3HSDZAPR1NN687366", "plate": "AH59897 PA", "annual_dot": "2026-08-26", "pa_insp": "2026-11-26", "gross": 19800.0, "fuel": 4700.0, "net": 15100.0, "files": []},
+    {"unit_number": "2009", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "M. AMAN RASOLI", "vin": "3HSDZAPR8LN864055", "plate": "AH65267 PA", "annual_dot": "2027-03-27", "pa_insp": "2026-01-27", "gross": 17600.0, "fuel": 4000.0, "net": 13600.0, "files": []},
+    {"unit_number": "2486", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "BESHARAT SEDEQI", "vin": "3HSDZAPR0LN272486", "plate": "AH80839 PA", "annual_dot": "2027-03-27", "pa_insp": "2026-05-27", "gross": 20500.0, "fuel": 4900.0, "net": 15600.0, "files": []},
+    {"unit_number": "4462", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "ALI TAJ", "vin": "3HSDZAPR4LN534462", "plate": "AH66257 PA", "annual_dot": "2026-07-27", "pa_insp": "2026-07-27", "gross": 18200.0, "fuel": 4200.0, "net": 14000.0, "files": []},
+    {"unit_number": "8929", "unit_type": "TRUCK", "company": "MOONSTAR", "driver": "HUSSAIN ANWARI", "vin": "3HSDZAPR7KN668929", "plate": "AH64254 PA", "annual_dot": "2026-11-26", "pa_insp": "2026-11-26", "gross": 21200.0, "fuel": 5000.0, "net": 16200.0, "files": []},
+    {"unit_number": "30", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RAFIQ SERFERAZ", "vin": "4V4NC9EJXMN286911", "plate": "TEMP- PA", "annual_dot": "2026-12-26", "pa_insp": "N/A", "gross": 17000.0, "fuel": 4000.0, "net": 13000.0, "files": []},
+    {"unit_number": "31", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "JOSHUA RAYMOND DIAZ", "vin": "4V4NC9EJ1GN953465", "plate": "AH84982 PA", "annual_dot": "2026-11-01", "pa_insp": "2026-05-27", "gross": 18500.0, "fuel": 4300.0, "net": 14200.0, "files": []},
+    {"unit_number": "38", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "BRYAN MAHMUTAJ", "vin": "4V4NC9EH4PN625082", "plate": "AH38803 PA", "annual_dot": "2027-10-01", "pa_insp": "2026-01-27", "gross": 24000.0, "fuel": 5800.0, "net": 18200.0, "files": []},
+    {"unit_number": "40", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RUSSLAN SMIRNOV", "vin": "4V4NC9EH3PN613540", "plate": "AH34226 PA", "annual_dot": "2026-10-01", "pa_insp": "2026-10-26", "gross": 22500.0, "fuel": 5200.0, "net": 17300.0, "files": []},
+    {"unit_number": "41", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "NOOR ALI WAZIRI", "vin": "4V4NC9EH5PN613541", "plate": "AH79469 PA", "annual_dot": "2027-04-01", "pa_insp": "2026-10-26", "gross": 21000.0, "fuel": 5000.0, "net": 16000.0, "files": []},
+    {"unit_number": "53", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "WAHDAT SAFI", "vin": "3HSDZSZR0SN355353", "plate": "AH76436 PA", "annual_dot": "2027-07-26", "pa_insp": "2027-07-27", "gross": 26000.0, "fuel": 6200.0, "net": 19800.0, "files": []},
+    {"unit_number": "63", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "FARHADULLAH WESAL", "vin": "3HSDZSZR8TN355263", "plate": "AH79468 PA", "annual_dot": "2027-07-27", "pa_insp": "2026-10-01", "gross": 25000.0, "fuel": 5900.0, "net": 19100.0, "files": []},
+    {"unit_number": "65", "unit_type": "TRUCK", "company": "LIONSTAR", "driver": "RIDVAN DENIZ", "vin": "4V4NC9EH8HN976742", "plate": "AH84983 PA", "annual_dot": "2026-12-01", "pa_insp": "2026-12-26", "gross": 19500.0, "fuel": 4500.0, "net": 15000.0, "files": []},
+    {"unit_number": "R14782", "unit_type": "TRAILER", "company": "TNT RENTAL", "driver": "Unassigned", "vin": "3AWF1VT24LX004006", "plate": "31-19733 ME", "annual_dot": "2026-07-27", "pa_insp": "N/A", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []},
+    {"unit_number": "S5319149", "unit_type": "TRAILER", "company": "PLM RENTAL", "driver": "Unassigned", "vin": "1UYVS2531K2742401", "plate": "30-25944 ME", "annual_dot": "2026-01-27", "pa_insp": "N/A", "gross": 0.0, "fuel": 0.0, "net": 0.0, "files": []}
 ]
 
 DRIVERS_DATA = [
     {"name": "ALTUG BACI", "company": "FIORI", "phone": "954-669-6229""954-669-6229", "email": "altug_baci@hotmail.com", "cdl": "B227-564-89-400-0", "cdl_expiry": "2033-06-04", "medical": "2026-08-26", "unit": "12", "files": ["CDL_Scan.pdf"]},
+    {"name": "FIERALDO", "company": "MOONSTAR", "phone": "267-764-8746""267-764-8746", "email": "Fieraldoshkembii@gmail.com", "cdl": "34593649", "cdl_expiry": "2026-08-26", "medical": "2026-08-26", "unit": "12", "files": []},
     {"name": "ASIL BAD SHAH", "company": "MOONSTAR", "phone": "215-555-0192""215-555-0192", "email": "asil@moonstarpa.com", "cdl": "PA-982341", "cdl_expiry": "2027-05-31", "medical": "2026-12-01", "unit": "6", "files": ["Medical_Card.pdf"]},
     {"name": "AT YARD", "company": "MOONSTAR", "phone": "215-555-0144""215-555-0144", "email": "yard@moonstarpa.com", "cdl": "PA-334112", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "unit": "8", "files": []},
     {"name": "OMAID FNU", "company": "MOONSTAR", "phone": "215-555-0110""215-555-0110", "email": "omaid@moonstarpa.com", "cdl": "TX-778574", "cdl_expiry": "2027-04-30", "medical": "2027-02-26", "unit": "10", "files": []},
@@ -70,7 +87,7 @@ MOONSTAR EXPRESS LLC — Reliable Transportation
     
         
             MOON★TAR
-            EXPRESS
+            EXPRESS LLC
         
         
             Home
@@ -123,11 +140,11 @@ MOONSTAR EXPRESS LLC — Reliable Transportation
 </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between">
-    <!-- HEADER -->
+    <!-- HEADER WITH LOGO -->
     <header class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center shadow-sm">
         <div class="flex items-center space-x-3">
             <span class="brand-font text-2xl font-black text-slate-900 tracking-wide">MOON<span class="text-sky-500">★</span>TAR</span>
-            <span class="text-xs font-semibold text-sky-600 border border-sky-600 px-2 py-0.5 rounded">EXPRESS</span>
+            <span class="text-xs font-semibold text-sky-600 border border-sky-600 px-2 py-0.5 rounded">EXPRESS LLC</span>
         </div>
         <nav class="hidden md:flex items-center space-x-8 text-xs font-bold uppercase tracking-wider text-slate-700">
             <a href="/" class="text-sky-600 border-b-2 border-sky-600 pb-1">Home</a>
@@ -213,13 +230,15 @@ DASHBOARD_HTML = """
 <head>
 <title>MOONSTAR EXPRESS LLC — Fleet Console</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>.brand-font { font-family: 'Montserrat', sans-serif; }</style>
 </head>
 <body class="bg-slate-50 min-h-screen p-6">
 <div class="max-w-7xl mx-auto space-y-6">
-    <!-- TOP HEADER -->
+    <!-- TOP HEADER WITH MOONSTAR LOGO -->
     <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-sky-600 p-5 rounded-xl shadow-lg border-b-4 border-orange-500 flex justify-between items-center text-white">
         <div class="flex items-center space-x-3">
-            <a href="/" class="text-2xl font-black tracking-wide text-white no-underline">MOON<span class="text-orange-500">★</span>TAR</a>
+            <a href="/dashboard?tab=home" class="brand-font text-2xl font-black tracking-wide text-white no-underline">MOON<span class="text-orange-500">★</span>TAR</a>
             <span class="text-xs font-semibold text-sky-300 border border-sky-400 px-2.5 py-0.5 rounded">EXPRESS LLC</span>
         </div>
         <div class="flex items-center space-x-4">
@@ -231,6 +250,7 @@ DASHBOARD_HTML = """
     <!-- NAVIGATION TABS -->
     <div class="flex justify-between items-center border-b border-slate-200 pb-3">
         <div class="flex space-x-2">
+            <a href="/dashboard?tab=home" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'home' %}bg-sky-600 text-white shadow{% else %}bg-white text-slate-700 border border-slate-200 hover:bg-slate-50{% endif %}">🏠 Home / Alerts</a>
             <a href="/dashboard?tab=trucks" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trucks' %}bg-sky-600 text-white shadow{% else %}bg-white text-slate-700 border border-slate-200 hover:bg-slate-50{% endif %}">Trucks & Trailers</a>
             <a href="/dashboard?tab=drivers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'drivers' %}bg-sky-600 text-white shadow{% else %}bg-white text-slate-700 border border-slate-200 hover:bg-slate-50{% endif %}">Drivers Compliance</a>
             <a href="/dashboard?tab=chat" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'chat' %}bg-sky-600 text-white shadow{% else %}bg-white text-slate-700 border border-slate-200 hover:bg-slate-50{% endif %}">💬 Fleet Team Chat</a>
@@ -245,10 +265,46 @@ DASHBOARD_HTML = """
         </div>
     </div>
 
-    {% if tab == 'trucks' %}
+    {% if tab == 'home' %}
+    <!-- HOME DASHBOARD & ALERTS -->
+    <div class="space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <h3 class="text-xl font-black text-slate-900 mb-2">🚨 Fleet Compliance Alerts & Expirations (Due Soon)</h3>
+            <p class="text-xs text-slate-500 mb-6">Review units and drivers whose federal inspections or medical cards require immediate attention.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-amber-50 border border-amber-200 p-5 rounded-xl">
+                    <h4 class="font-bold text-amber-800 text-sm mb-3">⚠️ Trucks & Trailers Due for Annual Inspection</h4>
+                    <ul class="space-y-2 text-xs text-amber-900">
+                        {% for v in vehicles %}
+                        {% if v.status == 'DUE SOON' %}
+                        <li class="flex justify-between bg-white p-2.5 rounded-lg border border-amber-200">
+                            <span><b>Unit #{{ v.unit_number }}</b> ({{ v.unit_type }}) - Driver: {{ v.driver }}</span>
+                            <span class="font-bold text-amber-700">Due: {{ v.annual_dot }}</span>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="bg-sky-50 border border-sky-200 p-5 rounded-xl">
+                    <h4 class="font-bold text-sky-800 text-sm mb-3">👤 Drivers Compliance (CDL & Medical Card Watch)</h4>
+                    <ul class="space-y-2 text-xs text-sky-900">
+                        {% for d in drivers %}
+                        <li class="flex justify-between bg-white p-2.5 rounded-lg border border-sky-200">
+                            <span><b>{{ d.name }}</b> (Unit #{{ d.unit }})</span>
+                            <span class="font-bold text-sky-700">Medical Due: {{ d.medical }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% elif tab == 'trucks' %}
     <!-- EQUIPMENT PORTAL GRID -->
     <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-        <h3 class="text-lg font-black text-slate-900 mb-6">📦 Fleet Equipment Portal (Federal Annual Inspection & DOT Tracking)</h3>
+        <h3 class="text-lg font-black text-slate-900 mb-6">📦 Fleet Equipment Portal & Federal Annual Inspection Tracking</h3>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {% for v in vehicles %}
             <a href="/dashboard?tab=trucks&dossier={{ v.unit_number }}" class="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-sm hover:shadow-lg transition flex flex-col justify-between relative overflow-hidden text-left block">
@@ -345,7 +401,7 @@ DASHBOARD_HTML = """
                 <form action="/update_unit" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <input type="hidden" name="unit_number" value="{{ selected_unit.unit_number }}">
                     <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Assigned Driver (Select from list)</label>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Assigned Driver</label>
                         <select name="driver" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
                             <option value="Unassigned">Unassigned</option>
                             {% for d in drivers %}
@@ -371,7 +427,6 @@ DASHBOARD_HTML = """
                     </div>
                 </form>
 
-                <!-- DOSYA EKLEME & YÖNETME ALANI -->
                 <div class="border-t border-slate-200 pt-4 space-y-4">
                     <h4 class="font-bold text-sm text-slate-900">📁 Federal Inspection & Compliance Documents</h4>
                     
@@ -428,7 +483,6 @@ DASHBOARD_HTML = """
                     </div>
                 </form>
 
-                <!-- DRIVER DOSYA EKLEME & YÖNETME ALANI -->
                 <div class="border-t border-slate-200 pt-4 space-y-4">
                     <h4 class="font-bold text-sm text-slate-900">📁 Driver Compliance Documents (CDL / Medical)</h4>
                     
@@ -522,8 +576,6 @@ DASHBOARD_HTML = """
 </html>
 """
 
-from fastapi import UploadFile, File
-
 @app.get("/", response_class=HTMLResponse)
 def read_root(request: Request):
     return Template(HOME_HTML).render()
@@ -535,13 +587,13 @@ def login_get(request: Request):
 @app.post("/login")
 def login_post(request: Request, email: str = Form(...), password: str = Form(...)):
     if "@moonstarpa" in email.strip().lower() and password == "Moonstar2026!":
-        response = RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
+        response = RedirectResponse(url="/dashboard?tab=home", status_code=303)
         response.set_cookie(key="user", value=email.strip().lower())
         return response
     return Template(LOGIN_HTML).render(error="Invalid credentials!")
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, tab: str = "trucks", dossier: str = None, driver_dossier: str = None, action: str = None):
+def dashboard(request: Request, tab: str = "home", dossier: str = None, driver_dossier: str = None, action: str = None):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse(url="/login", status_code=303)

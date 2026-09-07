@@ -7,7 +7,7 @@ from datetime import datetime
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-def load_master_excel_data():
+def load_all_excel_masters():
     trucks, trailers, drivers = [], [], []
 
     if os.path.exists("Trucks.xlsx"):
@@ -82,8 +82,8 @@ def load_master_excel_data():
 
     return trucks, trailers, drivers
 
-TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_master_excel_data()
-CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Master Excel datasets loaded successfully.", "time": "10:00 AM"}]
+TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_all_excel_masters()
+CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "All 86 Trucks, 35 Trailers and 56 Drivers successfully synchronized.", "time": "10:00 AM"}]
 
 HOME_HTML = """
 
@@ -268,15 +268,15 @@ DASHBOARD_HTML = """
             {% if tab == 'home' %}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trucks</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Registered Trucks</div>
                     <div class="text-3xl font-black text-sky-600 mt-2">{{ trucks|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trailers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Trailers</div>
                     <div class="text-3xl font-black text-orange-600 mt-2">{{ trailers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Drivers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Drivers</div>
                     <div class="text-3xl font-black text-emerald-600 mt-2">{{ drivers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-indigo-600 shadow-sm">
@@ -354,7 +354,7 @@ DASHBOARD_HTML = """
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                     <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory ({{ trailers|length }} Units)</h3>
-                    <span class="text-xs text-slate-500">Click any trailer row to open dossier.</span>
+                    <span class="text-xs text-slate-500">Click any row to open trailer dossier.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>

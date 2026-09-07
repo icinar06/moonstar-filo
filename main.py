@@ -7,16 +7,13 @@ from datetime import datetime
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-def load_master_excel_data():
-    trucks = []
-    trailers = []
-    drivers = []
+def load_all_excel_masters():
+    trucks, trailers, drivers = [], [], []
 
-    # 1. Trucks.xlsx
     if os.path.exists("Trucks.xlsx"):
         try:
-            df_t = pd.read_excel("Trucks.xlsx", sheet_name=0)
-            for _, r in df_t.iterrows():
+            df = pd.read_excel("Trucks.xlsx", sheet_name=0)
+            for _, r in df.iterrows():
                 num = str(r.get("Number", "")).strip()
                 if num and num.lower() != "nan":
                     trucks.append({
@@ -28,16 +25,18 @@ def load_master_excel_data():
                         "vin": str(r.get("VIN", "-")).strip(),
                         "driver": "Unassigned",
                         "trailer": "None",
+                        "gross": 21500.0,
+                        "fuel": 4800.0,
+                        "maintenance": 650.0,
                         "files": []
                     })
         except:
             pass
 
-    # 2. Trailers.xlsx
     if os.path.exists("Trailers.xlsx"):
         try:
-            df_tr = pd.read_excel("Trailers.xlsx", sheet_name=0)
-            for _, r in df_tr.iterrows():
+            df = pd.read_excel("Trailers.xlsx", sheet_name=0)
+            for _, r in df.iterrows():
                 num = str(r.get("Number", "")).strip()
                 if num and num.lower() != "nan":
                     trailers.append({
@@ -53,11 +52,10 @@ def load_master_excel_data():
         except:
             pass
 
-    # 3. Drivers (2).xlsx
     if os.path.exists("Drivers (2).xlsx"):
         try:
-            df_d = pd.read_excel("Drivers (2).xlsx", sheet_name=0)
-            for _, r in df_d.iterrows():
+            df = pd.read_excel("Drivers (2).xlsx", sheet_name=0)
+            for _, r in df.iterrows():
                 name = str(r.get("Name", "")).strip()
                 if name and name.lower() != "nan":
                     drivers.append({
@@ -75,16 +73,16 @@ def load_master_excel_data():
             pass
 
     if not trucks:
-        trucks = [{"unit": "8", "type": "VOLVO", "plate": "AH35700 PA", "plate_expiry": "2027-05-31", "dot_insp": "2026-10-26", "vin": "4V4NC9EH", "driver": "AT YARD", "trailer": "None", "files": []}]
+        trucks = [{"unit": "8", "type": "VOLVO", "plate": "AH35700 PA", "plate_expiry": "2027-05-31", "dot_insp": "2026-10-26", "vin": "4V4", "driver": "AT YARD", "trailer": "None", "gross": 18000.0, "fuel": 4000.0, "maintenance": 300.0, "files": []}]
     if not trailers:
-        trailers = [{"unit": "R14782", "type": "Dry Van", "plate": "31-19733 ME", "plate_expiry": "2031-02-28", "annual_insp": "2026-07-27", "vin": "3AWF1VT", "assigned_truck": "None", "files": []}]
+        trailers = [{"unit": "R14782", "type": "Dry Van", "plate": "31-19733 ME", "plate_expiry": "2031-02-28", "annual_insp": "2026-07-27", "vin": "3AW", "assigned_truck": "None", "files": []}]
     if not drivers:
-        drivers = [{"name": "ALTUG BACI", "phone": "954-669-6229""954-669-6229", "email": "altug_baci@hotmail.com", "cdl": "B227-564", "cdl_expiry": "2033-06-04", "medical": "2026-08-26", "truck": "12", "trailer": "None", "files": []}]
+        drivers = [{"name": "AT YARD", "phone": "215-555-0144""215-555-0144", "email": "yard@moonstarpa.com", "cdl": "PA-334", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "8", "trailer": "None", "files": []}]
 
     return trucks, trailers, drivers
 
-TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_master_excel_data()
-CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Master Excel datasets successfully loaded into the executive console.", "time": "10:00 AM"}]
+TRUCKS_DATA, TRAILERS_DATA, DRIVERS_DATA = load_all_excel_masters()
+CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "All Master Excel datasets loaded with P&L and assignment tracking.", "time": "10:00 AM"}]
 
 HOME_HTML = """
 
@@ -219,7 +217,7 @@ DASHBOARD_HTML = """
 <style>.brand-font { font-family: 'Montserrat', sans-serif; }</style>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
-    <!-- MODERN SIDEBAR (SAMSARA STYLE) -->
+    <!-- MODERN SIDEBAR -->
     <aside class="w-20 bg-slate-900 flex flex-col items-center py-6 space-y-8 border-r border-slate-800">
         <div class="text-sky-400 font-black text-xl">★</div>
         <div class="flex flex-col space-y-6 text-slate-400">
@@ -233,7 +231,6 @@ DASHBOARD_HTML = """
 
     <!-- MAIN CONTENT AREA -->
     <div class="flex-1 flex flex-col min-w-0">
-        <!-- TOP HEADER -->
         <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-sky-600 px-8 py-4 shadow-md border-b-4 border-orange-500 flex justify-between items-center text-white">
             <div class="flex items-center space-x-3">
                 <span class="brand-font text-xl font-black tracking-wide">MOON<span class="text-orange-500">★</span>TAR</span>
@@ -245,7 +242,6 @@ DASHBOARD_HTML = """
             </div>
         </header>
 
-        <!-- TABS BAR -->
         <div class="bg-white border-b border-slate-200 px-8 py-3 flex space-x-3 shadow-sm">
             <a href="/dashboard?tab=home" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'home' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Home / Alerts</a>
             <a href="/dashboard?tab=trucks" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trucks' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trucks Master ({{ trucks|length }})</a>
@@ -257,24 +253,24 @@ DASHBOARD_HTML = """
             {% if tab == 'home' %}
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trucks</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Registered Trucks</div>
                     <div class="text-3xl font-black text-sky-600 mt-2">{{ trucks|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trailers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Trailers</div>
                     <div class="text-3xl font-black text-orange-600 mt-2">{{ trailers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Drivers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Drivers</div>
                     <div class="text-3xl font-black text-emerald-600 mt-2">{{ drivers|length }}</div>
                 </div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="text-lg font-black text-slate-900">🚨 Fleet Compliance & Expiration Alerts</h3>
+                <h3 class="text-lg font-black text-slate-900">🚨 Fleet Compliance & Inspection Watch</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-2">
                         <h4 class="font-bold text-amber-900 text-sm">🚚 Trucks Inspection Watch</h4>
-                        {% for t in trucks[:6] %}
+                        {% for t in trucks[:8] %}
                         <div class="flex justify-between bg-white p-2.5 rounded border border-amber-100">
                             <span><b>Unit #{{ t.unit }}</b> ({{ t.type }})</span>
                             <span class="text-amber-700 font-bold">DOT: {{ t.dot_insp }}</span>
@@ -283,7 +279,7 @@ DASHBOARD_HTML = """
                     </div>
                     <div class="bg-sky-50 p-4 rounded-xl border border-sky-200 space-y-2">
                         <h4 class="font-bold text-sky-900 text-sm">👤 Drivers CDL & Medical Watch</h4>
-                        {% for d in drivers[:6] %}
+                        {% for d in drivers[:8] %}
                         <div class="flex justify-between bg-white p-2.5 rounded border border-sky-100">
                             <span><b>{{ d.name }}</b></span>
                             <span class="text-sky-700 font-bold">Medical: {{ d.medical }}</span>
@@ -295,18 +291,20 @@ DASHBOARD_HTML = """
             {% elif tab == 'trucks' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">🚛 Master Trucks Inventory</h3>
-                    <span class="text-xs text-slate-500">Click any row to manage truck, assign driver, or hook trailer.</span>
+                    <h3 class="font-black text-slate-900 text-base">🚛 Master Trucks Inventory ({{ trucks|length }} Units)</h3>
+                    <span class="text-xs text-slate-500">Click any unit row to manage P&L, assign driver/trailer, or manage files.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-slate-900 text-white">
                             <th class="p-3">Unit #</th>
                             <th class="p-3">Make / Model</th>
-                            <th class="p-3">Plate & Expiry</th>
-                            <th class="p-3">Annual DOT</th>
                             <th class="p-3">Assigned Driver</th>
                             <th class="p-3">Hooked Trailer</th>
+                            <th class="p-3">Gross</th>
+                            <th class="p-3">Fuel</th>
+                            <th class="p-3">Maintenance</th>
+                            <th class="p-3">Net Profit / Loss</th>
                             <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
@@ -315,12 +313,16 @@ DASHBOARD_HTML = """
                         <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=trucks&dossier={{ t.unit }}'">
                             <td class="p-3 font-black text-slate-900">#{{ t.unit }}</td>
                             <td class="p-3 text-slate-700">{{ t.type }}</td>
-                            <td class="p-3 text-slate-600">{{ t.plate }} <br><span class="text-[10px] text-slate-400">Exp: {{ t.plate_expiry }}</span></td>
-                            <td class="p-3 font-semibold text-amber-700">{{ t.dot_insp }}</td>
                             <td class="p-3 font-bold text-sky-600">{{ t.driver }}</td>
-                            <td class="p-3 font-bold text-orange-600">{{ t.trailer }}</td>
+                            <td class="p-3 font-bold text-orange-600">Trailer #{{ t.trailer }}</td>
+                            <td class="p-3 text-emerald-600 font-bold">${{ "{:,.2f}".format(t.gross) }}</td>
+                            <td class="p-3 text-orange-600 font-bold">${{ "{:,.2f}".format(t.fuel) }}</td>
+                            <td class="p-3 text-amber-600 font-bold">${{ "{:,.2f}".format(t.maintenance) }}</td>
+                            <td class="p-3 font-black {% if (t.gross - t.fuel - t.maintenance) >= 0 %}text-emerald-700{% else %}text-red-600{% endif %}">
+                                ${{ "{:,.2f}".format(t.gross - t.fuel - t.maintenance) }}
+                            </td>
                             <td class="p-3 text-right">
-                                <a href="/dashboard?tab=trucks&dossier={{ t.unit }}" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold hover:bg-sky-600 hover:text-white transition">Open →</a>
+                                <a href="/dashboard?tab=trucks&dossier={{ t.unit }}" class="bg-sky-50 text-sky-600 px-3 py-1.5 rounded-lg font-bold hover:bg-sky-600 hover:text-white transition">Open →</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -330,8 +332,8 @@ DASHBOARD_HTML = """
             {% elif tab == 'trailers' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory</h3>
-                    <span class="text-xs text-slate-500">Click any row to open trailer details.</span>
+                    <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory ({{ trailers|length }} Units)</h3>
+                    <span class="text-xs text-slate-500">Click any trailer row to open trailer dossier.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -340,18 +342,20 @@ DASHBOARD_HTML = """
                             <th class="p-3">Trailer Type</th>
                             <th class="p-3">Plate & Expiry</th>
                             <th class="p-3">Annual Inspection</th>
+                            <th class="p-3">Assigned Truck</th>
                             <th class="p-3 text-right">Action</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                         {% for tr in trailers %}
-                        <tr class="hover:bg-slate-50">
+                        <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=trailers&trailer_dossier={{ tr.unit }}'">
                             <td class="p-3 font-black text-slate-900">#{{ tr.unit }}</td>
                             <td class="p-3 text-slate-700">{{ tr.type }}</td>
                             <td class="p-3 text-slate-600">{{ tr.plate }} <br><span class="text-[10px] text-slate-400">Exp: {{ tr.plate_expiry }}</span></td>
                             <td class="p-3 font-semibold text-amber-700">{{ tr.annual_insp }}</td>
+                            <td class="p-3 font-bold text-sky-600">Truck #{{ tr.assigned_truck }}</td>
                             <td class="p-3 text-right">
-                                <span class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold">Active</span>
+                                <a href="/dashboard?tab=trailers&trailer_dossier={{ tr.unit }}" class="bg-orange-50 text-orange-600 px-3 py-1.5 rounded-lg font-bold hover:bg-orange-600 hover:text-white transition">Open →</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -361,8 +365,8 @@ DASHBOARD_HTML = """
             {% elif tab == 'drivers' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">👤 Master Drivers Roster</h3>
-                    <span class="text-xs text-slate-500">Click any driver row to assign truck/trailer and manage files.</span>
+                    <h3 class="font-black text-slate-900 text-base">👤 Master Drivers Roster ({{ drivers|length }} Active Drivers)</h3>
+                    <span class="text-xs text-slate-500">Click any driver row to manage CDL, medical records, and truck assignment.</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -384,7 +388,7 @@ DASHBOARD_HTML = """
                             <td class="p-3 font-bold text-amber-700">{{ d.medical }}</td>
                             <td class="p-3 font-bold text-sky-600">Truck #{{ d.truck }}</td>
                             <td class="p-3 text-right">
-                                <a href="/dashboard?tab=drivers&driver_dossier={{ d.name }}" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg font-bold hover:bg-sky-600 hover:text-white transition">Open →</a>
+                                <a href="/dashboard?tab=drivers&driver_dossier={{ d.name }}" class="bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg font-bold hover:bg-emerald-600 hover:text-white transition">Open →</a>
                             </td>
                         </tr>
                         {% endfor %}
@@ -414,16 +418,16 @@ DASHBOARD_HTML = """
         </main>
     </div>
 
-    <!-- TRUCK DOSSIER MODAL WITH DRIVER & TRAILER ASSIGNMENT -->
+    <!-- TRUCK DOSSIER MODAL (P&L, EXPENSES & ASSIGNMENT) -->
     {% if selected_unit %}
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden border border-slate-200">
             <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
-                <h3 class="font-black text-lg">Truck Dossier — Unit #{{ selected_unit.unit }}</h3>
+                <h3 class="font-black text-lg">Truck Dossier & P&L — Unit #{{ selected_unit.unit }}</h3>
                 <a href="/dashboard?tab=trucks" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
             </div>
             <div class="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
-                <form action="/update_truck" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form action="/update_truck" method="POST" class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input type="hidden" name="unit" value="{{ selected_unit.unit }}">
                     <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Assign Driver</label>
@@ -444,20 +448,29 @@ DASHBOARD_HTML = """
                         </select>
                     </div>
                     <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gross Revenue ($)</label>
+                        <input type="number" step="0.01" name="gross" value="{{ selected_unit.gross }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fuel Expense ($)</label>
+                        <input type="number" step="0.01" name="fuel" value="{{ selected_unit.fuel }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Maintenance / Oil ($)</label>
+                        <input type="number" step="0.01" name="maintenance" value="{{ selected_unit.maintenance }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
                         <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Plate Number</label>
                         <input type="text" name="plate" value="{{ selected_unit.plate }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
                     </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Federal Annual DOT</label>
-                        <input type="text" name="dot_insp" value="{{ selected_unit.dot_insp }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
-                    </div>
-                    <div class="md:col-span-2 flex justify-between pt-2">
-                        <button type="submit" class="bg-sky-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase shadow">💾 Save Truck</button>
+                    <div class="md:col-span-3 flex justify-between pt-2">
+                        <button type="submit" class="bg-sky-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold uppercase shadow">💾 Save Truck & P&L</button>
                         <a href="/delete_truck?unit={{ selected_unit.unit }}" class="bg-red-600 text-white px-5 py-2.5 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete</a>
                     </div>
                 </form>
+
                 <div class="border-t pt-4 space-y-3">
-                    <h4 class="font-bold text-sm text-slate-900">📁 Truck Compliance Files</h4>
+                    <h4 class="font-bold text-sm text-slate-900">📁 Truck Compliance & Maintenance Files</h4>
                     <form action="/upload_truck_file" method="POST" enctype="multipart/form-data" class="flex gap-3">
                         <input type="hidden" name="unit" value="{{ selected_unit.unit }}">
                         <input type="file" name="filename" required class="flex-1 text-xs border p-2 rounded-lg bg-slate-50">
@@ -475,7 +488,45 @@ DASHBOARD_HTML = """
     </div>
     {% endif %}
 
-    <!-- DRIVER DOSSIER MODAL WITH TRUCK ASSIGNMENT -->
+    <!-- TRAILER DOSSIER MODAL -->
+    {% if selected_trailer %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">Trailer Dossier — Unit #{{ selected_trailer.unit }}</h3>
+                <a href="/dashboard?tab=trailers" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <div class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <form action="/update_trailer" method="POST" class="space-y-3">
+                    <input type="hidden" name="unit" value="{{ selected_trailer.unit }}">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Assign to Truck</label>
+                        <select name="assigned_truck" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                            <option value="None">None</option>
+                            {% for t in trucks %}
+                            <option value="{{ t.unit }}" {% if selected_trailer.assigned_truck == t.unit %}selected{% endif %}>Truck #{{ t.unit }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Plate Number</label>
+                        <input type="text" name="plate" value="{{ selected_trailer.plate }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Annual Inspection Date</label>
+                        <input type="text" name="annual_insp" value="{{ selected_trailer.annual_insp }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div class="flex justify-between pt-2">
+                        <button type="submit" class="bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">💾 Save Trailer</button>
+                        <a href="/delete_trailer?unit={{ selected_trailer.unit }}" class="bg-red-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DRIVER DOSSIER MODAL -->
     {% if selected_driver %}
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
@@ -551,12 +602,13 @@ def login_post(request: Request, email: str = Form(...), password: str = Form(..
     return Template(LOGIN_HTML).render(error="Invalid credentials!")
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, tab: str = "home", dossier: str = None, driver_dossier: str = None):
+def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_dossier: str = None, driver_dossier: str = None):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse(url="/login", status_code=303)
     
     selected_unit = next((t for t in TRUCKS_DATA if t["unit"] == dossier), None) if dossier else None
+    selected_trailer = next((tr for tr in TRAILERS_DATA if tr["unit"] == trailer_dossier), None) if trailer_dossier else None
     selected_driver = next((d for d in DRIVERS_DATA if d["name"] == driver_dossier), None) if driver_dossier else None
 
     return Template(DASHBOARD_HTML).render(
@@ -567,30 +619,45 @@ def dashboard(request: Request, tab: str = "home", dossier: str = None, driver_d
         chat_messages=CHAT_MESSAGES,
         tab=tab,
         selected_unit=selected_unit,
+        selected_trailer=selected_trailer,
         selected_driver=selected_driver
     )
 
 @app.post("/send_chat")
 def send_chat(request: Request, message: str = Form(...)):
-    user = request.cookies.get("user", "dispatch@moonstarpa.com")
     time_str = datetime.now().strftime("%I:%M %p")
-    CHAT_MESSAGES.append({"sender": user, "message": message.strip(), "time": time_str})
+    CHAT_MESSAGES.append({"sender": "dispatch@moonstarpa.com", "message": message.strip(), "time": time_str})
     return RedirectResponse(url="/dashboard?tab=chat", status_code=303)
 
 @app.post("/update_truck")
-def update_truck(unit: str = Form(...), driver: str = Form(...), trailer: str = Form(...), plate: str = Form(...), dot_insp: str = Form(...)):
+def update_truck(unit: str = Form(...), driver: str = Form(...), trailer: str = Form(...), plate: str = Form(...), dot_insp: str = Form(...), gross: float = Form(0.0), fuel: float = Form(0.0), maintenance: float = Form(0.0)):
     for t in TRUCKS_DATA:
         if t["unit"] == unit:
             t["driver"] = driver
             t["trailer"] = trailer
             t["plate"] = plate
             t["dot_insp"] = dot_insp
-            # Karşılıklı atama güncellemesi
+            t["gross"] = gross
+            t["fuel"] = fuel
+            t["maintenance"] = maintenance
             if driver != "Unassigned":
                 for d in DRIVERS_DATA:
                     if d["name"] == driver:
                         d["truck"] = unit
     return RedirectResponse(url=f"/dashboard?tab=trucks&dossier={unit}", status_code=303)
+
+@app.post("/update_trailer")
+def update_trailer(unit: str = Form(...), assigned_truck: str = Form(...), plate: str = Form(...), annual_insp: str = Form(...)):
+    for tr in TRAILERS_DATA:
+        if tr["unit"] == unit:
+            tr["assigned_truck"] = assigned_truck
+            tr["plate"] = plate
+            tr["annual_insp"] = annual_insp
+            if assigned_truck != "None":
+                for t in TRUCKS_DATA:
+                    if t["unit"] == assigned_truck:
+                        t["trailer"] = unit
+    return RedirectResponse(url=f"/dashboard?tab=trailers&trailer_dossier={unit}", status_code=303)
 
 @app.post("/update_driver")
 def update_driver(original_name: str = Form(...), name: str = Form(...), truck: str = Form(...), cdl_expiry: str = Form(...), medical: str = Form(...)):

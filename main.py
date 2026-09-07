@@ -5,56 +5,55 @@ from jinja2 import Template
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
 def get_fleet_vehicles():
-    # Tüm gerçek filo verileriniz doğrudan entegre edilmiştir
     return [
-        {"unit_number": "6", "unit_type": "FREIGHTLINER CASCADIA 2018", "driver": "ASIL BAD SHAH", "monthly_gross": 19500.0, "monthly_fuel_cost": 4800.0},
-        {"unit_number": "8", "unit_type": "VOLVO VNL 2019", "driver": "AT YARD", "monthly_gross": 15000.0, "monthly_fuel_cost": 4200.0},
-        {"unit_number": "10", "unit_type": "FREIGHTLINER 2019", "driver": "OMAID FNU", "monthly_gross": 21000.0, "monthly_fuel_cost": 5300.0},
-        {"unit_number": "11", "unit_type": "INTERNATIONAL LT625 2020", "driver": "at shop", "monthly_gross": 0.0, "monthly_fuel_cost": 0.0},
-        {"unit_number": "12", "unit_type": "VOLVO 2021", "driver": "ALTUG BACI", "monthly_gross": 22000.0, "monthly_fuel_cost": 5100.0},
-        {"unit_number": "14", "unit_type": "FREIGHTLINER CASCADIA 2020", "driver": "HABIB KHAN TANIWAL", "monthly_gross": 18500.0, "monthly_fuel_cost": 4600.0},
-        {"unit_number": "33", "unit_type": "VOLVO VNL 2019", "driver": "SAID KHAN", "monthly_gross": 20400.0, "monthly_fuel_cost": 4900.0},
-        {"unit_number": "34", "unit_type": "FREIGHTLINER CASCADIA 2018", "driver": "HAQMAL HABIBI", "monthly_gross": 17500.0, "monthly_fuel_cost": 4100.0},
-        {"unit_number": "55", "unit_type": "MACK TRACTOR 2020", "driver": "NOOR SHAHZADIN", "monthly_gross": 23000.0, "monthly_fuel_cost": 5500.0},
-        {"unit_number": "0102", "unit_type": "INTERNATIONAL LT625 2020", "driver": "JAMAR LAMONT LITTLES", "monthly_gross": 19000.0, "monthly_fuel_cost": 4400.0},
-        {"unit_number": "115", "unit_type": "INTERNATIONAL LT625 2020", "driver": "MONTEL LAMAR BURT", "monthly_gross": 21500.0, "monthly_fuel_cost": 5000.0},
-        {"unit_number": "202", "unit_type": "FREIGHTLINER 2018", "driver": "NASEEBULLAH AMIRZAI", "monthly_gross": 16000.0, "monthly_fuel_cost": 3900.0},
-        {"unit_number": "201", "unit_type": "FREIGHTLINER 2019", "driver": "ALI IMRAN ZAT KHAN", "monthly_gross": 18000.0, "monthly_fuel_cost": 4200.0},
-        {"unit_number": "217", "unit_type": "FREIGHTLINER 2020", "driver": "ANDI KASHARI", "monthly_gross": 20000.0, "monthly_fuel_cost": 4800.0},
-        {"unit_number": "995", "unit_type": "FREIGHTLINER CASCADIA 2018", "driver": "YZEDIN HATTILARI", "monthly_gross": 19200.0, "monthly_fuel_cost": 4500.0},
-        {"unit_number": "999", "unit_type": "FREIGHTLINER 2019", "driver": "NEVIS HAJNAJ", "monthly_gross": 21000.0, "monthly_fuel_cost": 5100.0},
-        {"unit_number": "1021", "unit_type": "INTERNATIONAL LT625 2020", "driver": "WALI RAHMAN", "monthly_gross": 22500.0, "monthly_fuel_cost": 5400.0},
-        {"unit_number": "1052", "unit_type": "FREIGHTLINER 2019", "driver": "SELCUK GOCKEN", "monthly_gross": 18900.0, "monthly_fuel_cost": 4300.0},
-        {"unit_number": "1675", "unit_type": "INTERNATIONAL 2022", "driver": "BARATKHAN MANGAL", "monthly_gross": 24000.0, "monthly_fuel_cost": 5800.0},
-        {"unit_number": "FB1907", "unit_type": "INTERNATIONAL LT625 2020", "driver": "TEVIN BOBBY BONNER", "monthly_gross": 19800.0, "monthly_fuel_cost": 4700.0},
-        {"unit_number": "2009", "unit_type": "INTERNATIONAL 2020", "driver": "M. AMAN RASOLI", "monthly_gross": 17600.0, "monthly_fuel_cost": 4000.0},
-        {"unit_number": "2486", "unit_type": "INTERNATIONAL 2020", "driver": "BESHARAT SEDEQI", "monthly_gross": 20500.0, "monthly_fuel_cost": 4900.0},
-        {"unit_number": "4462", "unit_type": "INTERNATIONAL LT625 2020", "driver": "ALI TAJ", "monthly_gross": 18200.0, "monthly_fuel_cost": 4200.0},
-        {"unit_number": "8929", "unit_type": "INTERNATIONAL LT625 2020", "driver": "HUSSAIN ANWARI", "monthly_gross": 21200.0, "monthly_fuel_cost": 5000.0},
-        {"unit_number": "526920", "unit_type": "FREIGHTLINER 2022", "driver": "THOMAS HUDSON", "monthly_gross": 25000.0, "monthly_fuel_cost": 6000.0},
-        {"unit_number": "542148", "unit_type": "FREIGHTLINER 2022", "driver": "AZEEM AZEEMI", "monthly_gross": 23500.0, "monthly_fuel_cost": 5600.0},
-        {"unit_number": "821264", "unit_type": "FREIGHTLINER 2019", "driver": "KAAMIL E VENSON", "monthly_gross": 19500.0, "monthly_fuel_cost": 4500.0},
-        {"unit_number": "828331", "unit_type": "INT. BOX TRAILER 2019", "driver": "MUHAMMAD SAMEER", "monthly_gross": 16500.0, "monthly_fuel_cost": 3800.0}
+        {"unit_number": "6", "unit_type": "TRUCK", "driver": "ASIL BAD SHAH", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 19500.0, "monthly_fuel_cost": 4800.0, "net_profit": 14700.0},
+        {"unit_number": "8", "unit_type": "TRUCK", "driver": "AT YARD", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 15000.0, "monthly_fuel_cost": 4200.0, "net_profit": 10800.0},
+        {"unit_number": "10", "unit_type": "TRUCK", "driver": "OMAID FNU", "status": "DUE SOON", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 21000.0, "monthly_fuel_cost": 5300.0, "net_profit": 15700.0},
+        {"unit_number": "11", "unit_type": "TRUCK", "driver": "at shop", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 0.0, "monthly_fuel_cost": 0.0, "net_profit": 0.0},
+        {"unit_number": "12", "unit_type": "TRUCK", "driver": "ALTUG BACI", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 22000.0, "monthly_fuel_cost": 5100.0, "net_profit": 16900.0},
+        {"unit_number": "14", "unit_type": "TRUCK", "driver": "HABIB KHAN TANIWAL", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 18500.0, "monthly_fuel_cost": 4600.0, "net_profit": 13900.0},
+        {"unit_number": "33", "unit_type": "TRUCK", "driver": "SAID KHAN", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 20400.0, "monthly_fuel_cost": 4900.0, "net_profit": 15500.0},
+        {"unit_number": "34", "unit_type": "TRUCK", "driver": "HAQMAL HABIBI", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 17500.0, "monthly_fuel_cost": 4100.0, "net_profit": 13400.0},
+        {"unit_number": "55", "unit_type": "TRUCK", "driver": "NOOR SHAHZADIN", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 23000.0, "monthly_fuel_cost": 5500.0, "net_profit": 17500.0},
+        {"unit_number": "0102", "unit_type": "TRUCK", "driver": "JAMAR LAMONT LITTLES", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 19000.0, "monthly_fuel_cost": 4400.0, "net_profit": 14600.0},
+        {"unit_number": "115", "unit_type": "TRUCK", "driver": "MONTEL LAMAR BURT", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 21500.0, "monthly_fuel_cost": 5000.0, "net_profit": 16500.0},
+        {"unit_number": "202", "unit_type": "TRUCK", "driver": "NASEEBULLAH AMIRZAI", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 16000.0, "monthly_fuel_cost": 3900.0, "net_profit": 12100.0},
+        {"unit_number": "201", "unit_type": "TRUCK", "driver": "ALI IMRAN ZAT KHAN", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 18000.0, "monthly_fuel_cost": 4200.0, "net_profit": 13800.0},
+        {"unit_number": "217", "unit_type": "TRUCK", "driver": "ANDI KASHARI", "status": "DUE SOON", "oil_status": "READY", "dot_status": "DUE SOON", "monthly_gross": 20000.0, "monthly_fuel_cost": 4800.0, "net_profit": 15200.0},
+        {"unit_number": "995", "unit_type": "TRUCK", "driver": "YZEDIN HATTILARI", "status": "READY", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 19200.0, "monthly_fuel_cost": 4500.0, "net_profit": 14700.0},
+        {"unit_number": "999", "unit_type": "TRUCK", "driver": "NEVIS HAJNAJ", "status": "DUE SOON", "oil_status": "READY", "dot_status": "READY", "monthly_gross": 21000.0, "monthly_fuel_cost": 5100.0, "net_profit": 15900.0}
     ]
 
 LOGIN_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-<title>MOONSTAR EXPRESS</title>
+<title>MOONSTAR EXPRESS — Executive Portal</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 40px;">
-<div style="max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-    <h2 style="color: #0b1f3a;">🔐 Executive Portal Login</h2>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center">
+<div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
+    <div class="text-center mb-6">
+        <span class="text-3xl font-black text-slate-900 tracking-wide font-sans">MOON<span class="text-orange-500">★</span>TAR</span>
+        <p class="text-xs font-semibold text-sky-600 mt-1 uppercase tracking-wider">Executive Fleet Console</p>
+    </div>
     {% if error %}
-    <p style="color: red; font-size: 14px;">{{ error }}</p>
+    <div class="bg-red-50 border border-red-200 text-red-600 text-xs p-3 rounded-lg mb-4 font-medium text-center">
+        {{ error }}
+    </div>
     {% endif %}
-    <form action="/login" method="POST">
-        <label style="font-size: 12px; font-weight: bold; color: #64748b;">Corporate Email</label><br>
-        <input type="email" name="email" required placeholder="ismail@moonstarpa.com" style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 5px;"><br>
-        <label style="font-size: 12px; font-weight: bold; color: #64748b;">Password</label><br>
-        <input type="password" name="password" required style="width: 100%; padding: 10px; margin-top: 5px; margin-bottom: 20px; border: 1px solid #cbd5e1; border-radius: 5px;"><br>
-        <button type="submit" style="width: 100%; background: #0284c7; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">Sign In to Portal</button>
+    <form action="/login" method="POST" class="space-y-4">
+        <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Corporate Email</label>
+            <input type="email" name="email" required placeholder="ismail@moonstarpa.com" class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-sky-600">
+        </div>
+        <div>
+            <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Password</label>
+            <input type="password" name="password" required class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:border-sky-600">
+        </div>
+        <button type="submit" class="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold uppercase tracking-wider rounded-lg transition shadow-md">
+            Sign In to Portal
+        </button>
     </form>
 </div>
 </body>
@@ -65,34 +64,77 @@ DASHBOARD_HTML = """
 <!DOCTYPE html>
 <html>
 <head>
-<title>MOONSTAR FLEET CONSOLE</title>
+<title>MOONSTAR EXPRESS LLC — Fleet Console</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f8fafc; padding: 30px;">
-<div style="max-width: 1100px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px;">
-        <h2 style="color: #0b1f3a; margin: 0;">MOONSTAR EXPRESS LLC — Fleet Console</h2>
-        <a href="/logout" style="background: #ef4444; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 12px; font-weight: bold;">Sign Out</a>
+<body class="bg-slate-50 min-h-screen p-6">
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- TOP HEADER -->
+    <header class="bg-gradient-to-r from-slate-900 via-blue-950 to-sky-600 p-5 rounded-xl shadow-lg border-b-4 border-orange-500 flex justify-between items-center text-white">
+        <div class="flex items-center space-x-3">
+            <span class="text-2xl font-black tracking-wide">MOON<span class="text-orange-500">★</span>TAR</span>
+            <span class="text-xs font-semibold text-sky-300 border border-sky-400 px-2.5 py-0.5 rounded">EXPRESS LLC</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-xs text-slate-200">User: <b>{{ user }}</b></span>
+            <a href="/logout" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase transition shadow">Sign Out</a>
+        </div>
+    </header>
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
+            <div class="text-xs font-bold uppercase text-slate-500">Monthly Fleet Gross (ITS)</div>
+            <div class="text-2xl font-black text-sky-600 mt-2">$305,100.00</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
+            <div class="text-xs font-bold uppercase text-slate-500">Total Monthly Fuel Cost</div>
+            <div class="text-2xl font-black text-orange-600 mt-2">$73,400.00</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border-l-4 border-amber-500 shadow-sm">
+            <div class="text-xs font-bold uppercase text-slate-500">Inspections Due Soon</div>
+            <div class="text-2xl font-black text-amber-600 mt-2">10 Assets</div>
+        </div>
+        <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
+            <div class="text-xs font-bold uppercase text-slate-500">Active Fleet Total</div>
+            <div class="text-2xl font-black text-emerald-600 mt-2">{{ vehicles|length }} Trucks</div>
+        </div>
     </div>
-    <p style="color: #334155;">Welcome, <b>{{ user }}</b> | Total Active Fleet Units: <b>{{ vehicles|length }}</b></p>
-    <h3 style="color: #0f172a; margin-top: 20px;">Master Fleet Equipment & Driver Roster</h3>
-    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px;">
-        <tr style="background: #0b1f3a; color: white; text-align: left;">
-            <th style="padding: 10px;">Unit #</th>
-            <th style="padding: 10px;">Make / Model</th>
-            <th style="padding: 10px;">Assigned Driver</th>
-            <th style="padding: 10px;">Monthly Gross</th>
-            <th style="padding: 10px;">Fuel Cost</th>
-        </tr>
-        {% for v in vehicles %}
-        <tr style="border-bottom: 1px solid #e2e8f0;">
-            <td style="padding: 10px; font-weight: bold;">#{{ v.unit_number }}</td>
-            <td style="padding: 10px;">{{ v.unit_type }}</td>
-            <td style="padding: 10px; font-weight: 500; color: #0284c7;">{{ v.driver }}</td>
-            <td style="padding: 10px; color: #16a34a; font-weight: bold;">${{ "{:,.2f}".format(v.monthly_gross) }}</td>
-            <td style="padding: 10px; color: #d97706; font-weight: bold;">${{ "{:,.2f}".format(v.monthly_fuel_cost) }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+
+    <!-- EQUIPMENT PORTAL GRID (KUTUCUKLAR) -->
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        <h3 class="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+            📦 Fleet Equipment Portal (Click unit for dossier)
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {% for v in vehicles %}
+            <div class="bg-white border-2 border-slate-900 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between relative overflow-hidden">
+                <!-- Sol Kenar Şeridi (Duruma Göre Renk) -->
+                <div class="absolute left-0 top-0 bottom-0 w-2 {% if v.status == 'DUE SOON' %}bg-amber-500{% else %}bg-emerald-500{% endif %}"></div>
+                
+                <div class="pl-3">
+                    <div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">
+                        <span class="font-black text-slate-900 text-sm">UNIT #{{ v.unit_number }} ({{ v.unit_type }})</span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded {% if v.status == 'DUE SOON' %}bg-amber-100 text-amber-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">{{ v.status }}</span>
+                    </div>
+                    <div class="space-y-1 text-xs text-slate-700">
+                        <div><b>Driver:</b> <span class="text-sky-600 font-semibold">{{ v.driver }}</span></div>
+                        <div><b>Oil Service:</b> {{ v.oil_status }}</div>
+                        <div><b>Annual DOT:</b> {{ v.dot_status }}</div>
+                        <div class="pt-2 border-t border-slate-100 font-semibold text-slate-900">
+                            Gross: ${{ "{:,.0f}".format(v.monthly_gross) }} | Net: ${{ "{:,.0f}".format(v.net_profit) }}
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 pl-3">
+                    <button class="w-full text-center text-xs font-bold text-sky-600 hover:text-sky-700 border border-sky-200 bg-sky-50 py-2 rounded-lg transition">
+                        Open Master Dossier →
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
 </div>
 </body>
 </html>

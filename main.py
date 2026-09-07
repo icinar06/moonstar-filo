@@ -1,96 +1,90 @@
-from fastapi import FastAPI, Form, Request
+import os
+import pandas as pd
+from fastapi import FastAPI, Form, Request, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse
 from jinja2 import Template
 from datetime import datetime
 
 app = FastAPI(title="MOONSTAR EXPRESS LLC — Executive Fleet Console")
 
-# --- TÜM GERÇEK 56 ŞOFÖR ---
-DRIVERS_DATA = [
-    {"name": "ALTUG BACI", "phone": "954-669-6229""954-669-6229", "email": "altug_baci@hotmail.com", "cdl": "B227-564", "cdl_expiry": "2033-06-04", "medical": "2026-08-26", "truck": "12"},
-    {"name": "FIERALDO", "phone": "267-764-8746""267-764-8746", "email": "Fieraldoshkembii@gmail.com", "cdl": "34593649", "cdl_expiry": "2026-08-26", "medical": "2026-08-26", "truck": "12"},
-    {"name": "BRYAN MAHMUTAJ", "phone": "215-555-0138""215-555-0138", "email": "bryan@moonstarpa.com", "cdl": "PA-388031", "cdl_expiry": "2027-05-31", "medical": "2027-10-01", "truck": "38"},
-    {"name": "WAHDAT SAFI", "phone": "215-555-0153""215-555-0153", "email": "wahdat@moonstarpa.com", "cdl": "PA-764360", "cdl_expiry": "2027-05-31", "medical": "2027-07-26", "truck": "53"},
-    {"name": "FERHADULLAH WESAL", "phone": "215-555-0163""215-555-0163", "email": "farhad@moonstarpa.com", "cdl": "PA-794680", "cdl_expiry": "2026-11-30", "medical": "2027-07-27", "truck": "63"},
-    {"name": "ALI TAJ", "phone": "215-555-0442""215-555-0442", "email": "alitaj@moonstarpa.com", "cdl": "PA-662570", "cdl_expiry": "2027-05-31", "medical": "2027-07-27", "truck": "4462"},
-    {"name": "BULENT / ASIL BAD SHAH", "phone": "215-555-0192""215-555-0192", "email": "asil@moonstarpa.com", "cdl": "PA-982341", "cdl_expiry": "2027-05-31", "medical": "2026-12-01", "truck": "06"},
-    {"name": "DINDAR RAHMANI", "phone": "215-555-0177""215-555-0177", "email": "dindar@moonstarpa.com", "cdl": "PA-112344", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "Unassigned"},
-    {"name": "HABIB TANIWAL", "phone": "215-555-0114""215-555-0114", "email": "habib@moonstarpa.com", "cdl": "PA-598991", "cdl_expiry": "2027-05-31", "medical": "2026-10-01", "truck": "14"},
-    {"name": "BESHARAT SEDEQI", "phone": "215-555-0248""215-555-0248", "email": "besharat@moonstarpa.com", "cdl": "PA-808390", "cdl_expiry": "2027-05-31", "medical": "2027-03-27", "truck": "2486"},
-    {"name": "HUSSAIN ANWARI", "phone": "215-555-0892""215-555-0892", "email": "hussain@moonstarpa.com", "cdl": "PA-642540", "cdl_expiry": "2027-05-31", "medical": "2026-11-26", "truck": "8929"},
-    {"name": "ISMAIL CINAR", "phone": "347-444-1686""347-444-1686", "email": "ismail@moonstarpa.com", "cdl": "PA-OWNER", "cdl_expiry": "2028-01-01", "medical": "2027-01-01", "truck": "41"},
-    {"name": "ISMAIL CINAR 41", "phone": "347-444-1687""347-444-1687", "email": "ismail41@moonstarpa.com", "cdl": "PA-OWNER2", "cdl_expiry": "2028-01-01", "medical": "2027-01-01", "truck": "41"},
-    {"name": "NOOR SHAHZADIN", "phone": "215-555-0155""215-555-0155", "email": "noor@moonstarpa.com", "cdl": "PA-482560", "cdl_expiry": "2027-05-31", "medical": "2026-11-26", "truck": "55"},
-    {"name": "JOSHUA DIAZ", "phone": "215-555-0131""215-555-0131", "email": "joshua@moonstarpa.com", "cdl": "PA-849821", "cdl_expiry": "2026-11-30", "medical": "2026-11-01", "truck": "31"},
-    {"name": "MOHAMMAD MALAK", "phone": "215-555-0101""215-555-0101", "email": "malak@moonstarpa.com", "cdl": "PA-010101", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "01"},
-    {"name": "TEVIN BOBBY", "phone": "215-555-1907""215-555-1907", "email": "tevin@moonstarpa.com", "cdl": "PA-190719", "cdl_expiry": "2027-05-31", "medical": "2026-08-26", "truck": "FB1907"},
-    {"name": "DREW W. DAVIS", "phone": "215-555-0115""215-555-0115", "email": "drew@moonstarpa.com", "cdl": "PA-011511", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "0115"},
-    {"name": "LAMAR MONTEL BURT", "phone": "215-555-0116""215-555-0116", "email": "montel@moonstarpa.com", "cdl": "PA-550840", "cdl_expiry": "2027-05-31", "medical": "2026-10-26", "truck": "115"},
-    {"name": "JAMIL MBOYA", "phone": "215-555-1105""215-555-1105", "email": "jamil@moonstarpa.com", "cdl": "PA-110501", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "1105"},
-    {"name": "BARAT KHAN", "phone": "215-555-1675""215-555-1675", "email": "barat@moonstarpa.com", "cdl": "PA-167500", "cdl_expiry": "2027-05-31", "medical": "2026-11-26", "truck": "1675"},
-    {"name": "BRENA BYRD", "phone": "215-555-2468""215-555-2468", "email": "brena@moonstarpa.com", "cdl": "PA-246800", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "2468"},
-    {"name": "OLIVER FORD", "phone": "215-555-2640""215-555-2640", "email": "oliver@moonstarpa.com", "cdl": "PA-264000", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "2640"},
-    {"name": "AMJAD MULK", "phone": "215-555-2940""215-555-2940", "email": "amjad@moonstarpa.com", "cdl": "PA-294000", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "2940"},
-    {"name": "AZEEM MURPHY", "phone": "215-555-2941""215-555-2941", "email": "azeemm@moonstarpa.com", "cdl": "PA-294100", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "2940"},
-    {"name": "BRANDON OSINUPEBI", "phone": "215-555-4561""215-555-4561", "email": "brandon@moonstarpa.com", "cdl": "PA-456100", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "4561"},
-    {"name": "SHIRIN BAD SHAH", "phone": "215-555-5672""215-555-5672", "email": "shirin@moonstarpa.com", "cdl": "PA-567200", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "5672"},
-    {"name": "DEMITRUS FAUST", "phone": "215-555-6812""215-555-6812", "email": "demitrus@moonstarpa.com", "cdl": "PA-681200", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "6812"},
-    {"name": "MARQUIS J BATTLE", "phone": "215-555-7688""215-555-7688", "email": "marquis@moonstarpa.com", "cdl": "PA-768800", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "7688"},
-    {"name": "SHAFOOR BISMELLAH", "phone": "215-555-7710""215-555-7710", "email": "shafoor@moonstarpa.com", "cdl": "PA-771000", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "7710"},
-    {"name": "WALI RAHMAN", "phone": "215-555-1021""215-555-1021", "email": "wali@moonstarpa.com", "cdl": "PA-550670", "cdl_expiry": "2027-05-31", "medical": "2026-10-26", "truck": "1021"},
-    {"name": "ALI IMRAN", "phone": "215-555-0201""215-555-0201", "email": "aliimran@moonstarpa.com", "cdl": "TX-694300", "cdl_expiry": "2027-05-31", "medical": "2027-07-27", "truck": "201"},
-    {"name": "ANDI KASHARI", "phone": "215-555-0217""215-555-0217", "email": "andi@moonstarpa.com", "cdl": "PA-814160", "cdl_expiry": "2027-05-31", "medical": "2026-12-26", "truck": "217"},
-    {"name": "NASEEBULLAH", "phone": "215-555-0202""215-555-0202", "email": "naseeb@moonstarpa.com", "cdl": "TX-011000", "cdl_expiry": "2027-05-31", "medical": "2027-07-27", "truck": "202"},
-    {"name": "NEVIS HAJNAJ", "phone": "215-555-0999""215-555-0999", "email": "nevis@moonstarpa.com", "cdl": "PA-413900", "cdl_expiry": "2027-05-31", "medical": "2027-08-27", "truck": "999"},
-    {"name": "SELCUK GOCKEN", "phone": "215-555-1052""215-555-1052", "email": "selcuk@moonstarpa.com", "cdl": "NJ-136000", "cdl_expiry": "2027-05-31", "medical": "2027-07-26", "truck": "1052"},
-    {"name": "YZEDIN HATTILARI", "phone": "215-555-0995""215-555-0995", "email": "yzedin@moonstarpa.com", "cdl": "PA-995000", "cdl_expiry": "2027-05-31", "medical": "2027-04-01", "truck": "995"},
-    {"name": "OMAD FNU", "phone": "215-555-0010""215-555-0010", "email": "omad@moonstarpa.com", "cdl": "TX-778574", "cdl_expiry": "2027-04-30", "medical": "2027-02-26", "truck": "10"},
-    {"name": "OMAID FNU 35", "phone": "215-555-0035""215-555-0035", "email": "omaid35@moonstarpa.com", "cdl": "TX-778575", "cdl_expiry": "2027-04-30", "medical": "2027-02-26", "truck": "35"},
-    {"name": "OMAID FNU T34", "phone": "215-555-0034""215-555-0034", "email": "omaidt34@moonstarpa.com", "cdl": "TX-567959", "cdl_expiry": "2027-04-30", "medical": "2027-02-27", "truck": "34"},
-    {"name": "RAFIQ SARFERAZ", "phone": "215-555-0130""215-555-0130", "email": "rafiq@moonstarpa.com", "cdl": "PA-286911", "cdl_expiry": "2026-09-25", "medical": "2026-12-26", "truck": "30"},
-    {"name": "RIDVAN DENIZ", "phone": "215-555-0165""215-555-0165", "email": "ridvan@moonstarpa.com", "cdl": "PA-849830", "cdl_expiry": "2026-11-30", "medical": "2026-12-01", "truck": "65"},
-    {"name": "RUSS", "phone": "215-555-0342""215-555-0342", "email": "russ@moonstarpa.com", "cdl": "PA-342260", "cdl_expiry": "2027-05-31", "medical": "2026-10-26", "truck": "40"},
-    {"name": "AZEEM AZEEMI", "phone": "215-555-5421""215-555-5421", "email": "azeemi@moonstarpa.com", "cdl": "IN-315962", "cdl_expiry": "2027-03-31", "medical": "2027-03-31", "truck": "542148"},
-    {"name": "KAAMIL E VENSON", "phone": "215-555-8212""215-555-8212", "email": "kaamil@moonstarpa.com", "cdl": "IN-384287", "cdl_expiry": "2027-03-31", "medical": "2027-03-31", "truck": "821264"},
-    {"name": "SAID KHAN", "phone": "215-555-0133""215-555-0133", "email": "said@moonstarpa.com", "cdl": "PA-856140", "cdl_expiry": "2027-05-31", "medical": "2026-07-27", "truck": "33"},
-    {"name": "MOHAMMAD AMAN RASOLI", "phone": "215-555-2009""215-555-2009", "email": "aman@moonstarpa.com", "cdl": "PA-652670", "cdl_expiry": "2027-05-31", "medical": "2027-03-27", "truck": "2009"},
-    {"name": "SAYED MUKHTAR", "phone": "215-555-0530""215-555-0530", "email": "sayed@moonstarpa.com", "cdl": "PA-530000", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "Unassigned"},
-    {"name": "THOMAS HUDSON", "phone": "215-555-5269""215-555-5269", "email": "thomas@moonstarpa.com", "cdl": "PA-526920", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "526920"},
-    {"name": "THOMAS VASQUEZ", "phone": "215-555-5270""215-555-5270", "email": "tvasquez@moonstarpa.com", "cdl": "PA-527000", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "Unassigned"},
-    {"name": "AT YARD", "phone": "215-555-0144""215-555-0144", "email": "yard@moonstarpa.com", "cdl": "PA-334112", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "8"},
-    {"name": "FERHADULLAH", "phone": "215-555-0164""215-555-0164", "email": "ferhad@moonstarpa.com", "cdl": "PA-630000", "cdl_expiry": "2026-11-30", "medical": "2027-07-27", "truck": "63"},
-    {"name": "BARAT KHAN 2", "phone": "215-555-1676""215-555-1676", "email": "barat2@moonstarpa.com", "cdl": "PA-167501", "cdl_expiry": "2027-05-31", "medical": "2026-11-26", "truck": "1675"},
-    {"name": "DEMITRUS FAUST 2", "phone": "215-555-6813""215-555-6813", "email": "demitrus2@moonstarpa.com", "cdl": "PA-681201", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "6812"},
-    {"name": "MARQUIS J BATTLE 2", "phone": "215-555-7689""215-555-7689", "email": "marquis2@moonstarpa.com", "cdl": "PA-768801", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "7688"},
-    {"name": "SHAFOOR BISMELLAH 2", "phone": "215-555-7711""215-555-7711", "email": "shafoor2@moonstarpa.com", "cdl": "PA-771001", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "7710"}
-]
+def load_master_data():
+    trucks, trailers, drivers = [], [], []
 
-# --- KAMYONLAR VE P&L ---
-TRUCKS_DATA = [
-    {"unit": "FB1907", "type": "2022 INTERNATIONAL", "plate": "AH59897 PA", "driver": "TEVIN BOBBY", "gross": 19800.0, "fuel": 4700.0, "maintenance": 500.0},
-    {"unit": "8", "type": "VOLVO Vnl64t", "plate": "AH35700 PA", "driver": "AT YARD", "gross": 15000.0, "fuel": 4200.0, "maintenance": 300.0},
-    {"unit": "10", "type": "FREIGHTLINER", "plate": "R785774 TX", "driver": "OMAID FNU", "gross": 21000.0, "fuel": 5300.0, "maintenance": 650.0},
-    {"unit": "12", "type": "VOLVO 2021", "plate": "AH69361 PA", "driver": "ALTUG BACI", "gross": 22000.0, "fuel": 5100.0, "maintenance": 500.0},
-    {"unit": "14", "type": "FREIGHTLINER", "plate": "AH59899 PA", "driver": "HABIB TANIWAL", "gross": 18500.0, "fuel": 4600.0, "maintenance": 400.0},
-    {"unit": "33", "type": "FREIGHTLINER", "plate": "AG85614 PA", "driver": "SAID KHAN", "gross": 20400.0, "fuel": 4900.0, "maintenance": 450.0},
-    {"unit": "38", "type": "VOLVO", "plate": "AH38803 PA", "driver": "BRYAN MAHMUTAJ", "gross": 24000.0, "fuel": 5800.0, "maintenance": 600.0},
-    {"unit": "41", "type": "VOLVO", "plate": "AH79469 PA", "driver": "ISMAIL CINAR", "gross": 21000.0, "fuel": 5000.0, "maintenance": 350.0},
-    {"unit": "53", "type": "FREIGHTLINER", "plate": "AH76436 PA", "driver": "WAHDAT SAFI", "gross": 26000.0, "fuel": 6200.0, "maintenance": 750.0},
-    {"unit": "65", "type": "VOLVO", "plate": "AH84983 PA", "driver": "RIDVAN DENIZ", "gross": 19500.0, "fuel": 4500.0, "maintenance": 500.0}
-]
+    if os.path.exists("Trucks.xlsx"):
+        try:
+            df = pd.read_excel("Trucks.xlsx", sheet_name=0)
+            for _, r in df.iterrows():
+                num = str(r.get("Number", "")).strip()
+                if num and num.lower() != "nan":
+                    trucks.append({
+                        "unit": num,
+                        "type": str(r.get("Type", "Truck")).strip(),
+                        "plate": str(r.get("Plate Number", "-")).strip(),
+                        "plate_expiry": str(r.get("Plate Expiry", "-")).strip()[:10],
+                        "dot_insp": str(r.get("DOT Inspection Date", "2026-10-26")).strip()[:10],
+                        "vin": str(r.get("VIN", "-")).strip(),
+                        "driver": "Unassigned",
+                        "trailer": "None",
+                        "status": "Active",
+                        "gross": 21500.0,
+                        "fuel": 4800.0,
+                        "maintenance": 650.0,
+                        "accident_report": "No accidents reported.",
+                        "files": []
+                    })
+        except:
+            pass
 
-# --- RÖMORKLAR ---
-TRAILERS_DATA = [
-    {"unit": "127", "type": "22' Van", "plate": "516-6421 ME", "annual_insp": "2027-06-30", "assigned_truck": "FB1907"},
-    {"unit": "209536611", "type": "53' Reefer", "plate": "-", "annual_insp": "2027-05-31", "assigned_truck": "8"},
-    {"unit": "532019", "type": "53' Van", "plate": "563-7097 ME", "annual_insp": "2027-05-31", "assigned_truck": "12"},
-    {"unit": "532132", "type": "53' Reefer", "plate": "-", "annual_insp": "2027-08-30", "assigned_truck": "53"},
-    {"unit": "599238", "type": "Flatbed", "plate": "-", "annual_insp": "2027-09-30", "assigned_truck": "38"},
-    {"unit": "9421", "type": "53' Reefer", "plate": "30-28279 ME", "annual_insp": "2027-09-30", "assigned_truck": "41"},
-    {"unit": "DORSEY 0916", "type": "Step Deck", "plate": "2830813", "annual_insp": "2028-02-29", "assigned_truck": "10"},
-    {"unit": "L 524", "type": "Step Deck", "plate": "TN861605", "annual_insp": "2027-06-30", "assigned_truck": "14"},
-    {"unit": "R14782", "type": "Dry Van", "plate": "31-19733 ME", "annual_insp": "2026-07-27", "assigned_truck": "65"}
-]
+    if os.path.exists("Trailers.xlsx"):
+        try:
+            df = pd.read_excel("Trailers.xlsx", sheet_name=0)
+            for _, r in df.iterrows():
+                num = str(r.get("Number", "")).strip()
+                if num and num.lower() != "nan":
+                    trailers.append({
+                        "unit": num,
+                        "type": str(r.get("Type", "Trailer")).strip(),
+                        "plate": str(r.get("Plate Number", "-")).strip(),
+                        "plate_expiry": str(r.get("Plate Expiry", "-")).strip()[:10],
+                        "annual_insp": str(r.get("Annual Inspection Date", "2026-11-26")).strip()[:10],
+                        "vin": str(r.get("VIN", "-")).strip(),
+                        "assigned_truck": "None",
+                        "files": []
+                    })
+        except:
+            pass
+
+    if os.path.exists("Drivers (2).xlsx"):
+        try:
+            df = pd.read_excel("Drivers (2).xlsx", sheet_name=0)
+            for _, r in df.iterrows():
+                name = str(r.get("Name", "")).strip()
+                if name and name.lower() != "nan":
+                    drivers.append({
+                        "name": name,
+                        "phone": str(r.get("Telephone", "-")).strip(),
+                        "email": str(r.get("E-mail", "-")).strip(),
+                        "cdl": str(r.get("License Number", "-")).strip(),
+                        "cdl_expiry": str(r.get("License Expiry", "2027-05-31")).strip()[:10],
+                        "medical": str(r.get("Next Medical", "2027-01-15")).strip()[:10],
+                        "truck": "Unassigned",
+                        "accident_report": "Clean record.",
+                        "files": []
+                    })
+        except:
+            pass
+
+    if not trucks:
+        trucks = [{"unit": "8", "type": "VOLVO", "plate": "AH35700 PA", "plate_expiry": "2027-05-31", "dot_insp": "2026-10-26", "vin": "4V4", "driver": "AT YARD", "trailer": "None", "status": "Active", "gross": 18000.0, "fuel": 4000.0, "maintenance": 300.0, "accident_report": "None", "files": []}]
+    if not trailers:
+        trailers = [{"unit": "R14782", "type": "Dry Van", "plate": "31-19733 ME", "plate_expiry": "2031-02-28", "annual_insp": "2026-07-27", "vin": "3AW", "assigned_truck": "None", "files": []}]
+    if not drivers:
+        drivers = [{"name": "AT YARD", "phone": "215-555-0144""215-555-0144", "email": "yard@moonstarpa.com", "cdl": "PA-334", "cdl_expiry": "2027-05-31", "medical": "2027-01-15", "truck": "8", "accident_report": "None", "files": []}]
+
+    return trucks, trailers, drivers
+
+TRUCKS_LIST, TRAILERS_LIST, DRIVERS_LIST = load_master_data()
+CHAT_MESSAGES = [{"sender": "ismail@moonstarpa.com", "message": "Executive Fleet Console synchronized successfully.", "time": "10:00 AM"}]
 
 LOGIN_HTML = """
 <!DOCTYPE html>
@@ -140,9 +134,9 @@ DASHBOARD_HTML = """
         <div class="brand-font text-sky-400 font-black text-xl">★</div>
         <div class="flex flex-col space-y-6 text-slate-400">
             <a href="/dashboard?tab=home" title="Home" class="p-3 rounded-xl {% if tab == 'home' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">🏠</a>
-            <a href="/dashboard?tab=trucks" title="Trucks" class="p-3 rounded-xl {% if tab == 'trucks' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">🚛</a>
-            <a href="/dashboard?tab=trailers" title="Trailers" class="p-3 rounded-xl {% if tab == 'trailers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">📦</a>
-            <a href="/dashboard?tab=drivers" title="Drivers" class="p-3 rounded-xl {% if tab == 'drivers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">👤</a>
+            <a href="/dashboard?tab=trucks" title="Trucks & Trailers" class="p-3 rounded-xl {% if tab == 'trucks' or tab == 'trailers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">🚛</a>
+            <a href="/dashboard?tab=drivers" title="Drivers Compliance" class="p-3 rounded-xl {% if tab == 'drivers' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">👤</a>
+            <a href="/dashboard?tab=chat" title="Dispatch Chat" class="p-3 rounded-xl {% if tab == 'chat' %}bg-sky-600 text-white{% else %}hover:bg-slate-800{% endif %} transition">💬</a>
         </div>
     </aside>
 
@@ -158,26 +152,37 @@ DASHBOARD_HTML = """
             </div>
         </header>
 
-        <div class="bg-white border-b border-slate-200 px-8 py-3 flex space-x-3 shadow-sm">
-            <a href="/dashboard?tab=home" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'home' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Home / Analytics</a>
-            <a href="/dashboard?tab=trucks" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trucks' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trucks & P&L ({{ trucks|length }})</a>
-            <a href="/dashboard?tab=trailers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trailers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trailers Master ({{ trailers|length }})</a>
-            <a href="/dashboard?tab=drivers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'drivers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Drivers Roster ({{ drivers|length }})</a>
+        <div class="bg-white border-b border-slate-200 px-8 py-3 flex justify-between items-center shadow-sm">
+            <div class="flex space-x-3">
+                <a href="/dashboard?tab=home" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'home' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Home / Analytics</a>
+                <a href="/dashboard?tab=trucks" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'trucks' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Trucks & Trailers ({{ trucks|length }}/{{ trailers|length }})</a>
+                <a href="/dashboard?tab=drivers" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'drivers' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Drivers Compliance ({{ drivers|length }})</a>
+                <a href="/dashboard?tab=chat" class="px-4 py-2 text-xs font-bold uppercase rounded-lg {% if tab == 'chat' %}bg-slate-900 text-white shadow{% else %}text-slate-600 hover:bg-slate-100{% endif %}">Dispatch Team Chat</a>
+            </div>
+            <div>
+                {% if tab == 'trucks' %}
+                <a href="/dashboard?tab=trucks&action=add_truck" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Truck</a>
+                {% elif tab == 'trailers' %}
+                <a href="/dashboard?tab=trailers&action=add_trailer" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Trailer</a>
+                {% elif tab == 'drivers' %}
+                <a href="/dashboard?tab=drivers&action=add_driver" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-bold uppercase shadow">+ Add Driver</a>
+                {% endif %}
+            </div>
         </div>
 
         <main class="p-8 space-y-6 flex-1">
             {% if tab == 'home' %}
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div class="bg-white p-5 rounded-xl border-l-4 border-sky-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trucks</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Registered Trucks</div>
                     <div class="text-3xl font-black text-sky-600 mt-2">{{ trucks|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-orange-500 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Total Trailers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Trailers</div>
                     <div class="text-3xl font-black text-orange-600 mt-2">{{ trailers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-emerald-600 shadow-sm">
-                    <div class="text-xs font-bold uppercase text-slate-500">Active Drivers</div>
+                    <div class="text-xs font-bold uppercase text-slate-500">Total Active Drivers</div>
                     <div class="text-3xl font-black text-emerald-600 mt-2">{{ drivers|length }}</div>
                 </div>
                 <div class="bg-white p-5 rounded-xl border-l-4 border-indigo-600 shadow-sm">
@@ -188,14 +193,14 @@ DASHBOARD_HTML = """
                 </div>
             </div>
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h3 class="text-lg font-black text-slate-900">🚨 Fleet Compliance & Expiration Watch</h3>
+                <h3 class="text-lg font-black text-slate-900">🚨 Fleet Compliance & Inspection Watch</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                     <div class="bg-amber-50 p-4 rounded-xl border border-amber-200 space-y-2">
-                        <h4 class="font-bold text-amber-900 text-sm">🚚 Trucks & Trailers Inspection Watch</h4>
-                        {% for tr in trailers[:6] %}
+                        <h4 class="font-bold text-amber-900 text-sm">🚚 Trucks Inspection Watch</h4>
+                        {% for t in trucks[:6] %}
                         <div class="flex justify-between bg-white p-2.5 rounded border border-amber-100">
-                            <span><b>Trailer #{{ tr.unit }}</b> ({{ tr.type }})</span>
-                            <span class="text-amber-700 font-bold">Insp: {{ tr.annual_insp }}</span>
+                            <span><b>Unit #{{ t.unit }}</b> ({{ t.type }})</span>
+                            <span class="text-amber-700 font-bold">DOT: {{ t.dot_insp }}</span>
                         </div>
                         {% endfor %}
                     </div>
@@ -213,8 +218,12 @@ DASHBOARD_HTML = """
             {% elif tab == 'trucks' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">🚛 Master Trucks Inventory & P&L Ledger</h3>
-                    <span class="text-xs text-slate-500">Click any truck row to edit financial data and expenses.</span>
+                    <h3 class="font-black text-slate-900 text-base">🚛 Master Trucks Inventory & P&L Ledger ({{ trucks|length }} Units)</h3>
+                    <form method="GET" action="/dashboard" class="flex gap-2">
+                        <input type="hidden" name="tab" value="trucks">
+                        <input type="text" name="search" value="{{ search or '' }}" placeholder="Search unit, driver, plate..." class="px-3 py-1.5 text-xs border rounded-lg bg-white">
+                        <button type="submit" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold">Search</button>
+                    </form>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -229,6 +238,7 @@ DASHBOARD_HTML = """
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                         {% for t in trucks %}
+                        {% if not search or search.lower() in t.unit.lower() or search.lower() in t.driver.lower() or search.lower() in t.plate.lower() %}
                         <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=trucks&dossier={{ t.unit }}'">
                             <td class="p-3 font-black text-slate-900">#{{ t.unit }}</td>
                             <td class="p-3 text-slate-700">{{ t.type }}</td>
@@ -239,6 +249,7 @@ DASHBOARD_HTML = """
                                 ${{ "{:,.2f}".format(t.gross - t.fuel - t.maintenance) }}
                             </td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
@@ -246,25 +257,25 @@ DASHBOARD_HTML = """
             {% elif tab == 'trailers' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory</h3>
-                    <span class="text-xs text-slate-500">Active trailers assigned to fleet units.</span>
+                    <h3 class="font-black text-slate-900 text-base">📦 Master Trailers Inventory ({{ trailers|length }} Units)</h3>
+                    <a href="/dashboard?tab=trailers&action=add_trailer" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold">+ Add Trailer</a>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
                         <tr class="bg-slate-900 text-white">
                             <th class="p-3">Unit #</th>
                             <th class="p-3">Trailer Type</th>
-                            <th class="p-3">Plate Number</th>
-                            <th class="p-3">Annual Inspection Due</th>
+                            <th class="p-3">Plate & Expiry</th>
+                            <th class="p-3">Annual Inspection</th>
                             <th class="p-3">Assigned Truck</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                         {% for tr in trailers %}
-                        <tr class="hover:bg-slate-50">
+                        <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=trailers&trailer_dossier={{ tr.unit }}'">
                             <td class="p-3 font-black text-slate-900">#{{ tr.unit }}</td>
                             <td class="p-3 text-slate-700">{{ tr.type }}</td>
-                            <td class="p-3 text-slate-600">{{ tr.plate }}</td>
+                            <td class="p-3 text-slate-600">{{ tr.plate }} <br><span class="text-[10px] text-slate-400">Exp: {{ tr.plate_expiry }}</span></td>
                             <td class="p-3 font-semibold text-amber-700">{{ tr.annual_insp }}</td>
                             <td class="p-3 font-bold text-sky-600">Truck #{{ tr.assigned_truck }}</td>
                         </tr>
@@ -275,8 +286,8 @@ DASHBOARD_HTML = """
             {% elif tab == 'drivers' %}
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="p-5 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-black text-slate-900 text-base">👤 Master Drivers Roster ({{ drivers|length }} Active Drivers)</h3>
-                    <span class="text-xs text-slate-500">Click phone number to call directly.</span>
+                    <h3 class="font-black text-slate-900 text-base">👤 Master Drivers Compliance & Roster ({{ drivers|length }} Active Drivers)</h3>
+                    <span class="text-xs text-slate-500">Click any driver to view full dossier (CDL, Medical, Phone, Accident Report).</span>
                 </div>
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
@@ -290,10 +301,10 @@ DASHBOARD_HTML = """
                     </thead>
                     <tbody class="divide-y divide-slate-200">
                         {% for d in drivers %}
-                        <tr class="hover:bg-slate-50">
+                        <tr class="hover:bg-slate-50 cursor-pointer" onclick="window.location='/dashboard?tab=drivers&driver_dossier={{ d.name }}'">
                             <td class="p-3 font-black text-slate-900">{{ d.name }}</td>
                             <td class="p-3 text-slate-600">
-                                <a href="tel:{{ d.phone }}" class="text-sky-600 font-bold hover:underline">📞 {{ d.phone }}</a>
+                                <a href="tel:{{ d.phone }}" class="text-sky-600 font-bold hover:underline" onclick="event.stopPropagation();">📞 {{ d.phone }}</a>
                                 <br><span class="text-[10px] text-slate-400">{{ d.email }}</span>
                             </td>
                             <td class="p-3 text-slate-700">{{ d.cdl }} <br><span class="text-[10px] text-sky-600 font-bold">Exp: {{ d.cdl_expiry }}</span></td>
@@ -304,34 +315,151 @@ DASHBOARD_HTML = """
                     </tbody>
                 </table>
             </div>
+            {% elif tab == 'chat' %}
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-6 max-w-4xl mx-auto">
+                <h3 class="text-lg font-black text-slate-900 border-b pb-3">💬 Moonstar Fleet Team Chat & Dispatch Board</h3>
+                <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200 h-80 overflow-y-auto">
+                    {% for c in chat_messages %}
+                    <div class="bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
+                        <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                            <span class="font-bold text-sky-600">{{ c.sender }}</span>
+                            <span>{{ c.time }}</span>
+                        </div>
+                        <div class="text-xs text-slate-800 font-medium">{{ c.message }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <form action="/send_chat" method="POST" class="flex gap-3">
+                    <input type="text" name="message" required placeholder="Type dispatch message..." class="flex-1 px-4 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-lg">
+                    <button type="submit" class="bg-sky-600 text-white px-6 py-2.5 rounded-lg text-xs font-bold uppercase shadow">Send</button>
+                </form>
+            </div>
             {% endif %}
         </main>
     </div>
 
-    <!-- TRUCK P&L DOSSIER MODAL -->
-    {% if selected_truck %}
+    <!-- TRUCK DOSSIER MODAL -->
+    {% if selected_unit %}
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
             <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
-                <h3 class="font-black text-lg">Truck P&L & Expenses — Unit #{{ selected_truck.unit }}</h3>
+                <h3 class="font-black text-lg">Truck Dossier & Financial Ledger — Unit #{{ selected_unit.unit }}</h3>
                 <a href="/dashboard?tab=trucks" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
             </div>
             <form action="/update_truck" method="POST" class="p-6 space-y-4">
-                <input type="hidden" name="unit" value="{{ selected_truck.unit }}">
+                <input type="hidden" name="unit" value="{{ selected_unit.unit }}">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gross Revenue ($)</label>
+                        <input type="number" step="0.01" name="gross" value="{{ selected_unit.gross }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fuel Expense ($)</label>
+                        <input type="number" step="0.01" name="fuel" value="{{ selected_unit.fuel }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Maintenance Expense ($)</label>
+                        <input type="number" step="0.01" name="maintenance" value="{{ selected_unit.maintenance }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Accident / Incident Report</label>
+                        <input type="text" name="accident_report" value="{{ selected_unit.accident_report }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-between pt-2">
+                    <button type="submit" class="bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">💾 Save Truck Info</button>
+                    <a href="/delete_truck?unit={{ selected_unit.unit }}" class="bg-red-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete Truck</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- DRIVER DOSSIER MODAL -->
+    {% if selected_driver %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">Driver Dossier & Compliance: {{ selected_driver.name }}</h3>
+                <a href="/dashboard?tab=drivers" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/update_driver" method="POST" class="p-6 space-y-4">
+                <input type="hidden" name="original_name" value="{{ selected_driver.name }}">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+                        <input type="text" name="name" value="{{ selected_driver.name }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Phone Number</label>
+                        <input type="text" name="phone" value="{{ selected_driver.phone }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">CDL License Number</label>
+                        <input type="text" name="cdl" value="{{ selected_driver.cdl }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">DOT Medical Expiry</label>
+                        <input type="text" name="medical" value="{{ selected_driver.medical }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Accident / Violation Record</label>
+                        <input type="text" name="accident_report" value="{{ selected_driver.accident_report or 'Clean' }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    </div>
+                </div>
+                <div class="flex justify-between pt-2">
+                    <button type="submit" class="bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">💾 Save Driver Compliance</button>
+                    <a href="/delete_driver?name={{ selected_driver.name }}" class="bg-red-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">🗑️ Delete Driver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADD TRUCK MODAL -->
+    {% if action == 'add_truck' %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">➕ Add New Truck</h3>
+                <a href="/dashboard?tab=trucks" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/add_truck" method="POST" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Gross Revenue ($)</label>
-                    <input type="number" step="0.01" name="gross" value="{{ selected_truck.gross }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Unit Number (e.g., 95)</label>
+                    <input type="text" name="unit" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Fuel Expense ($)</label>
-                    <input type="number" step="0.01" name="fuel" value="{{ selected_truck.fuel }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Maintenance / Oil Change Expense ($)</label>
-                    <input type="number" step="0.01" name="maintenance" value="{{ selected_truck.maintenance }}" class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Make / Model</label>
+                    <input type="text" name="type" value="VOLVO VNL" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
                 </div>
                 <div class="flex justify-end pt-2">
-                    <button type="submit" class="bg-sky-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">💾 Save Financials</button>
+                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">Save Truck</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ADD DRIVER MODAL -->
+    {% if action == 'add_driver' %}
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200">
+            <div class="bg-slate-900 text-white p-5 flex justify-between items-center">
+                <h3 class="font-black text-lg">➕ Add New Driver</h3>
+                <a href="/dashboard?tab=drivers" class="text-slate-400 hover:text-white font-bold text-lg">✕</a>
+            </div>
+            <form action="/add_driver" method="POST" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Full Name</label>
+                    <input type="text" name="name" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-600 mb-1">Phone Number</label>
+                    <input type="text" name="phone" required class="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-emerald-600 text-white px-5 py-2 rounded-lg text-xs font-bold uppercase shadow">Save Driver</button>
                 </div>
             </form>
         </div>
@@ -354,30 +482,76 @@ def login_post(request: Request, email: str = Form(...), password: str = Form(..
     return Template(LOGIN_HTML).render(error="Invalid credentials!")
 
 @app.get("/dashboard", response_class=HTMLResponse)
-def dashboard(request: Request, tab: str = "home", dossier: str = None):
+def dashboard(request: Request, tab: str = "home", dossier: str = None, trailer_dossier: str = None, driver_dossier: str = None, search: str = None, action: str = None):
     user = request.cookies.get("user")
     if not user:
         return RedirectResponse(url="/", status_code=303)
     
-    selected_truck = next((t for t in TRUCKS_DATA if t["unit"] == dossier), None) if dossier else None
+    selected_unit = next((t for t in TRUCKS_LIST if t["unit"] == dossier), None) if dossier else None
+    selected_driver = next((d for d in DRIVERS_LIST if d["name"] == driver_dossier), None) if driver_dossier else None
 
     return Template(DASHBOARD_HTML).render(
         user=user, 
-        trucks=TRUCKS_DATA, 
-        trailers=TRAILERS_DATA,
-        drivers=DRIVERS_DATA, 
-        tab=tab, 
-        selected_truck=selected_truck
+        trucks=TRUCKS_LIST, 
+        trailers=TRAILERS_LIST,
+        drivers=DRIVERS_LIST,
+        chat_messages=CHAT_MESSAGES, 
+        tab=tab,
+        search=search,
+        action=action, 
+        selected_unit=selected_unit,
+        selected_driver=selected_driver
     )
 
 @app.post("/update_truck")
-def update_truck(unit: str = Form(...), gross: float = Form(0.0), fuel: float = Form(0.0), maintenance: float = Form(0.0)):
-    for t in TRUCKS_DATA:
+def update_truck(unit: str = Form(...), gross: float = Form(0.0), fuel: float = Form(0.0), maintenance: float = Form(0.0), accident_report: str = Form("None")):
+    for t in TRUCKS_LIST:
         if t["unit"] == unit:
             t["gross"] = gross
             t["fuel"] = fuel
             t["maintenance"] = maintenance
+            t["accident_report"] = accident_report
+    return RedirectResponse(url=f"/dashboard?tab=trucks&dossier={unit}", status_code=303)
+
+@app.post("/update_driver")
+def update_driver(original_name: str = Form(...), name: str = Form(...), phone: str = Form(...), cdl: str = Form(...), medical: str = Form(...), accident_report: str = Form("Clean")):
+    for d in DRIVERS_LIST:
+        if d["name"] == original_name:
+            d["name"] = name
+            d["phone"] = phone
+            d["cdl"] = cdl
+            d["medical"] = medical
+            d["accident_report"] = accident_report
+    return RedirectResponse(url=f"/dashboard?tab=drivers&driver_dossier={name}", status_code=303)
+
+@app.post("/add_truck")
+def add_truck(unit: str = Form(...), type: str = Form(...)):
+    TRUCKS_LIST.append({
+        "unit": unit, "type": type, "plate": "TEMP-PA", "plate_expiry": "2027-05-31",
+        "dot_insp": "2027-01-01", "vin": "NEW", "driver": "Unassigned", "trailer": "None",
+        "status": "Active", "gross": 15000.0, "fuel": 3500.0, "maintenance": 500.0, "accident_report": "None", "files": []
+    })
     return RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
+
+@app.get("/delete_truck")
+def delete_truck(unit: str):
+    global TRUCKS_LIST
+    TRUCKS_LIST = [t for t in TRUCKS_LIST if t["unit"] != unit]
+    return RedirectResponse(url="/dashboard?tab=trucks", status_code=303)
+
+@app.post("/add_driver")
+def add_driver(name: str = Form(...), phone: str = Form(...)):
+    DRIVERS_LIST.append({
+        "name": name, "phone": phone, "email": f"{name.lower().replace(' ', '')}@moonstarpa.com",
+        "cdl": "CDL-NEW", "cdl_expiry": "2028-01-01", "medical": "2027-01-01", "truck": "Unassigned", "accident_report": "Clean", "files": []
+    })
+    return RedirectResponse(url="/dashboard?tab=drivers", status_code=303)
+
+@app.get("/delete_driver")
+def delete_driver(name: str):
+    global DRIVERS_LIST
+    DRIVERS_LIST = [d for d in DRIVERS_LIST if d["name"] != name]
+    return RedirectResponse(url="/dashboard?tab=drivers", status_code=303)
 
 @app.get("/logout")
 def logout():
